@@ -6,15 +6,22 @@
  * NEXT_PUBLIC_* vars are the only ones accessible in the browser bundle.
  */
 
-function requireEnv(key: string, fallback?: string): string {
-  const value = process.env[key] ?? fallback;
-  if (!value && process.env.NODE_ENV !== "test") {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[env] Missing environment variable: ${key}`);
+function requireEnv(key: string, devFallback?: string): string {
+  const value = process.env[key];
+  if (!value) {
+    if (process.env.NODE_ENV === "production") {
+      // In production builds, missing NEXT_PUBLIC vars become empty string.
+      // Log clearly so the issue is visible in Vercel build logs.
+      console.error(`[env] MISSING required environment variable: ${key}. Set it in Vercel → Settings → Environment Variables.`);
+      return "";
     }
-    return fallback ?? "";
+    if (devFallback) {
+      console.warn(`[env] ${key} not set, using dev fallback: ${devFallback}`);
+      return devFallback;
+    }
+    return "";
   }
-  return value!;
+  return value;
 }
 
 export const env = {
