@@ -83,7 +83,7 @@ export function AdminAuthProvider({
     const handler = () => {
       setAdmin(null);
       setIsLoading(false);
-      router.push("/admin/login");
+      router.replace("/admin/login");
     };
     window.addEventListener("kromic:session-expired", handler);
     return () =>
@@ -135,7 +135,7 @@ export function AdminAuthProvider({
   const logout = useCallback(async () => {
     await authApi.logout();
     setAdmin(null);
-    router.push("/admin/login");
+    router.replace("/admin/login");
   }, [router]);
 
   return (

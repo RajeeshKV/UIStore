@@ -1,31 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useAdminAuth } from "./AdminAuthContext";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 /**
- * Client-side guard that wraps all protected admin pages.
- * Renders nothing until mounted (avoids SSR/client hydration mismatch).
- * While auth is resolving shows a full-page skeleton.
- * If user is not an admin, redirects to /admin/login.
+ * Client-side guard for all protected admin routes.
+ * Login/forgot-password/reset-password are in the (auth) route group
+ * and never reach this component.
+ *
+ * - While auth resolves: shows a full-page loading state.
+ * - Not authenticated: redirects to /admin/login (preserving the intended path).
+ * - Authenticated: renders children.
  */
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAdminAuth();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (mounted && !isLoading && !isAuthenticated) {
-      router.push("/admin/login");
+    if (!isLoading && !isAuthenticated) {
+      const redirect = encodeURIComponent(pathname);
+      router.replace(`/admin/login?redirect=${redirect}`);
     }
-  }, [mounted, isLoading, isAuthenticated, router]);
-
-  // Server render and first client paint: render nothing to avoid mismatch
-  if (!mounted) return null;
+  }, [isLoading, isAuthenticated, router, pathname]);
 
   if (isLoading) {
     return (
@@ -42,6 +41,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Not authenticated — redirect is in flight, render nothing
   if (!isAuthenticated) return null;
 
   return <>{children}</>;
