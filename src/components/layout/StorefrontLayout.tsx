@@ -22,10 +22,12 @@ interface StorefrontLayoutProps {
 export function StorefrontLayout({
   children,
   settings,
-  policies = [],
+  policies,
 }: StorefrontLayoutProps) {
   const currency = settings?.currencyCode ?? "INR";
   const locale = settings?.culture ?? "en-IN";
+  // Normalize null to empty array — API may return null when backend is unreachable
+  const policyList = policies ?? [];
 
   return (
     <AuthProvider>
@@ -38,7 +40,7 @@ export function StorefrontLayout({
           <main id="main-content" className="flex-1">
             {children}
           </main>
-          <Footer settings={settings} policies={policies} />
+          <Footer settings={settings} policies={policyList} />
         </div>
         <CartDrawer currency={currency} locale={locale} />
       </CartProvider>

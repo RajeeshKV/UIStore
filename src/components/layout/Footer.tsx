@@ -12,9 +12,11 @@ interface FooterProps {
   policies?: StorePolicyResponse[];
 }
 
-export function Footer({ settings, policies = [] }: FooterProps) {
+export function Footer({ settings, policies }: FooterProps) {
   const year = new Date().getFullYear();
   const name = settings?.businessName ?? "Kromic";
+  // Guard: policies may be null/undefined if caller doesn't normalize the API response
+  const policyList = policies ?? [];
 
   return (
     <footer
@@ -84,12 +86,12 @@ export function Footer({ settings, policies = [] }: FooterProps) {
           </div>
 
           {/* Policies */}
-          {policies.length > 0 && (
+          {policyList.length > 0 && (
             <div className="flex flex-col gap-3">
               <h3 className="text-label font-semibold text-foreground uppercase tracking-wider">
                 Information
               </h3>
-              {policies.map((policy) => (
+              {policyList.map((policy) => (
                 <FooterLink key={policy.id} href={`/policies/${(policy.policyType ?? "policy").toLowerCase()}`}>
                   {policy.title ?? policy.policyType}
                 </FooterLink>
@@ -105,9 +107,9 @@ export function Footer({ settings, policies = [] }: FooterProps) {
           <p>
             © {year} {name}. All rights reserved.
           </p>
-          {policies.length > 0 && (
+          {policyList.length > 0 && (
             <nav aria-label="Policy links" className="flex flex-wrap gap-4">
-              {policies.map((p) => (
+              {policyList.map((p) => (
                 <Link
                   key={p.id}
                   href={`/policies/${(p.policyType ?? "policy").toLowerCase()}`}
