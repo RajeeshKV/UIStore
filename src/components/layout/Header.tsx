@@ -328,7 +328,13 @@ function HeaderIconButton({
 function AccountButton() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+
+  // Only render auth-aware UI after hydration to avoid SSR mismatch.
+  // Server has no auth state, so we always render the unauthenticated
+  // state on first pass — matching what the server sends.
+  useEffect(() => { setMounted(true); }, []);
 
   // Close on outside click
   useEffect(() => {
@@ -338,9 +344,12 @@ function AccountButton() {
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
 
-  if (isLoading) {
+  // Before hydration or while loading: show plain user icon (matches SSR)
+  if (!mounted || isLoading) {
     return (
-      <div className="h-9 w-9 rounded-md bg-muted animate-skeleton" aria-hidden="true" />
+      <HeaderIconButton label="Sign in" href="/auth/login">
+        <User className="size-4.5" />
+      </HeaderIconButton>
     );
   }
 
