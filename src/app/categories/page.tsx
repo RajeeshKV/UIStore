@@ -6,6 +6,7 @@ import { storeApi } from "@/services/api/store";
 import { CatalogBreadcrumb } from "@/features/catalog/CatalogBreadcrumb";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LayoutGrid } from "lucide-react";
+import { safeData } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const r = await storeApi.getSettings();
@@ -23,14 +24,9 @@ export default async function CategoriesPage() {
     storeApi.getCategories(),
   ]);
 
-  const settings =
-    settingsRes.status === "fulfilled" && settingsRes.value.ok
-      ? settingsRes.value.data : null;
-  const policies =
-    policiesRes.status === "fulfilled" && policiesRes.value.ok
-      ? policiesRes.value.data : [];
-  const catVal = categoriesRes.status === "fulfilled" ? categoriesRes.value : null;
-  const categories = catVal?.ok ? catVal.data : [];
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
+  const categories = safeData(categoriesRes, []);
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>

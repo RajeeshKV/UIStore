@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { storeApi } from "@/services/api/store";
 import { StorefrontLayout } from "@/components/layout";
 import { GoogleLoginButton } from "@/features/auth/GoogleLoginButton";
+import { safeData } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -16,20 +17,9 @@ export default async function LoginPage() {
     storeApi.getSettings(),
     storeApi.getPolicies(),
   ]);
-  const settings =
-    settingsRes.status === "fulfilled" && settingsRes.value.ok
-      ? settingsRes.value.data
-      : null;
-  const policies =
-    policiesRes.status === "fulfilled" && policiesRes.value.ok
-      ? policiesRes.value.data
-      : [];
-
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
   const storeName = settings?.businessName ?? "Kromic Store";
-
-  // Inject the Google client_id from store integration settings if available
-  // (The backend may expose it via the Google integration public fields)
-  // For now it is read by GoogleLoginButton from NEXT_PUBLIC_GOOGLE_CLIENT_ID or a meta tag
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>

@@ -8,6 +8,7 @@ import {
   catalogParamsToApiParams,
   DEFAULT_PAGE_SIZE,
 } from "@/types/catalog";
+import { safeData } from "@/lib/utils";
 
 interface BrandPageProps {
   params: Promise<{ slug: string }>;
@@ -73,27 +74,15 @@ export default async function BrandPage({
       storeApi.getProducts(catalogParamsToApiParams(catalogParams)),
     ]);
 
-  const settings =
-    settingsRes.status === "fulfilled" && settingsRes.value.ok
-      ? settingsRes.value.data
-      : null;
-
-  const policies =
-    policiesRes.status === "fulfilled" && policiesRes.value.ok
-      ? policiesRes.value.data
-      : [];
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
 
   const brandVal = brandRes.status === "fulfilled" ? brandRes.value : null;
   if (!brandVal?.ok) notFound();
   const brand = brandVal.data;
 
-  const categoriesVal =
-    categoriesRes.status === "fulfilled" ? categoriesRes.value : null;
-  const categories = categoriesVal?.ok ? categoriesVal.data : [];
-
-  const productsVal =
-    productsRes.status === "fulfilled" ? productsRes.value : null;
-  const productsData = productsVal?.ok ? productsVal.data : null;
+  const categories = safeData(categoriesRes, []);
+  const productsData = safeData(productsRes, null);
 
   const currency = settings?.currencyCode ?? "INR";
   const locale = settings?.culture ?? "en-IN";

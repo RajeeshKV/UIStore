@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { StorefrontLayout } from "@/components/layout";
 import { storeApi } from "@/services/api/store";
 import { CatalogBreadcrumb } from "@/features/catalog/CatalogBreadcrumb";
+import { safeData } from "@/lib/utils";
 import { ProductGallery, ProductGalleryFallback } from "@/features/product/ProductGallery";
 import { ProductInformation } from "@/features/product/ProductInformation";
 import { RelatedProducts } from "@/features/product/RelatedProducts";
@@ -78,23 +79,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
       storeApi.getRelatedProducts(slug),
     ]);
 
-  const settings =
-    settingsRes.status === "fulfilled" && settingsRes.value.ok
-      ? settingsRes.value.data
-      : null;
-
-  const policies =
-    policiesRes.status === "fulfilled" && policiesRes.value.ok
-      ? policiesRes.value.data
-      : [];
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
 
   // 404 if product not found or API errored
   const productVal = productRes.status === "fulfilled" ? productRes.value : null;
   if (!productVal?.ok) notFound();
   const product = productVal.data;
 
-  const relatedVal = relatedRes.status === "fulfilled" ? relatedRes.value : null;
-  const related = relatedVal?.ok ? relatedVal.data : [];
+  const related = safeData(relatedRes, []);
 
   const currency = settings?.currencyCode ?? product.currency ?? "INR";
   const locale = settings?.culture ?? "en-IN";

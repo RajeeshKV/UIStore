@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { StorefrontLayout } from "@/components/layout";
 import { storeApi } from "@/services/api/store";
 import { ResetPasswordForm } from "@/features/auth/ResetPasswordForm";
+import { safeData } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Set New Password",
@@ -13,8 +14,8 @@ export default async function ResetPasswordPage() {
   const [settingsRes, policiesRes] = await Promise.allSettled([
     storeApi.getSettings(), storeApi.getPolicies(),
   ]);
-  const settings = settingsRes.status === "fulfilled" && settingsRes.value.ok ? settingsRes.value.data : null;
-  const policies = policiesRes.status === "fulfilled" && policiesRes.value.ok ? policiesRes.value.data : [];
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>

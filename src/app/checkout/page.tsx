@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { StorefrontLayout } from "@/components/layout";
 import { storeApi } from "@/services/api/store";
 import { CheckoutClient } from "@/features/checkout/CheckoutClient";
+import { safeData } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Checkout",
@@ -13,8 +14,8 @@ export default async function CheckoutPage() {
     storeApi.getSettings(),
     storeApi.getPolicies(),
   ]);
-  const settings = settingsRes.status === "fulfilled" && settingsRes.value.ok ? settingsRes.value.data : null;
-  const policies = policiesRes.status === "fulfilled" && policiesRes.value.ok ? policiesRes.value.data : [];
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
 
   const currency = settings?.currencyCode ?? "INR";
   const locale = settings?.culture ?? "en-IN";

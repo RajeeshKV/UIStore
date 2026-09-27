@@ -7,6 +7,7 @@ import {
   catalogParamsToApiParams,
   DEFAULT_PAGE_SIZE,
 } from "@/types/catalog";
+import { safeData } from "@/lib/utils";
 
 // Next.js 16: searchParams is a Promise
 interface ShopPageProps {
@@ -57,27 +58,11 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       storeApi.getProducts(catalogParamsToApiParams(params)),
     ]);
 
-  const settings =
-    settingsRes.status === "fulfilled" && settingsRes.value.ok
-      ? settingsRes.value.data
-      : null;
-
-  const policies =
-    policiesRes.status === "fulfilled" && policiesRes.value.ok
-      ? policiesRes.value.data
-      : [];
-
-  const categoriesVal =
-    categoriesRes.status === "fulfilled" ? categoriesRes.value : null;
-  const categories = categoriesVal?.ok ? categoriesVal.data : [];
-
-  const brandsVal =
-    brandsRes.status === "fulfilled" ? brandsRes.value : null;
-  const brands = brandsVal?.ok ? brandsVal.data : [];
-
-  const productsVal =
-    productsRes.status === "fulfilled" ? productsRes.value : null;
-  const productsData = productsVal?.ok ? productsVal.data : null;
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
+  const categories = safeData(categoriesRes, []);
+  const brands = safeData(brandsRes, []);
+  const productsData = safeData(productsRes, null);
 
   const currency = settings?.currencyCode ?? "INR";
   const locale = settings?.culture ?? "en-IN";

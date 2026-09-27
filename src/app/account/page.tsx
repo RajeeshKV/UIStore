@@ -3,6 +3,7 @@ import { StorefrontLayout } from "@/components/layout";
 import { storeApi } from "@/services/api/store";
 import { AccountLayout } from "@/features/account/AccountLayout";
 import { AccountOverviewClient } from "@/features/account/AccountOverviewClient";
+import { safeData } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "My Account",
@@ -13,8 +14,8 @@ export default async function AccountPage() {
   const [settingsRes, policiesRes] = await Promise.allSettled([
     storeApi.getSettings(), storeApi.getPolicies(),
   ]);
-  const settings = settingsRes.status === "fulfilled" && settingsRes.value.ok ? settingsRes.value.data : null;
-  const policies = policiesRes.status === "fulfilled" && policiesRes.value.ok ? policiesRes.value.data : [];
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
   const currency = settings?.currencyCode ?? "INR";
   const locale = settings?.culture ?? "en-IN";
 

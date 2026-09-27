@@ -8,6 +8,7 @@ import { CategoryShowcase } from "@/features/storefront/CategoryShowcase";
 import { FeaturedProducts } from "@/features/storefront/FeaturedProducts";
 import { EditorialBanner } from "@/features/storefront/EditorialBanner";
 import { NewArrivals } from "@/features/storefront/NewArrivals";
+import { safeData } from "@/lib/utils";
 import type {
   PublicBusinessSettingsResponse,
   StorePolicyResponse,
@@ -60,27 +61,12 @@ async function getHomePageData(): Promise<HomePageData> {
       storeApi.getFeatured(),
     ]);
 
-  const settings =
-    settingsRes.status === "fulfilled" && settingsRes.value.ok
-      ? settingsRes.value.data
-      : null;
-
-  const policies =
-    policiesRes.status === "fulfilled" && policiesRes.value.ok
-      ? policiesRes.value.data
-      : [];
-
-  const categoriesResult =
-    categoriesRes.status === "fulfilled" ? categoriesRes.value : null;
-  const categories =
-    categoriesResult?.ok ? categoriesResult.data : [];
-  // On the home page, treat API errors as empty — don't show error alerts
-  // for ambient content the user didn't navigate here to specifically see.
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
+  const categories = safeData(categoriesRes, []);
   const categoriesError = false;
 
-  const featuredResult =
-    featuredRes.status === "fulfilled" ? featuredRes.value : null;
-  const featuredProducts = featuredResult?.ok ? featuredResult.data : [];
+  const featuredProducts = safeData(featuredRes, []);
   const featuredError = false;
 
   return {

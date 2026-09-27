@@ -6,7 +6,7 @@ import { storeApi } from "@/services/api/store";
 import { CatalogBreadcrumb } from "@/features/catalog/CatalogBreadcrumb";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Tag } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, safeData } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const r = await storeApi.getSettings();
@@ -24,14 +24,9 @@ export default async function BrandsPage() {
     storeApi.getBrands(),
   ]);
 
-  const settings =
-    settingsRes.status === "fulfilled" && settingsRes.value.ok
-      ? settingsRes.value.data : null;
-  const policies =
-    policiesRes.status === "fulfilled" && policiesRes.value.ok
-      ? policiesRes.value.data : [];
-  const brandsVal = brandsRes.status === "fulfilled" ? brandsRes.value : null;
-  const brands = brandsVal?.ok ? brandsVal.data : [];
+  const settings = safeData(settingsRes, null);
+  const policies = safeData(policiesRes, []);
+  const brands = safeData(brandsRes, []);
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>
