@@ -1,44 +1,46 @@
 /**
  * Kromic Store – Environment Configuration
  *
- * Single source of truth for all environment variables used by the frontend.
- * Validates required variables at import time in development.
- * NEXT_PUBLIC_* vars are the only ones accessible in the browser bundle.
+ * NEXT_PUBLIC_* variables are inlined at BUILD TIME by Next.js/Turbopack.
+ * They MUST be set in Vercel → Project Settings → Environment Variables
+ * before the build runs. Runtime env vars do NOT work for NEXT_PUBLIC_*.
+ *
+ * Required variables:
+ *   NEXT_PUBLIC_API_URL  — backend API base URL (no trailing slash)
+ *   NEXT_PUBLIC_APP_URL  — this frontend's canonical URL
+ *   NEXT_PUBLIC_ENV      — development | staging | production
  */
 
-function requireEnv(key: string, devFallback?: string): string {
-  const value = process.env[key];
-  if (!value) {
-    if (process.env.NODE_ENV === "production") {
-      // In production builds, missing NEXT_PUBLIC vars become empty string.
-      // Log clearly so the issue is visible in Vercel build logs.
-      console.error(`[env] MISSING required environment variable: ${key}. Set it in Vercel → Settings → Environment Variables.`);
-      return "";
-    }
-    if (devFallback) {
-      console.warn(`[env] ${key} not set, using dev fallback: ${devFallback}`);
-      return devFallback;
-    }
-    return "";
-  }
-  return value;
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+
+// Fail the build loudly if the backend URL is missing in production.
+// An empty apiUrl causes ALL API calls to hit the frontend origin (/api/v1/...)
+// which returns 404s — this is the worst possible silent failure.
+if (!apiUrl && process.env.NODE_ENV === "production") {
+  throw new Error(
+    "\n\n" +
+    "========================================================\n" +
+    "  MISSING: NEXT_PUBLIC_API_URL environment variable\n" +
+    "  Set it in Vercel → Project Settings → Environment Variables\n" +
+    "  Value should be your backend API base URL, e.g.:\n" +
+    "  https://api.kromic.in\n" +
+    "========================================================\n"
+  );
 }
 
 export const env = {
-  /** Base URL of the Kromic Commerce API backend */
-  apiUrl: requireEnv("NEXT_PUBLIC_API_URL", "http://localhost:5000"),
+  /** Base URL of the Kromic Commerce API backend (no trailing slash) */
+  apiUrl: apiUrl || "http://localhost:5000",
 
   /** Public URL of this frontend application */
-  appUrl: requireEnv("NEXT_PUBLIC_APP_URL", "http://localhost:3000"),
+  appUrl: appUrl || "http://localhost:3000",
 
   /** Current deployment environment */
-  environment: requireEnv("NEXT_PUBLIC_ENV", "development") as
+  environment: (process.env.NEXT_PUBLIC_ENV ?? "development") as
     | "development"
     | "staging"
     | "production",
-
-  /** Razorpay public key (secret stays in backend) */
-  razorpayKeyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
 
   isDevelopment: process.env.NODE_ENV === "development",
   isProduction: process.env.NODE_ENV === "production",
