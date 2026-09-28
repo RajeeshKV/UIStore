@@ -15,7 +15,7 @@ export const ordersApi = {
   get: (orderId: string) =>
     apiClient.get<OrderResponse>(`/api/v1/orders/${orderId}`),
 
-  /** POST /api/v1/orders/{id}/cancel — 204 on success, 409 if not cancellable */
+  /** POST /api/v1/orders/{id}/cancel — now returns OrderResponse (was 204) */
   cancel: (orderId: string) =>
-    apiClient.post<void>(`/api/v1/orders/${orderId}/cancel`, {}),
+    apiClient.post<OrderResponse>(`/api/v1/orders/${orderId}/cancel`, {}),
 };

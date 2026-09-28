@@ -59,6 +59,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
     setUpdating(false);
     if (res.ok) {
       setStatusDialogOpen(false);
+      // Use response body directly — no re-fetch needed (was 204, now returns OrderResponse)
       setOrder(res.data);
     } else {
       setUpdateError(res.error && "message" in res.error ? res.error.message : "Update failed.");

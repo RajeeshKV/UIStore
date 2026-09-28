@@ -93,8 +93,9 @@ export const adminProductsApi = {
   deleteImage: (productId: string, imageId: string) =>
     apiClient.delete<void>(`/api/v1/products/${productId}/images/${imageId}`),
 
+  /** PUT /api/v1/products/{productId}/images/reorder — returns ordered image list */
   reorderImages: (productId: string, data: ReorderImagesRequest) =>
-    apiClient.put<void>(`/api/v1/products/${productId}/images/reorder`, data),
+    apiClient.put<ProductImageDto[]>(`/api/v1/products/${productId}/images/reorder`, data),
 };
 
 // ── Variants ──────────────────────────────────────────────────────────────────
@@ -171,6 +172,7 @@ export const adminOrdersApi = {
   getById: (id: string) =>
     apiClient.get<OrderResponse>(`/api/v1/admin/orders/${id}`),
 
+  /** PUT /api/v1/admin/orders/{id}/status — returns OrderResponse (was 204) */
   updateStatus: (id: string, data: UpdateOrderStatusRequest) =>
     apiClient.put<OrderResponse>(`/api/v1/admin/orders/${id}/status`, data),
 };

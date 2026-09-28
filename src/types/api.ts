@@ -310,7 +310,7 @@ export interface UpdateCartItemRequest {
  * OrderItemResponse from the backend.
  * 'variantDescription' not 'variantName'.
  * 'lineTotal' not 'subtotal'.
- * No 'imageUrl' or 'slug' on order items.
+ * 'primaryImageUrl' added as of latest API update.
  */
 export interface OrderItemResponse {
   id: string;
@@ -322,6 +322,7 @@ export interface OrderItemResponse {
   unitPrice: number;
   quantity: number;
   lineTotal: number;
+  primaryImageUrl?: string | null;
 }
 
 export interface ShippingAddressDto {

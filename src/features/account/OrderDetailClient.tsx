@@ -48,8 +48,13 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
     const result = await ordersApi.cancel(orderId);
     setCancelOpen(false);
     if (result.ok) {
+      // POST /orders/{id}/cancel now returns OrderResponse — update directly
+      if (result.data) {
+        setOrder(result.data);
+      } else {
+        await load();
+      }
       toastSuccess("Order cancelled", "Your order has been cancelled.");
-      await load(); // refresh order state from backend
     } else {
       const msg = "error" in result && "message" in result.error
         ? result.error.message
@@ -76,9 +81,9 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
   }
 
   const effectiveCurrency = order.currency ?? currency;
-  const canCancel = order.status
-    ? ["pending", "confirmed"].includes(order.status.toLowerCase())
-    : false;
+  // Cancel is only allowed when status is PendingPayment or Confirmed
+  // (backend returns 409 CANNOT_CANCEL for Processing or later)
+  const canCancel = order.status === "PendingPayment" || order.status === "Confirmed";
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
@@ -130,12 +135,25 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
           <ul>
             {order.items.map((item) => (
               <li key={item.id} className="flex items-center gap-3 px-5 py-4 border-b border-border last:border-none">
-                <div className="h-14 w-14 rounded-lg bg-muted shrink-0" />
+                {/* Thumbnail */}
+                {item.primaryImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.primaryImageUrl}
+                    alt={item.productName ?? "Product"}
+                    className="h-14 w-14 rounded-lg object-cover bg-muted shrink-0"
+                  />
+                ) : (
+                  <div className="h-14 w-14 rounded-lg bg-muted shrink-0 flex items-center justify-center">
+                    <Package className="size-5 text-foreground-muted" aria-hidden="true" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-body-sm font-medium text-foreground line-clamp-2">
                     {item.productName}
                   </p>
                   {item.variantDescription && <p className="text-caption text-foreground-muted">{item.variantDescription}</p>}
+                  {item.sku && <p className="text-caption text-foreground-muted">SKU: {item.sku}</p>}
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-caption text-foreground-muted">×{item.quantity}</p>

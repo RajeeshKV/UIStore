@@ -99,6 +99,7 @@ export function AdminCategoriesClient() {
     setSaving(false);
     if (res.ok) {
       setDialogOpen(false);
+      // update() and create() both return CategoryResponse — update list directly
       void load();
     } else {
       setApiError(res.error && "message" in res.error ? res.error.message : "Failed to save category.");
