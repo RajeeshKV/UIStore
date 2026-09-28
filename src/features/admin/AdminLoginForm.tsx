@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useAdminAuth } from "./AdminAuthContext";
@@ -10,9 +9,6 @@ import { Button } from "@/components/ui/Button";
 
 export function AdminLoginForm() {
   const { login } = useAdminAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") ?? "/admin";
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -41,11 +37,10 @@ export function AdminLoginForm() {
     // Do NOT trim password — intentional per spec
     const result = await login(identifier, password);
     setLoading(false);
-    if (result.ok) {
-      router.push(redirectTo);
-    } else {
+    if (!result.ok) {
       setApiError(result.error ?? "Sign in failed. Please try again.");
     }
+    // On success: AdminGuard detects isAuthenticated=true and redirects automatically
   }
 
   return (

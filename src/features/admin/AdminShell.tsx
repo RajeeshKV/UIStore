@@ -3,7 +3,6 @@
 import { useState, Suspense } from "react";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminTopBar } from "./AdminTopBar";
-import { AdminAuthProvider } from "./AdminAuthContext";
 import { AdminGuard } from "./AdminGuard";
 
 interface AdminShellProps {
@@ -32,14 +31,16 @@ function AdminShellInner({ children }: AdminShellProps) {
   );
 }
 
+/**
+ * AdminShell — wraps protected pages with Guard + Sidebar + TopBar.
+ * AdminAuthProvider is provided by the root admin/layout.tsx — not here.
+ */
 export function AdminShell({ children }: AdminShellProps) {
   return (
-    <AdminAuthProvider>
-      <Suspense fallback={null}>
-        <AdminGuard>
-          <AdminShellInner>{children}</AdminShellInner>
-        </AdminGuard>
-      </Suspense>
-    </AdminAuthProvider>
+    <Suspense fallback={null}>
+      <AdminGuard>
+        <AdminShellInner>{children}</AdminShellInner>
+      </AdminGuard>
+    </Suspense>
   );
 }

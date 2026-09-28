@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AdminShell } from "@/features/admin/AdminShell";
+import { AdminAuthProvider } from "@/features/admin/AdminAuthContext";
 
 export const metadata: Metadata = {
   title: {
@@ -10,13 +10,14 @@ export const metadata: Metadata = {
 };
 
 /**
- * Admin layout — wraps all /admin/* routes except /admin/login.
- * AdminShell provides: AuthProvider, AdminGuard, Sidebar, TopBar.
+ * Root admin layout — provides AdminAuthContext to ALL /admin/* routes.
+ * No shell or guard here — those are added by (protected)/layout.tsx only.
+ * Auth pages (/admin/login etc.) need the context to check if already logged in.
  */
-export default function AdminLayout({
+export default function AdminRootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminAuthProvider>{children}</AdminAuthProvider>;
 }
