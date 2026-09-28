@@ -16,6 +16,7 @@ export function AdminPaymentIntegrationClient() {
   // Form — secrets never pre-filled
   const [keyId, setKeyId] = useState("");
   const [keySecret, setKeySecret] = useState("");
+  const [webhookSecret, setWebhookSecret] = useState("");
   const [enabled, setEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -41,6 +42,7 @@ export function AdminPaymentIntegrationClient() {
     const res = await adminIntegrationsApi.updatePayment({
       keyId: keyId.trim() || undefined,
       keySecret: keySecret || undefined,
+      webhookSecret: webhookSecret || undefined,
       enabled,
     });
     setSaving(false);
@@ -49,6 +51,7 @@ export function AdminPaymentIntegrationClient() {
       setEnabled(res.data.enabled);
       setKeyId("");
       setKeySecret("");
+      setWebhookSecret("");
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } else {
@@ -98,6 +101,14 @@ export function AdminPaymentIntegrationClient() {
             value={keySecret}
             onChange={(e) => setKeySecret(e.target.value)}
             placeholder={status?.hasSecret ? "Secret is configured — enter new value to update" : "Enter key secret"}
+            autoComplete="new-password"
+          />
+          <Input
+            label="Webhook Secret (optional)"
+            type="password"
+            value={webhookSecret}
+            onChange={(e) => setWebhookSecret(e.target.value)}
+            placeholder="Enter webhook secret to update"
             autoComplete="new-password"
           />
 

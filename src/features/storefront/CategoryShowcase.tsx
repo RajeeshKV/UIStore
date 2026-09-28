@@ -8,7 +8,6 @@ import { staggerContainer, fadeUp } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { LayoutGrid } from "lucide-react";
 import type { StorefrontCategoryResponse } from "@/types/api";
 
 interface CategoryShowcaseProps {

@@ -43,9 +43,9 @@ export function AdminEmailIntegrationClient() {
     if (settingsRes.ok && settingsRes.data.email) {
       const e = settingsRes.data.email;
       setEmailSettings({
-        mode: e.provider ?? "",
-        senderName: "",
-        senderEmail: e.fromEmail ?? "",
+        mode: e.mode ?? "",
+        senderName: e.senderName ?? "",
+        senderEmail: e.senderEmail ?? "",
       });
     }
     setLoading(false);

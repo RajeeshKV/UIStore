@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminTopBar } from "./AdminTopBar";
 import { AdminAuthProvider } from "./AdminAuthContext";
@@ -35,9 +35,11 @@ function AdminShellInner({ children }: AdminShellProps) {
 export function AdminShell({ children }: AdminShellProps) {
   return (
     <AdminAuthProvider>
-      <AdminGuard>
-        <AdminShellInner>{children}</AdminShellInner>
-      </AdminGuard>
+      <Suspense fallback={null}>
+        <AdminGuard>
+          <AdminShellInner>{children}</AdminShellInner>
+        </AdminGuard>
+      </Suspense>
     </AdminAuthProvider>
   );
 }

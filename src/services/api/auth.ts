@@ -43,8 +43,13 @@ export const authApi = {
       skipAuth: true,
     }),
 
-  resetPassword: (token: string, newPassword: string) =>
-    apiClient.post("/api/v1/auth/reset-password", { token, newPassword }, {
+  resetPassword: (token: string, newPassword: string, email?: string) =>
+    apiClient.post("/api/v1/auth/reset-password", {
+      token,
+      newPassword,
+      confirmPassword: newPassword,
+      email: email ?? "",
+    }, {
       skipAuth: true,
     }),
 };

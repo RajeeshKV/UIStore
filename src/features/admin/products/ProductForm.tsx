@@ -50,24 +50,24 @@ interface ImageManagerProps {
 }
 
 function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) {
-  const [url, setUrl] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [alt, setAlt] = useState("");
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
 
   async function handleAdd() {
-    if (!url.trim()) { setFormError("Image URL is required."); return; }
+    if (!file) { setFormError("Please select an image file."); return; }
     setFormError("");
     setAdding(true);
-    const res = await adminProductsApi.addImage(productId, {
-      url: url.trim(),
-      altText: alt.trim() || undefined,
-      isPrimary: images.length === 0,
-    });
+    const formData = new FormData();
+    formData.append("file", file);
+    if (alt.trim()) formData.append("altText", alt.trim());
+    formData.append("isPrimary", images.length === 0 ? "true" : "false");
+    const res = await adminProductsApi.addImage(productId, formData);
     setAdding(false);
     if (res.ok) {
-      setUrl("");
+      setFile(null);
       setAlt("");
       onRefresh();
     } else {
@@ -115,16 +115,15 @@ function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) 
         </div>
       )}
 
-      {/* Add image by URL */}
+      {/* Upload image file */}
       <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <input
-            type="url"
-            placeholder="Image URL (https://…)"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            aria-label="Image URL"
-            className="flex-1 h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus"
+            type="file"
+            accept="image/*"
+            aria-label="Image file"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="flex-1 min-w-0 h-9 text-body-sm text-foreground file:mr-2 file:h-full file:rounded file:border-0 file:bg-muted file:px-3 file:text-body-sm file:font-medium file:text-foreground hover:file:bg-muted/80 cursor-pointer"
           />
           <input
             type="text"
@@ -134,8 +133,8 @@ function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) 
             aria-label="Alt text"
             className="w-36 h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus"
           />
-          <Button size="sm" variant="outline" onClick={handleAdd} loading={adding}>
-            <Plus className="size-3.5 mr-1" /> Add
+          <Button size="sm" variant="outline" onClick={handleAdd} loading={adding} disabled={!file}>
+            <Plus className="size-3.5 mr-1" /> Upload
           </Button>
         </div>
         {formError && <p className="text-caption text-danger">{formError}</p>}

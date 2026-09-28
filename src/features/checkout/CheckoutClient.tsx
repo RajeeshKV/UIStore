@@ -184,7 +184,7 @@ export function CheckoutClient({
       theme: { color: "#09090b" },
       handler: async (response) => {
         setStep("verifying");
-        const verifyResult = await checkoutApi.verifyPayment({
+        const verifyResult = await checkoutApi.verifyPayment(orderId, {
           razorpayPaymentId: response.razorpay_payment_id,
           razorpayOrderId: response.razorpay_order_id,
           razorpaySignature: response.razorpay_signature,

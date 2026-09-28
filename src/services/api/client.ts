@@ -101,8 +101,11 @@ async function request<T>(
 ): Promise<ApiResult<T>> {
   const { body, skipAuth, skipRefresh, ...init } = options;
 
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    // Don't set Content-Type for FormData — browser sets it with correct boundary
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(init.headers as Record<string, string>),
   };
 
@@ -120,7 +123,7 @@ async function request<T>(
     res = await fetch(url, {
       ...init,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body !== undefined ? (isFormData ? (body as FormData) : JSON.stringify(body)) : undefined,
     });
   } catch {
     return { ok: false, error: new NetworkError() };
@@ -211,4 +214,22 @@ export const apiClient = {
 
   delete: <T>(path: string, options?: Omit<RequestOptions, "method" | "body">) =>
     request<T>(path, { ...options, method: "DELETE" }),
+
+  /**
+   * Multipart/form-data POST — used for file uploads (e.g. product images).
+   * Passes FormData directly; does NOT set Content-Type (browser sets it with boundary).
+   */
+  postForm: <T>(path: string, formData: FormData, options?: Omit<RequestOptions, "method" | "body">) => {
+    // Must not set Content-Type header — browser auto-sets multipart/form-data with boundary
+    const { headers: extraHeaders, ...rest } = options ?? {};
+    const headers: Record<string, string> = { ...(extraHeaders as Record<string, string>) };
+    // Remove Content-Type so fetch sets it correctly for FormData
+    delete headers["Content-Type"];
+    return request<T>(path, {
+      ...rest,
+      method: "POST",
+      headers,
+      body: formData as unknown,
+    });
+  },
 };

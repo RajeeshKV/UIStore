@@ -34,22 +34,22 @@ export interface TokenResponse {
 }
 
 /**
- * Customer registration (legacy — not used; customers authenticate via Google).
- * Kept for backward-compat type reference only.
+ * POST /api/v1/auth/reset-password
+ * All four fields are required by the backend contract.
  */
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
+export interface ResetPasswordRequest {
+  email?: string;
+  token?: string;
+  newPassword?: string;
+  confirmPassword?: string;
 }
 
 /**
- * Admin login — email field accepts either email or username (backend accepts both).
+ * Admin login — identifier accepts either username or email.
+ * Field name is 'identifier' per backend contract, NOT 'email'.
  */
 export interface LoginRequest {
-  email: string;
+  identifier: string;
   password: string;
   deviceHint?: string;
 }
@@ -372,6 +372,8 @@ export interface OrderSummaryPagedResponse {
 }
 
 export interface OrderResponse extends OrderSummaryResponse {
+  /** subtotal is present on full OrderResponse (not on summary) */
+  subtotal: number;
   discountAmount: number;
   shippingAmount: number;
   taxAmount: number;
@@ -661,7 +663,6 @@ export interface CreateCategoryRequest {
   description?: string;
   parentCategoryId?: string;
   sortOrder?: number;
-  imageUrl?: string;
 }
 
 export type UpdateCategoryRequest = CreateCategoryRequest;
@@ -683,7 +684,6 @@ export interface CreateBrandRequest {
   slug?: string;
   description?: string;
   websiteUrl?: string;
-  logoUrl?: string;
 }
 
 export type UpdateBrandRequest = CreateBrandRequest;
@@ -719,11 +719,13 @@ export interface PromotionSummaryResponse {
   couponCode?: string;
   discountType?: string;
   discountValue: number;
+  maxDiscountAmount?: number;
   isActive: boolean;
   usageCount: number;
   usageLimit?: number;
   startsAt?: string;
   expiresAt?: string;
+  applicability?: string;
   createdAtUtc: string;
 }
 
@@ -864,6 +866,7 @@ export interface UpdateAuthSettingsRequest {
   otpExpiryMinutes?: number;
   otpResendCooldownSeconds?: number;
   otpMaxAttempts?: number;
+  smsProvider?: string;
 }
 
 /** Policies (admin) */
@@ -898,23 +901,29 @@ export interface IntegrationStatusResponse {
 }
 
 export interface UpdateRazorpayConfigRequest {
+  enabled?: boolean;
   keyId?: string;
   keySecret?: string;
-  enabled?: boolean;
+  webhookSecret?: string;
 }
 
 export interface UpdateGoogleOAuthConfigRequest {
+  enabled?: boolean;
   clientId?: string;
   clientSecret?: string;
-  enabled?: boolean;
+  redirectUri?: string;
 }
 
+/**
+ * PUT /api/v1/admin/integrations/email — Integration-level email config.
+ * Contract fields: enabled, mode, senderName, senderEmail, apiKey.
+ */
 export interface UpdateEmailConfigRequest {
-  provider?: string;
-  apiKey?: string;
-  fromEmail?: string;
-  fromName?: string;
   enabled?: boolean;
+  mode?: string;
+  senderName?: string;
+  senderEmail?: string;
+  apiKey?: string;
 }
 
 /**
@@ -934,11 +943,14 @@ export interface UpdateSmsConfigRequest {
   enabled?: boolean;
 }
 
+/**
+ * EmailSettingsDto — nested in AdminBusinessSettingsResponse.email
+ * Contract fields: mode, senderName, senderEmail (no enabled/provider/fromEmail).
+ */
 export interface EmailSettingsDto {
-  provider?: string;
-  fromEmail?: string;
-  fromName?: string;
-  enabled: boolean;
+  mode?: string;
+  senderName?: string;
+  senderEmail?: string;
 }
 
 /** Image reorder */

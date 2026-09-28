@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAdminAuth } from "./AdminAuthContext";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-// Public admin paths that should never be redirected away from
+// Paths that bypass auth check (public admin pages)
 const ADMIN_PUBLIC_PATHS = [
   "/admin/login",
   "/admin/forgot-password",
@@ -13,51 +13,66 @@ const ADMIN_PUBLIC_PATHS = [
 ];
 
 /**
- * Client-side guard for protected admin routes.
+ * Unified admin auth guard.
  *
- * Strategy:
- * 1. On first render (SSR + hydration), render nothing — auth state unknown.
- * 2. After mount, check if this is a public path — if so, always render.
- * 3. While auth is loading, show a loading screen.
- * 4. If not authenticated on a protected path, redirect to /admin/login.
- * 5. If authenticated, render children.
+ * Rules:
+ * - Public paths (/admin/login etc): always render.
+ *   BUT if user is already authenticated → redirect to /admin (dashboard).
+ * - Protected paths: if not authenticated → redirect to /admin/login?redirect=<path>.
+ *   If authenticated → render children.
+ * - While auth resolves (isLoading) → show loading screen (protected) or nothing (public).
+ * - Uses mounted flag to avoid SSR hydration mismatch.
  */
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAdminAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const isPublicPath = ADMIN_PUBLIC_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "?"),
+  );
+
   useEffect(() => {
-    if (!mounted) return;
-    if (isLoading) return;
+    if (!mounted || isLoading) return;
 
-    // Never redirect away from public paths
-    const isPublic = ADMIN_PUBLIC_PATHS.some(
-      (p) => pathname === p || pathname.startsWith(p + "?"),
-    );
-    if (isPublic) return;
+    if (isPublicPath) {
+      // Already logged in — send to intended destination or dashboard
+      if (isAuthenticated) {
+        const redirect = searchParams.get("redirect");
+        const dest =
+          redirect && redirect.startsWith("/admin") ? redirect : "/admin";
+        router.replace(dest);
+      }
+      // Not logged in — stay on public path, no redirect needed
+      return;
+    }
 
+    // Protected path — redirect to login if not authenticated
     if (!isAuthenticated) {
       const redirect = encodeURIComponent(pathname);
       router.replace(`/admin/login?redirect=${redirect}`);
     }
-  }, [mounted, isLoading, isAuthenticated, pathname, router]);
+  }, [mounted, isLoading, isAuthenticated, isPublicPath, pathname, searchParams, router]);
 
-  // Before hydration: render nothing to avoid SSR mismatch
+  // SSR / before hydration: render nothing
   if (!mounted) return null;
 
-  // Check if current path is a public admin path — always render it
-  const isPublicPath = ADMIN_PUBLIC_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(p + "?"),
-  );
-  if (isPublicPath) return <>{children}</>;
+  if (isPublicPath) {
+    // Loading: show nothing while we check if already logged in
+    if (isLoading) return null;
+    // Already authenticated: redirect in progress, show nothing
+    if (isAuthenticated) return null;
+    // Not authenticated: show the public page (login form etc.)
+    return <>{children}</>;
+  }
 
-  // Protected path — show loading state while auth resolves
+  // Protected path below this point
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface">
@@ -77,8 +92,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Not authenticated on protected path — redirect in progress
+  // Not authenticated — redirect in progress
   if (!isAuthenticated) return null;
 
+  // Authenticated — render the protected page
   return <>{children}</>;
 }

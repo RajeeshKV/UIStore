@@ -96,9 +96,8 @@ export function AdminAuthProvider({
       emailOrUsername: string,
       password: string,
     ): Promise<{ ok: boolean; error?: string }> => {
-      // LoginRequest.email accepts either email or username per API contract
       const result = await authApi.adminLogin({
-        email: emailOrUsername.trim(),
+        identifier: emailOrUsername.trim(),
         password,
       });
       if (result.ok) {

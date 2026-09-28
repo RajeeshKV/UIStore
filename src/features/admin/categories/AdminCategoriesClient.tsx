@@ -16,7 +16,7 @@ function slugify(s: string) {
 }
 
 const emptyForm: CreateCategoryRequest = {
-  name: "", slug: "", description: "", parentCategoryId: undefined, sortOrder: 0, imageUrl: "",
+  name: "", slug: "", description: "", parentCategoryId: undefined, sortOrder: 0,
 };
 
 export function AdminCategoriesClient() {
@@ -66,7 +66,6 @@ export function AdminCategoriesClient() {
       description: cat.description ?? "",
       parentCategoryId: cat.parentCategoryId,
       sortOrder: cat.sortOrder,
-      imageUrl: cat.imageUrl ?? "",
     });
     setFormErrors({});
     setApiError("");
@@ -91,7 +90,6 @@ export function AdminCategoriesClient() {
       slug: form.slug?.trim() || slugify(form.name ?? ""),
       description: form.description?.trim() || undefined,
       parentCategoryId: form.parentCategoryId || undefined,
-      imageUrl: form.imageUrl?.trim() || undefined,
     };
 
     const res = editTarget
@@ -247,12 +245,6 @@ export function AdminCategoriesClient() {
             min={0}
             value={form.sortOrder ?? 0}
             onChange={(e) => setForm((f) => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))}
-          />
-          <Input
-            label="Image URL (optional)"
-            type="url"
-            value={form.imageUrl ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
           />
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>

@@ -16,7 +16,7 @@ function slugify(s: string) {
 }
 
 const emptyForm: CreateBrandRequest = {
-  name: "", slug: "", description: "", websiteUrl: "", logoUrl: "",
+  name: "", slug: "", description: "", websiteUrl: "",
 };
 
 export function AdminBrandsClient() {
@@ -63,7 +63,6 @@ export function AdminBrandsClient() {
       slug: brand.slug ?? "",
       description: brand.description ?? "",
       websiteUrl: brand.websiteUrl ?? "",
-      logoUrl: brand.logoUrl ?? "",
     });
     setFormErrors({});
     setApiError("");
@@ -88,7 +87,6 @@ export function AdminBrandsClient() {
       slug: form.slug?.trim() || slugify(form.name ?? ""),
       description: form.description?.trim() || undefined,
       websiteUrl: form.websiteUrl?.trim() || undefined,
-      logoUrl: form.logoUrl?.trim() || undefined,
     };
 
     const res = editTarget
@@ -198,7 +196,6 @@ export function AdminBrandsClient() {
           <Input label="Slug" value={form.slug ?? ""} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} hint="Auto-generated from name if blank." />
           <Input label="Description" value={form.description ?? ""} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
           <Input label="Website URL" type="url" value={form.websiteUrl ?? ""} onChange={(e) => setForm((f) => ({ ...f, websiteUrl: e.target.value }))} />
-          <Input label="Logo URL" type="url" value={form.logoUrl ?? ""} onChange={(e) => setForm((f) => ({ ...f, logoUrl: e.target.value }))} />
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>
             <Button variant="primary" size="sm" onClick={handleSave} loading={saving}>

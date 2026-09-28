@@ -25,6 +25,7 @@ export function AdminGoogleIntegrationClient() {
 
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
+  const [redirectUri, setRedirectUri] = useState("");
   const [enabled, setEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -54,6 +55,7 @@ export function AdminGoogleIntegrationClient() {
     const res = await adminIntegrationsApi.updateGoogle({
       clientId: clientId.trim() || undefined,
       clientSecret: clientSecret || undefined,
+      redirectUri: redirectUri.trim() || undefined,
       enabled,
     });
     setSaving(false);
@@ -110,6 +112,14 @@ export function AdminGoogleIntegrationClient() {
             onChange={(e) => setClientSecret(e.target.value)}
             placeholder={status?.hasSecret ? "Secret configured — enter new value to update" : "Enter client secret"}
             autoComplete="new-password"
+          />
+          <Input
+            label="Redirect URI (optional)"
+            type="url"
+            value={redirectUri}
+            onChange={(e) => setRedirectUri(e.target.value)}
+            placeholder="https://yourdomain.com/api/auth/callback/google"
+            hint="Leave blank to use the default configured in Google Console."
           />
 
           <label className="flex items-center gap-2.5 cursor-pointer">

@@ -82,8 +82,13 @@ export const adminProductsApi = {
   archive: (id: string) =>
     apiClient.post<void>(`/api/v1/products/${id}/archive`),
 
-  addImage: (productId: string, data: { url: string; altText?: string; isPrimary?: boolean }) =>
-    apiClient.post<ProductImageDto>(`/api/v1/products/${productId}/images`, data),
+  /**
+   * POST /api/v1/products/{productId}/images
+   * Contract: multipart/form-data with { file (binary), altText?, isPrimary? }
+   * The backend does NOT accept a JSON URL — it requires a binary file upload.
+   */
+  addImage: (productId: string, formData: FormData) =>
+    apiClient.postForm<ProductImageDto>(`/api/v1/products/${productId}/images`, formData),
 
   deleteImage: (productId: string, imageId: string) =>
     apiClient.delete<void>(`/api/v1/products/${productId}/images/${imageId}`),
@@ -248,8 +253,9 @@ export const adminPoliciesApi = {
   list: () =>
     apiClient.get<StorePolicyResponse[]>("/api/v1/admin/policies"),
 
+  /** PUT /api/v1/admin/policies — contract method is PUT, not POST */
   upsert: (data: UpsertStorePolicyRequest) =>
-    apiClient.post<StorePolicyResponse>("/api/v1/admin/policies", data),
+    apiClient.put<StorePolicyResponse>("/api/v1/admin/policies", data),
 
   delete: (id: string) =>
     apiClient.delete<void>(`/api/v1/admin/policies/${id}`),
@@ -281,18 +287,23 @@ export const adminIntegrationsApi = {
 };
 
 // ── Inventory ─────────────────────────────────────────────────────────────────
+// NOTE: GET /api/v1/admin/inventory/{productId} does NOT exist in the backend contract.
+// Only PUT (set stock) and POST /adjust exist.
 
 export const adminInventoryApi = {
-  get: (productId: string, variantId?: string) => {
-    const query = variantId ? `?variantId=${variantId}` : "";
-    return apiClient.get<InventoryResponse>(`/api/v1/admin/inventory/${productId}${query}`);
-  },
-
+  /**
+   * PUT /api/v1/admin/inventory/{productId}?variantId={variantId}
+   * Sets absolute stock level.
+   */
   set: (productId: string, data: SetStockRequest, variantId?: string) => {
     const query = variantId ? `?variantId=${variantId}` : "";
     return apiClient.put<InventoryResponse>(`/api/v1/admin/inventory/${productId}${query}`, data);
   },
 
+  /**
+   * POST /api/v1/admin/inventory/{productId}/adjust?variantId={variantId}
+   * Adjusts stock by a delta amount.
+   */
   adjust: (productId: string, data: AdjustStockRequest, variantId?: string) => {
     const query = variantId ? `?variantId=${variantId}` : "";
     return apiClient.post<InventoryResponse>(`/api/v1/admin/inventory/${productId}/adjust${query}`, data);

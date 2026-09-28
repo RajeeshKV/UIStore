@@ -16,10 +16,10 @@ export const checkoutApi = {
   placeOrder: (data: CheckoutRequest) =>
     apiClient.post<CheckoutResponse>("/api/v1/checkout", data),
 
-  /** POST /api/v1/payments/verify — verify Razorpay payment (backend does HMAC) */
-  verifyPayment: (data: RazorpayCallbackRequest) =>
+  /** POST /api/v1/payments/verify?orderId={orderId} — orderId is a query param per contract */
+  verifyPayment: (orderId: string, data: RazorpayCallbackRequest) =>
     apiClient.post<{ success: boolean; orderId: string }>(
-      "/api/v1/payments/verify",
+      `/api/v1/payments/verify?orderId=${encodeURIComponent(orderId)}`,
       data,
     ),
 

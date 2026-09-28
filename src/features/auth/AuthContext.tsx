@@ -61,9 +61,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void refresh();
 
+    // When session expires, clear user — the page's own guard handles redirect
     const handler = () => {
       setUser(null);
       setIsLoading(false);
+      // Redirect to login — only if currently on a protected page
+      if (typeof window !== "undefined" &&
+          window.location.pathname.startsWith("/account")) {
+        const redirect = encodeURIComponent(window.location.pathname);
+        window.location.replace(`/auth/login?redirect=${redirect}`);
+      }
     };
     window.addEventListener("kromic:session-expired", handler);
     return () => window.removeEventListener("kromic:session-expired", handler);
