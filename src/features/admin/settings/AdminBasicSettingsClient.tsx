@@ -149,13 +149,16 @@ export function AdminBasicSettingsClient() {
         {/* Social links */}
         <div className="flex flex-col gap-4">
           <div className="rounded-lg border border-border bg-background p-5 flex flex-col gap-4">
-            <h3 className="text-body font-semibold text-foreground border-b border-border pb-3">Social Links</h3>
-            <Input label="Facebook URL" type="url" value={form.facebookUrl ?? ""} onChange={(e) => set("facebookUrl", e.target.value)} />
-            <Input label="Instagram URL" type="url" value={form.instagramUrl ?? ""} onChange={(e) => set("instagramUrl", e.target.value)} />
-            <Input label="Twitter / X URL" type="url" value={form.twitterUrl ?? ""} onChange={(e) => set("twitterUrl", e.target.value)} />
-            <Input label="YouTube URL" type="url" value={form.youtubeUrl ?? ""} onChange={(e) => set("youtubeUrl", e.target.value)} />
-            <Input label="WhatsApp number" type="tel" value={form.whatsAppNumber ?? ""} onChange={(e) => set("whatsAppNumber", e.target.value)} placeholder="+91 9876543210" />
-            <Input label="LinkedIn URL" type="url" value={form.linkedInUrl ?? ""} onChange={(e) => set("linkedInUrl", e.target.value)} />
+            <div>
+              <h3 className="text-body font-semibold text-foreground border-b border-border pb-3">Social Links</h3>
+              <p className="text-caption text-foreground-muted mt-2">These appear as icons in the website footer. Configure any you want shown.</p>
+            </div>
+            <Input label="Facebook URL" type="url" value={form.facebookUrl ?? ""} onChange={(e) => set("facebookUrl", e.target.value)} placeholder="https://facebook.com/yourpage" />
+            <Input label="Instagram URL" type="url" value={form.instagramUrl ?? ""} onChange={(e) => set("instagramUrl", e.target.value)} placeholder="https://instagram.com/yourhandle" />
+            <Input label="Twitter / X URL" type="url" value={form.twitterUrl ?? ""} onChange={(e) => set("twitterUrl", e.target.value)} placeholder="https://x.com/yourhandle" />
+            <Input label="YouTube URL" type="url" value={form.youtubeUrl ?? ""} onChange={(e) => set("youtubeUrl", e.target.value)} placeholder="https://youtube.com/@channel" />
+            <Input label="WhatsApp number" type="tel" value={form.whatsAppNumber ?? ""} onChange={(e) => set("whatsAppNumber", e.target.value)} placeholder="+919876543210" hint="Include country code. Shown in Contact Us section and footer." />
+            <Input label="LinkedIn URL" type="url" value={form.linkedInUrl ?? ""} onChange={(e) => set("linkedInUrl", e.target.value)} placeholder="https://linkedin.com/company/yourcompany" />
           </div>
 
           {/* Store open/close toggle */}
