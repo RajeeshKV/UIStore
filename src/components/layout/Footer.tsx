@@ -46,8 +46,8 @@ export function Footer({ settings, policies }: FooterProps) {
                 {settings.websiteUrl.replace(/^https?:\/\//, "")}
               </a>
             )}
-            {/* Social icons row */}
-            <SocialLinks settings={settings} />
+            {/* Social icons row — URL socials only in brand column */}
+            <SocialOnlyLinks settings={settings} />
           </div>
 
           {/* ── Shop ──────────────────────────────────────────────── */}
@@ -182,6 +182,21 @@ interface SocialLink {
 
 function SocialLinks({ settings }: { settings?: PublicBusinessSettingsResponse | null }) {
   const links: SocialLink[] = [
+    settings?.supportEmail && {
+      href: `mailto:${settings.supportEmail}`,
+      label: `Email: ${settings.supportEmail}`,
+      icon: <IconEmail className="size-4.5" />,
+    },
+    settings?.supportPhone && {
+      href: `tel:${settings.supportPhone}`,
+      label: `Call: ${settings.supportPhone}`,
+      icon: <IconPhone className="size-4.5" />,
+    },
+    settings?.whatsAppNumber && {
+      href: `https://wa.me/${settings.whatsAppNumber.replace(/\D/g, "")}`,
+      label: `WhatsApp: ${settings.whatsAppNumber}`,
+      icon: <IconWhatsApp className="size-4.5" />,
+    },
     settings?.instagramUrl && {
       href: settings.instagramUrl,
       label: "Instagram",
@@ -191,11 +206,6 @@ function SocialLinks({ settings }: { settings?: PublicBusinessSettingsResponse |
       href: settings.facebookUrl,
       label: "Facebook",
       icon: <IconFacebook className="size-4.5" />,
-    },
-    settings?.whatsAppNumber && {
-      href: `https://wa.me/${settings.whatsAppNumber.replace(/\D/g, "")}`,
-      label: "WhatsApp",
-      icon: <IconWhatsApp className="size-4.5" />,
     },
     settings?.linkedInUrl && {
       href: settings.linkedInUrl,
@@ -217,7 +227,68 @@ function SocialLinks({ settings }: { settings?: PublicBusinessSettingsResponse |
   if (!links.length) return null;
 
   return (
-    <div className="flex items-center gap-2 mt-1" aria-label="Social media links">
+    <div className="flex items-center gap-1.5" aria-label="Contact and social links">
+      {links.map((l) => (
+        <a
+          key={l.label}
+          href={l.href}
+          target={l.href.startsWith("mailto:") || l.href.startsWith("tel:") ? undefined : "_blank"}
+          rel={l.href.startsWith("http") ? "noopener noreferrer" : undefined}
+          aria-label={l.label}
+          title={l.label}
+          className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-md",
+            "text-foreground-muted hover:text-foreground hover:bg-muted",
+            "transition-colors duration-150",
+          )}
+        >
+          {l.icon}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+// ── Social-only links (brand column — URL platforms, not email/phone) ──────────
+
+function SocialOnlyLinks({ settings }: { settings?: PublicBusinessSettingsResponse | null }) {
+  const links: SocialLink[] = [
+    settings?.whatsAppNumber && {
+      href: `https://wa.me/${settings.whatsAppNumber.replace(/\D/g, "")}`,
+      label: "WhatsApp",
+      icon: <IconWhatsApp className="size-4.5" />,
+    },
+    settings?.instagramUrl && {
+      href: settings.instagramUrl,
+      label: "Instagram",
+      icon: <IconInstagram className="size-4.5" />,
+    },
+    settings?.facebookUrl && {
+      href: settings.facebookUrl,
+      label: "Facebook",
+      icon: <IconFacebook className="size-4.5" />,
+    },
+    settings?.linkedInUrl && {
+      href: settings.linkedInUrl,
+      label: "LinkedIn",
+      icon: <IconLinkedIn className="size-4.5" />,
+    },
+    settings?.twitterUrl && {
+      href: settings.twitterUrl,
+      label: "X / Twitter",
+      icon: <IconXTwitter className="size-4.5" />,
+    },
+    settings?.youtubeUrl && {
+      href: settings.youtubeUrl,
+      label: "YouTube",
+      icon: <IconYouTube className="size-4.5" />,
+    },
+  ].filter(Boolean) as SocialLink[];
+
+  if (!links.length) return null;
+
+  return (
+    <div className="flex items-center flex-wrap gap-1.5 mt-1" aria-label="Social media links">
       {links.map((l) => (
         <a
           key={l.label}
@@ -225,8 +296,9 @@ function SocialLinks({ settings }: { settings?: PublicBusinessSettingsResponse |
           target="_blank"
           rel="noopener noreferrer"
           aria-label={l.label}
+          title={l.label}
           className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-lg",
+            "flex h-8 w-8 items-center justify-center rounded-md",
             "text-foreground-muted hover:text-foreground hover:bg-muted",
             "transition-colors duration-150",
           )}
@@ -285,6 +357,23 @@ function IconYouTube({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+    </svg>
+  );
+}
+
+function IconEmail({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  );
+}
+
+function IconPhone({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
     </svg>
   );
 }
