@@ -133,10 +133,16 @@ export function Footer({ settings, policies }: FooterProps) {
 
       {/* ── Bottom bar ──────────────────────────────────────────────── */}
       <div className="border-t border-border">
-        <div className="container-x mx-auto py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-caption text-foreground-muted">
-          <p>© {year} {name}. All rights reserved.</p>
-          {policyList.length > 0 && (
-            <nav aria-label="Policy links" className="flex flex-wrap gap-4">
+        <div className="container-x mx-auto py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-caption text-foreground-muted">
+          {/* Copyright — left */}
+          <p className="shrink-0">© {year} {name}. All rights reserved.</p>
+
+          {/* Social icons — center */}
+          <SocialLinks settings={settings} />
+
+          {/* Policy links — right */}
+          {policyList.length > 0 ? (
+            <nav aria-label="Policy links" className="flex flex-wrap gap-4 justify-end shrink-0">
               {policyList.map((p) => (
                 <Link
                   key={p.id}
@@ -147,6 +153,8 @@ export function Footer({ settings, policies }: FooterProps) {
                 </Link>
               ))}
             </nav>
+          ) : (
+            <span aria-hidden="true" className="shrink-0" />
           )}
         </div>
       </div>
