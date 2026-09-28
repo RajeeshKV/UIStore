@@ -147,6 +147,19 @@
             "name": "Status",
             "in": "query",
             "schema": {
+              "enum": [
+                "PendingPayment",
+                "PaymentProcessing",
+                "Confirmed",
+                "Processing",
+                "Packed",
+                "Shipped",
+                "Delivered",
+                "Cancelled",
+                "Failed",
+                "RefundPending",
+                "Refunded"
+              ],
               "type": "string"
             }
           },
@@ -154,6 +167,14 @@
             "name": "PaymentStatus",
             "in": "query",
             "schema": {
+              "enum": [
+                "Pending",
+                "Authorized",
+                "Paid",
+                "Failed",
+                "RefundPending",
+                "Refunded"
+              ],
               "type": "string"
             }
           },
@@ -6238,7 +6259,12 @@
             "nullable": true
           },
           "stockAvailability": {
-            "$ref": "#/components/schemas/StockAvailability"
+            "enum": [
+              "InStock",
+              "LowStock",
+              "OutOfStock"
+            ],
+            "type": "string"
           },
           "canPurchase": {
             "type": "boolean"
@@ -6335,8 +6361,11 @@
             "$ref": "#/components/schemas/ShippingAddressDto"
           },
           "paymentMethod": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Razorpay",
+              "CashOnDelivery"
+            ],
+            "type": "string"
           },
           "couponCode": {
             "type": "string",
@@ -6361,12 +6390,27 @@
             "nullable": true
           },
           "orderStatus": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "PendingPayment",
+              "PaymentProcessing",
+              "Confirmed",
+              "Processing",
+              "Packed",
+              "Shipped",
+              "Delivered",
+              "Cancelled",
+              "Failed",
+              "RefundPending",
+              "Refunded"
+            ],
+            "type": "string"
           },
           "paymentMethod": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Razorpay",
+              "CashOnDelivery"
+            ],
+            "type": "string"
           },
           "subtotal": {
             "type": "number",
@@ -6430,6 +6474,10 @@
             "format": "double"
           },
           "discountType": {
+            "enum": [
+              "Percentage",
+              "FixedAmount"
+            ],
             "type": "string",
             "nullable": true
           },
@@ -6629,8 +6677,11 @@
             "nullable": true
           },
           "discountType": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Percentage",
+              "FixedAmount"
+            ],
+            "type": "string"
           },
           "discountValue": {
             "type": "number",
@@ -6667,8 +6718,12 @@
             "nullable": true
           },
           "applicability": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "EntireOrder",
+              "SpecificProducts",
+              "SpecificCategories"
+            ],
+            "type": "string"
           },
           "isFirstOrderOnly": {
             "type": "boolean"
@@ -6898,8 +6953,11 @@
         "type": "object",
         "properties": {
           "mode": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "KromicManaged",
+              "CustomerBrevo"
+            ],
+            "type": "string"
           },
           "senderName": {
             "type": "string",
@@ -7088,8 +7146,11 @@
             "type": "boolean"
           },
           "role": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Customer",
+              "Admin"
+            ],
+            "type": "string"
           },
           "isActive": {
             "type": "boolean"
@@ -7194,12 +7255,27 @@
             "nullable": true
           },
           "status": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "PendingPayment",
+              "PaymentProcessing",
+              "Confirmed",
+              "Processing",
+              "Packed",
+              "Shipped",
+              "Delivered",
+              "Cancelled",
+              "Failed",
+              "RefundPending",
+              "Refunded"
+            ],
+            "type": "string"
           },
           "paymentMethod": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Razorpay",
+              "CashOnDelivery"
+            ],
+            "type": "string"
           },
           "subtotal": {
             "type": "number",
@@ -7290,12 +7366,27 @@
             "nullable": true
           },
           "status": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "PendingPayment",
+              "PaymentProcessing",
+              "Confirmed",
+              "Processing",
+              "Packed",
+              "Shipped",
+              "Delivered",
+              "Cancelled",
+              "Failed",
+              "RefundPending",
+              "Refunded"
+            ],
+            "type": "string"
           },
           "paymentMethod": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Razorpay",
+              "CashOnDelivery"
+            ],
+            "type": "string"
           },
           "grandTotal": {
             "type": "number",
@@ -7362,8 +7453,12 @@
             "nullable": true
           },
           "purpose": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "PhoneVerification",
+              "Login",
+              "PasswordReset"
+            ],
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -7394,8 +7489,12 @@
             "nullable": true
           },
           "purpose": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "PhoneVerification",
+              "Login",
+              "PasswordReset"
+            ],
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -7428,8 +7527,15 @@
             "nullable": true
           },
           "status": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Pending",
+              "Authorized",
+              "Paid",
+              "Failed",
+              "RefundPending",
+              "Refunded"
+            ],
+            "type": "string"
           },
           "paidAt": {
             "type": "string",
@@ -7552,8 +7658,12 @@
             "nullable": true
           },
           "status": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Draft",
+              "Active",
+              "Archived"
+            ],
+            "type": "string"
           },
           "categoryId": {
             "type": "string",
@@ -7652,8 +7762,12 @@
             "nullable": true
           },
           "status": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Draft",
+              "Active",
+              "Archived"
+            ],
+            "type": "string"
           },
           "categoryId": {
             "type": "string",
@@ -7748,8 +7862,11 @@
             "nullable": true
           },
           "discountType": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Percentage",
+              "FixedAmount"
+            ],
+            "type": "string"
           },
           "discountValue": {
             "type": "number",
@@ -7786,8 +7903,12 @@
             "nullable": true
           },
           "applicability": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "EntireOrder",
+              "SpecificProducts",
+              "SpecificCategories"
+            ],
+            "type": "string"
           },
           "isFirstOrderOnly": {
             "type": "boolean"
@@ -7842,8 +7963,11 @@
             "nullable": true
           },
           "discountType": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Percentage",
+              "FixedAmount"
+            ],
+            "type": "string"
           },
           "discountValue": {
             "type": "number",
@@ -7877,8 +8001,12 @@
             "nullable": true
           },
           "applicability": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "EntireOrder",
+              "SpecificProducts",
+              "SpecificCategories"
+            ],
+            "type": "string"
           },
           "createdAtUtc": {
             "type": "string",
@@ -8183,15 +8311,6 @@
         },
         "additionalProperties": false
       },
-      "StockAvailability": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "StoreAuthSettingsDto": {
         "type": "object",
         "properties": {
@@ -8231,8 +8350,16 @@
             "format": "uuid"
           },
           "policyType": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "TermsConditions",
+              "PrivacyPolicy",
+              "RefundPolicy",
+              "CancellationPolicy",
+              "ReturnPolicy",
+              "ShippingPolicy",
+              "OrderPolicy"
+            ],
+            "type": "string"
           },
           "title": {
             "type": "string",
@@ -8391,7 +8518,12 @@
             "nullable": true
           },
           "stockAvailability": {
-            "$ref": "#/components/schemas/StockAvailability"
+            "enum": [
+              "InStock",
+              "LowStock",
+              "OutOfStock"
+            ],
+            "type": "string"
           },
           "canPurchase": {
             "type": "boolean"
@@ -8501,7 +8633,12 @@
             "nullable": true
           },
           "stockAvailability": {
-            "$ref": "#/components/schemas/StockAvailability"
+            "enum": [
+              "InStock",
+              "LowStock",
+              "OutOfStock"
+            ],
+            "type": "string"
           },
           "canPurchase": {
             "type": "boolean"
@@ -8603,7 +8740,12 @@
             "nullable": true
           },
           "stockAvailability": {
-            "$ref": "#/components/schemas/StockAvailability"
+            "enum": [
+              "InStock",
+              "LowStock",
+              "OutOfStock"
+            ],
+            "type": "string"
           },
           "canPurchase": {
             "type": "boolean"
@@ -8956,8 +9098,11 @@
         "type": "object",
         "properties": {
           "mode": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "KromicManaged",
+              "CustomerBrevo"
+            ],
+            "type": "string"
           },
           "senderName": {
             "type": "string",
@@ -9017,8 +9162,20 @@
         "type": "object",
         "properties": {
           "status": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "PendingPayment",
+              "PaymentProcessing",
+              "Confirmed",
+              "Processing",
+              "Packed",
+              "Shipped",
+              "Delivered",
+              "Cancelled",
+              "Failed",
+              "RefundPending",
+              "Refunded"
+            ],
+            "type": "string"
           },
           "trackingNumber": {
             "type": "string",
@@ -9110,8 +9267,11 @@
             "nullable": true
           },
           "discountType": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "Percentage",
+              "FixedAmount"
+            ],
+            "type": "string"
           },
           "discountValue": {
             "type": "number",
@@ -9148,8 +9308,12 @@
             "nullable": true
           },
           "applicability": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "EntireOrder",
+              "SpecificProducts",
+              "SpecificCategories"
+            ],
+            "type": "string"
           },
           "isFirstOrderOnly": {
             "type": "boolean"
@@ -9294,8 +9458,16 @@
         "type": "object",
         "properties": {
           "policyType": {
-            "type": "string",
-            "nullable": true
+            "enum": [
+              "TermsConditions",
+              "PrivacyPolicy",
+              "RefundPolicy",
+              "CancellationPolicy",
+              "ReturnPolicy",
+              "ShippingPolicy",
+              "OrderPolicy"
+            ],
+            "type": "string"
           },
           "title": {
             "type": "string",

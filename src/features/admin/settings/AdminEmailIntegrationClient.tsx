@@ -157,12 +157,19 @@ export function AdminEmailIntegrationClient() {
           {settingsSuccess && (
             <p className="text-body-sm text-success bg-success/5 border border-success/20 rounded-md px-4 py-3">Sender settings saved.</p>
           )}
-          <Input
-            label="Mode"
-            value={emailSettings.mode ?? ""}
-            onChange={(e) => setEmailSettings((f) => ({ ...f, mode: e.target.value }))}
-            placeholder="e.g. smtp, api"
-          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-body-sm font-medium text-foreground">Mode</label>
+            <select
+              value={emailSettings.mode ?? ""}
+              onChange={(e) => setEmailSettings((f) => ({ ...f, mode: e.target.value }))}
+              aria-label="Email mode"
+              className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
+            >
+              <option value="">— Select mode —</option>
+              <option value="KromicManaged">KromicManaged — Kromic handles delivery</option>
+              <option value="CustomerBrevo">CustomerBrevo — Your own Brevo account</option>
+            </select>
+          </div>
           <Input
             label="Sender name"
             value={emailSettings.senderName ?? ""}

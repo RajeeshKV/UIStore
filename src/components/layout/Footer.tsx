@@ -133,29 +133,29 @@ export function Footer({ settings, policies }: FooterProps) {
 
       {/* ── Bottom bar ──────────────────────────────────────────────── */}
       <div className="border-t border-border">
-        <div className="container-x mx-auto py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-caption text-foreground-muted">
-          {/* Copyright — left */}
-          <p className="shrink-0">© {year} {name}. All rights reserved.</p>
+        <div className="container-x mx-auto py-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-caption text-foreground-muted">
+            {/* Left: copyright + icons grouped together */}
+            <div className="flex flex-col items-center sm:items-start gap-2">
+              <SocialLinks settings={settings} />
+              <p>© {year} {name}. All rights reserved.</p>
+            </div>
 
-          {/* Social icons — center */}
-          <SocialLinks settings={settings} />
-
-          {/* Policy links — right */}
-          {policyList.length > 0 ? (
-            <nav aria-label="Policy links" className="flex flex-wrap gap-4 justify-end shrink-0">
-              {policyList.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/policies/${(p.policyType ?? "policy").toLowerCase()}`}
-                  className="hover:text-foreground transition-colors"
-                >
-                  {p.title ?? p.policyType}
-                </Link>
-              ))}
-            </nav>
-          ) : (
-            <span aria-hidden="true" className="shrink-0" />
-          )}
+            {/* Right: policy links */}
+            {policyList.length > 0 && (
+              <nav aria-label="Policy links" className="flex flex-wrap gap-x-4 gap-y-1 justify-center sm:justify-end">
+                {policyList.map((p) => (
+                  <Link
+                    key={p.id}
+                    href={`/policies/${(p.policyType ?? "policy").toLowerCase()}`}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    {p.title ?? p.policyType}
+                  </Link>
+                ))}
+              </nav>
+            )}
+          </div>
         </div>
       </div>
     </footer>

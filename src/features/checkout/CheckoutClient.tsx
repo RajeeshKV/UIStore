@@ -30,7 +30,7 @@ interface CheckoutClientProps {
   codExtraFee: number;
 }
 
-type PaymentMethod = "razorpay" | "cod";
+type PaymentMethod = "Razorpay" | "CashOnDelivery";
 type CheckoutStep = "idle" | "placing" | "razorpay_loading" | "razorpay_open" | "verifying" | "success" | "failed";
 
 // ── Address form shape ────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export function CheckoutClient({
 
   const [address, setAddress] = useState<ShippingAddressDto>(emptyAddress());
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("razorpay");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Razorpay");
   const [couponCode, setCouponCode] = useState("");
   const [coupon, setCoupon] = useState<CouponValidationResponse | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
@@ -84,7 +84,7 @@ export function CheckoutClient({
     freeShippingThreshold != null && subtotal >= freeShippingThreshold
       ? 0
       : flatDeliveryFee;
-  const estimatedCod = paymentMethod === "cod" ? codExtraFee : 0;
+  const estimatedCod = paymentMethod === "CashOnDelivery" ? codExtraFee : 0;
   const couponDiscount = coupon?.isValid ? coupon.discountAmount : 0;
 
   // ── Coupon ─────────────────────────────────────────────────────────────────
@@ -144,7 +144,7 @@ export function CheckoutClient({
 
     const checkout = result.data;
 
-    if (paymentMethod === "cod") {
+    if (paymentMethod === "CashOnDelivery") {
       // COD: no payment step needed
       setStep("success");
       router.push(`/order-success/${checkout.orderId}`);
@@ -252,7 +252,7 @@ export function CheckoutClient({
     razorpay_open: "Complete payment in popup",
     verifying: "Verifying payment…",
     success: "Order placed!",
-    failed: paymentMethod === "razorpay" ? "Retry Payment" : "Retry Order",
+    failed: paymentMethod === "Razorpay" ? "Retry Payment" : "Retry Order",
   };
 
   return (
@@ -292,9 +292,9 @@ export function CheckoutClient({
             <div className="flex flex-col gap-3" role="radiogroup" aria-label="Select payment method">
               <PaymentOption
                 id="pm-razorpay"
-                value="razorpay"
-                selected={paymentMethod === "razorpay"}
-                onSelect={() => setPaymentMethod("razorpay")}
+                value="Razorpay"
+                selected={paymentMethod === "Razorpay"}
+                onSelect={() => setPaymentMethod("Razorpay")}
                 icon={<CreditCard className="size-4" />}
                 label="Pay Online"
                 description="Cards, UPI, Net Banking, Wallets — powered by Razorpay"
@@ -302,9 +302,9 @@ export function CheckoutClient({
               {codEnabled && (
                 <PaymentOption
                   id="pm-cod"
-                  value="cod"
-                  selected={paymentMethod === "cod"}
-                  onSelect={() => setPaymentMethod("cod")}
+                  value="CashOnDelivery"
+                  selected={paymentMethod === "CashOnDelivery"}
+                  onSelect={() => setPaymentMethod("CashOnDelivery")}
                   icon={<Banknote className="size-4" />}
                   label="Cash on Delivery"
                   description={codExtraFee > 0 ? `+${formatPrice(codExtraFee, effectiveCurrency, locale)} COD fee` : "Pay when your order arrives"}

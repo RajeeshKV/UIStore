@@ -14,15 +14,15 @@ import { formatPrice } from "@/lib/utils";
 import type { PromotionSummaryResponse, CreatePromotionRequest } from "@/types/api";
 
 const PAGE_SIZE = 20;
-const DISCOUNT_TYPES = ["Percentage", "FixedAmount", "FreeShipping"];
-const APPLICABILITY = ["All", "SpecificProducts", "SpecificCategories"];
+const DISCOUNT_TYPES = ["Percentage", "FixedAmount"];
+const APPLICABILITY = ["EntireOrder", "SpecificProducts", "SpecificCategories"];
 
 const emptyForm: CreatePromotionRequest = {
   name: "",
   couponCode: "",
   discountType: "Percentage",
   discountValue: 0,
-  applicability: "All",
+  applicability: "EntireOrder",
   isFirstOrderOnly: false,
 };
 
@@ -86,7 +86,7 @@ export function AdminPromotionsClient() {
       perCustomerUsageLimit: d.perCustomerUsageLimit,
       startsAt: d.startsAt ? d.startsAt.slice(0, 16) : "",
       expiresAt: d.expiresAt ? d.expiresAt.slice(0, 16) : "",
-      applicability: d.applicability ?? "All",
+      applicability: d.applicability ?? "EntireOrder",
       isFirstOrderOnly: d.isFirstOrderOnly,
     });
     setFormErrors({});
@@ -172,8 +172,6 @@ export function AdminPromotionsClient() {
         <span className="text-body-sm text-foreground whitespace-nowrap">
           {row.discountType === "Percentage"
             ? `${row.discountValue}%`
-            : row.discountType === "FreeShipping"
-            ? "Free Shipping"
             : formatPrice(row.discountValue, "INR")}
         </span>
       ),
@@ -302,7 +300,7 @@ export function AdminPromotionsClient() {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-body-sm font-medium text-foreground">Applicability</label>
-            <select value={form.applicability ?? "All"} onChange={(e) => set("applicability", e.target.value)} aria-label="Applicability" className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus">
+            <select value={form.applicability ?? "EntireOrder"} onChange={(e) => set("applicability", e.target.value)} aria-label="Applicability" className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus">
               {APPLICABILITY.map((a) => <option key={a} value={a}>{a}</option>)}
             </select>
           </div>

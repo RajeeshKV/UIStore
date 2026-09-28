@@ -13,8 +13,8 @@ import type { OrderSummaryResponse } from "@/types/api";
 
 const PAGE_SIZE = 20;
 
-const ORDER_STATUSES = ["", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
-const PAYMENT_STATUSES = ["", "Pending", "Paid", "Failed", "Refunded"];
+const ORDER_STATUSES = ["", "PendingPayment", "PaymentProcessing", "Confirmed", "Processing", "Packed", "Shipped", "Delivered", "Cancelled", "Failed", "RefundPending", "Refunded"];
+const PAYMENT_STATUSES = ["", "Pending", "Authorized", "Paid", "Failed", "RefundPending", "Refunded"];
 
 export function AdminOrdersClient() {
   const [orders, setOrders] = useState<OrderSummaryResponse[]>([]);

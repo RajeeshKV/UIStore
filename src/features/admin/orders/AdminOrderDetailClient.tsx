@@ -12,7 +12,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { formatPrice } from "@/lib/utils";
 import type { OrderResponse } from "@/types/api";
 
-const ORDER_STATUSES = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+const ORDER_STATUSES = ["PendingPayment", "PaymentProcessing", "Confirmed", "Processing", "Packed", "Shipped", "Delivered", "Cancelled", "Failed", "RefundPending", "Refunded"];
 
 interface AdminOrderDetailClientProps {
   orderId: string;

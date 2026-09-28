@@ -453,7 +453,8 @@ export interface UpdateCustomerProfileRequest {
 
 export interface CheckoutRequest {
   shippingAddress: ShippingAddressDto;
-  paymentMethod: "razorpay" | "cod";
+  /** Exact enum values per backend contract */
+  paymentMethod: "Razorpay" | "CashOnDelivery";
   couponCode?: string;
   idempotencyKey?: string;
 }
@@ -871,14 +872,16 @@ export interface UpdateAuthSettingsRequest {
 
 /** Policies (admin) */
 export interface UpsertStorePolicyRequest {
+  /** Exact enum: TermsConditions | PrivacyPolicy | RefundPolicy | CancellationPolicy | ReturnPolicy | ShippingPolicy | OrderPolicy */
   policyType?: string;
   title?: string;
   content?: string;
   isPublished: boolean;
 }
 
-/** Admin order */
+/** Admin order status update — status is a strict enum per backend contract */
 export interface UpdateOrderStatusRequest {
+  /** Exact enum: PendingPayment | PaymentProcessing | Confirmed | Processing | Packed | Shipped | Delivered | Cancelled | Failed | RefundPending | Refunded */
   status?: string;
   trackingNumber?: string;
   trackingProvider?: string;

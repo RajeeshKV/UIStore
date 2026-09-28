@@ -13,11 +13,12 @@ import type { StorePolicyResponse, UpsertStorePolicyRequest } from "@/types/api"
 
 const POLICY_TYPES = [
   "PrivacyPolicy",
-  "TermsAndConditions",
+  "TermsConditions",
   "ShippingPolicy",
   "RefundPolicy",
   "CancellationPolicy",
   "ReturnPolicy",
+  "OrderPolicy",
 ];
 
 const emptyForm: UpsertStorePolicyRequest = {
