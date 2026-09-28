@@ -133,29 +133,27 @@ export function Footer({ settings, policies }: FooterProps) {
 
       {/* ── Bottom bar ──────────────────────────────────────────────── */}
       <div className="border-t border-border">
-        <div className="container-x mx-auto py-5">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-caption text-foreground-muted">
-            {/* Left: copyright + icons grouped together */}
-            <div className="flex flex-col items-center sm:items-start gap-2">
-              <SocialLinks settings={settings} />
-              <p>© {year} {name}. All rights reserved.</p>
-            </div>
-
-            {/* Right: policy links */}
-            {policyList.length > 0 && (
-              <nav aria-label="Policy links" className="flex flex-wrap gap-x-4 gap-y-1 justify-center sm:justify-end">
-                {policyList.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/policies/${(p.policyType ?? "policy").toLowerCase()}`}
-                    className="hover:text-foreground transition-colors"
-                  >
-                    {p.title ?? p.policyType}
-                  </Link>
-                ))}
-              </nav>
-            )}
+        <div className="container-x mx-auto py-5 text-caption text-foreground-muted">
+          {/* Icons + copyright — centered on all screen sizes */}
+          <div className="flex flex-col items-center gap-2 mb-3">
+            <SocialLinks settings={settings} />
+            <p>© {year} {name}. All rights reserved.</p>
           </div>
+
+          {/* Policy links — centered below */}
+          {policyList.length > 0 && (
+            <nav aria-label="Policy links" className="flex flex-wrap gap-x-4 gap-y-1 justify-center">
+              {policyList.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/policies/${(p.policyType ?? "policy").toLowerCase()}`}
+                  className="hover:text-foreground transition-colors"
+                >
+                  {p.title ?? p.policyType}
+                </Link>
+              ))}
+            </nav>
+          )}
         </div>
       </div>
     </footer>
