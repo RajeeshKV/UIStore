@@ -35,7 +35,7 @@ export function ProductGrid({
   currency,
   locale,
   skeletonCount = 8,
-  cols = 4,
+  cols = 5,
   className,
   eagerCount = 0,
 }: ProductGridProps) {

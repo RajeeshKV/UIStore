@@ -119,6 +119,17 @@ export interface TrackingSettingsDto {
   metaPixelId?: string;
 }
 
+/**
+ * Payment settings returned in GET /api/v1/store/settings
+ * Controls which payment methods are shown on checkout.
+ */
+export interface PaymentSettingsDto {
+  razorpayEnabled: boolean;
+  codEnabled: boolean;
+  /** Public Razorpay Key ID — safe for browser. Use to init widget. */
+  razorpayKeyId?: string;
+}
+
 export interface PublicBusinessSettingsResponse {
   businessName?: string;
   legalName?: string;
@@ -144,6 +155,8 @@ export interface PublicBusinessSettingsResponse {
   tracking?: TrackingSettingsDto;
   /** Auth settings — includes googleOAuthEnabled and googleClientId for storefront */
   auth?: PublicAuthSettingsDto;
+  /** Payment settings — controls which methods are shown on checkout */
+  payment?: PaymentSettingsDto;
 }
 
 // ── Storefront: Categories ────────────────────────────────────────────────────

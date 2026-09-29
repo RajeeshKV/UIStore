@@ -52,7 +52,7 @@ export function ProductCard({
       <Link
         href={`/products/${product.slug}`}
         aria-label={`View ${product.name}`}
-        className="block relative aspect-[4/3] overflow-hidden rounded-md bg-surface"
+        className="block relative aspect-[3/4] overflow-hidden rounded-md bg-surface"
       >
         {product.primaryImageUrl && !imgError ? (
           <Image

@@ -47,7 +47,7 @@ export const SORT_OPTIONS: SortOption[] = [
   { label: "Name: Z to A",      value: "name:desc",     sortBy: "name",     sortDirection: "desc" },
 ];
 
-export const DEFAULT_PAGE_SIZE = 24;
+export const DEFAULT_PAGE_SIZE = 30;
 export const DEFAULT_SORT: SortOption = SORT_OPTIONS[0];
 
 /** Parse URLSearchParams into CatalogParams */

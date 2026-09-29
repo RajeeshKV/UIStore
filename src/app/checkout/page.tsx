@@ -22,7 +22,11 @@ export default async function CheckoutPage() {
   const currency = settings?.currencyCode ?? "INR";
   const locale = settings?.culture ?? "en-IN";
   const storeName = settings?.businessName ?? "Kromic Store";
-  const codEnabled = settings?.delivery?.codEnabled ?? false;
+  // Use payment settings from store settings to drive which methods are shown.
+  // spec: payment.razorpayEnabled drives whether "Pay Online" is shown.
+  // Fallback: if payment field absent (old backend), assume Razorpay available.
+  const razorpayEnabled = settings?.payment?.razorpayEnabled ?? true;
+  const codEnabled = settings?.payment?.codEnabled ?? settings?.delivery?.codEnabled ?? false;
   const freeShippingThreshold = settings?.delivery?.freeShippingThreshold;
   const flatFee = settings?.delivery?.flatFeeAmount ?? 0;
   const codExtraFee = settings?.delivery?.codExtraFee ?? 0;
@@ -33,6 +37,7 @@ export default async function CheckoutPage() {
         currency={currency}
         locale={locale}
         storeName={storeName}
+        razorpayEnabled={razorpayEnabled}
         codEnabled={codEnabled}
         freeShippingThreshold={freeShippingThreshold}
         flatDeliveryFee={flatFee}

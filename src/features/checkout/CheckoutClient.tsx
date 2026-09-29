@@ -23,6 +23,7 @@ interface CheckoutClientProps {
   currency: string;
   locale: string;
   storeName: string;
+  razorpayEnabled: boolean;
   codEnabled: boolean;
   freeShippingThreshold?: number;
   flatDeliveryFee: number;
@@ -54,6 +55,7 @@ export function CheckoutClient({
   currency,
   locale,
   storeName,
+  razorpayEnabled,
   codEnabled,
   freeShippingThreshold,
   flatDeliveryFee,
@@ -65,7 +67,8 @@ export function CheckoutClient({
 
   const [address, setAddress] = useState<ShippingAddressDto>(emptyAddress());
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Razorpay");
+  // Default to Razorpay if enabled, else COD
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(razorpayEnabled ? "Razorpay" : "CashOnDelivery");
   const [couponCode, setCouponCode] = useState("");
   const [coupon, setCoupon] = useState<CouponValidationResponse | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
@@ -133,10 +136,48 @@ export function CheckoutClient({
     });
 
     if (!result.ok) {
-      const msg = extractApiError(result.error, "Could not place order.");
+      const err = result.error;
+      const code = "code" in err ? (err as { code?: string }).code : undefined;
+      const msg = extractApiError(err, "Could not place order. Please try again.");
+
+      // Handle specific error codes per spec
+      if (code === "CART_EMPTY") {
+        router.push("/cart");
+        return;
+      }
+
+      if (err && "status" in err && (err as { status: number }).status === 409) {
+        // Idempotency: order already exists — navigate to orders list
+        setStepError("This order was already placed. Redirecting to your orders…");
+        setTimeout(() => router.push("/account/orders"), 2000);
+        setStep("failed");
+        return;
+      }
+
+      if (code === "COD_NOT_AVAILABLE") {
+        setPaymentMethod("Razorpay");
+        setStepError("Cash on Delivery is not available right now. Please pay online.");
+        setStep("failed");
+        return;
+      }
+
+      if (code === "PRODUCT_UNAVAILABLE") {
+        setStepError(msg);
+        setStep("failed");
+        await refreshCart();
+        return;
+      }
+
+      if (code === "INSUFFICIENT_INVENTORY" || code === "COUPON_INVALID" || code === "COUPON_USAGE_LIMIT") {
+        // Show backend message directly — spec says it is user-friendly
+        setStepError(msg);
+        setStep("failed");
+        if (code === "INSUFFICIENT_INVENTORY") await refreshCart();
+        return;
+      }
+
       setStepError(msg);
       setStep("failed");
-      // Refresh cart in case stock changed
       await refreshCart();
       return;
     }
@@ -192,17 +233,21 @@ export function CheckoutClient({
           setStep("success");
           router.push(`/order-success/${orderId}`);
         } else {
-          setStepError("Payment verification failed. Please contact support with your order ID: " + orderId);
+          // Spec: "Payment could not be verified. Please contact support with your order number."
+          // Do NOT let user retry silently — payment may already be captured by Razorpay.
+          setStepError(
+            `Payment could not be verified. Please contact support with your order number: ${checkout.orderNumber ?? orderId}`
+          );
           setStep("failed");
         }
       },
       modal: {
         ondismiss: () => {
-          // User closed Razorpay — order exists but unpaid; allow retry
-          setStepError("Payment was cancelled. Your cart is saved. You can retry.");
+          // Spec: order is in PendingPayment state — let user retry.
+          // Keep the SAME idempotency key so backend returns the existing order on retry.
+          setStepError("Payment was cancelled. You can retry payment for this order.");
           setStep("failed");
-          // New idempotency key for a fresh attempt
-          idempotencyRef.current = generateIdempotencyKey();
+          // Do NOT generate new idempotency key — reuse for retry per spec.
         },
       },
     });
@@ -283,34 +328,39 @@ export function CheckoutClient({
             </div>
           </section>
 
-          {/* Payment method */}
-          <section aria-labelledby="pay-heading">
-            <h2 id="pay-heading" className="text-h4 font-semibold text-foreground mb-4 flex items-center gap-2">
-              <CreditCard className="size-4" aria-hidden="true" /> Payment Method
-            </h2>
-            <div className="flex flex-col gap-3" role="radiogroup" aria-label="Select payment method">
-              <PaymentOption
-                id="pm-razorpay"
-                value="Razorpay"
-                selected={paymentMethod === "Razorpay"}
-                onSelect={() => setPaymentMethod("Razorpay")}
-                icon={<CreditCard className="size-4" />}
-                label="Pay Online"
-                description="Cards, UPI, Net Banking, Wallets — powered by Razorpay"
-              />
-              {codEnabled && (
-                <PaymentOption
-                  id="pm-cod"
-                  value="CashOnDelivery"
-                  selected={paymentMethod === "CashOnDelivery"}
-                  onSelect={() => setPaymentMethod("CashOnDelivery")}
-                  icon={<Banknote className="size-4" />}
-                  label="Cash on Delivery"
-                  description={codExtraFee > 0 ? `+${formatPrice(codExtraFee, effectiveCurrency, locale)} COD fee` : "Pay when your order arrives"}
-                />
-              )}
-            </div>
-          </section>
+          {/* Payment method — only shown when at least one method is available */}
+          {(razorpayEnabled || codEnabled) && (
+            <section aria-labelledby="pay-heading">
+              <h2 id="pay-heading" className="text-h4 font-semibold text-foreground mb-4 flex items-center gap-2">
+                <CreditCard className="size-4" aria-hidden="true" /> Payment Method
+              </h2>
+              <div className="flex flex-col gap-3" role="radiogroup" aria-label="Select payment method">
+                {/* spec: hide entirely if razorpayEnabled=false, never show disabled */}
+                {razorpayEnabled && (
+                  <PaymentOption
+                    id="pm-razorpay"
+                    value="Razorpay"
+                    selected={paymentMethod === "Razorpay"}
+                    onSelect={() => setPaymentMethod("Razorpay")}
+                    icon={<CreditCard className="size-4" />}
+                    label="Pay Online"
+                    description="Cards, UPI, Net Banking, Wallets — powered by Razorpay"
+                  />
+                )}
+                {codEnabled && (
+                  <PaymentOption
+                    id="pm-cod"
+                    value="CashOnDelivery"
+                    selected={paymentMethod === "CashOnDelivery"}
+                    onSelect={() => setPaymentMethod("CashOnDelivery")}
+                    icon={<Banknote className="size-4" />}
+                    label="Cash on Delivery"
+                    description={codExtraFee > 0 ? `+${formatPrice(codExtraFee, effectiveCurrency, locale)} COD fee` : "Pay when your order arrives"}
+                  />
+                )}
+              </div>
+            </section>
+          )}
 
           {/* Coupon */}
           <section aria-labelledby="coupon-heading">
