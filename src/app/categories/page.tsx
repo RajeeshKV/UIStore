@@ -1,22 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import { StorefrontLayout } from "@/components/layout";
 import { storeApi } from "@/services/api/store";
 import { CatalogBreadcrumb } from "@/features/catalog/CatalogBreadcrumb";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LayoutGrid } from "lucide-react";
-import { safeData } from "@/lib/utils";
+import { safeData, cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const r = await storeApi.getSettings();
   const name = r.ok ? (r.data.businessName ?? "Kromic Store") : "Kromic Store";
-  return {
-    title: `All Categories — ${name}`,
-    description: "Browse all product categories.",
-  };
+  return { title: `All Categories — ${name}`, description: "Browse all product categories." };
 }
 
 export default async function CategoriesPage() {
@@ -32,57 +30,62 @@ export default async function CategoriesPage() {
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>
-      <div className="container-x mx-auto py-8 md:py-12 min-h-[60vh]">
-        <CatalogBreadcrumb
-          items={[{ label: "Home", href: "/" }, { label: "Categories" }]}
-          className="mb-6"
-        />
-        <h1 className="text-h2 text-foreground mb-8">All Categories</h1>
+      <div className="container-x mx-auto py-6 md:py-8 min-h-[60vh]">
+        <CatalogBreadcrumb items={[{ label: "Home", href: "/" }, { label: "Categories" }]} className="mb-4" />
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h1 className="text-h3 font-bold text-foreground">All Categories</h1>
+            {categories.length > 0 && (
+              <p className="text-caption text-foreground-muted mt-0.5">{categories.length} categories</p>
+            )}
+          </div>
+        </div>
 
         {categories.length === 0 ? (
-          <EmptyState
-            icon={<LayoutGrid className="size-8" />}
-            title="No categories yet"
-            description="Categories will appear here once added."
-          />
+          <EmptyState icon={<LayoutGrid className="size-8" />} title="No categories yet" description="Categories will appear here once added." />
         ) : (
-          <ul
-            role="list"
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"
-          >
+          <ul role="list" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
             {categories.map((cat) => (
               <li key={cat.id}>
                 <Link
                   href={`/categories/${cat.slug}`}
-                  className="group flex flex-col items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-focus rounded-lg"
+                  className={cn(
+                    "group flex flex-col gap-2 rounded-lg overflow-hidden border border-border",
+                    "hover:border-border-strong hover:shadow-sm transition-all duration-150",
+                    "focus-visible:outline-2 focus-visible:outline-focus",
+                  )}
+                  aria-label={`${cat.name}${cat.productCount ? ` — ${cat.productCount} products` : ""}`}
                 >
-                  <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-surface">
+                  {/* Image */}
+                  <div className="relative aspect-[4/3] overflow-hidden bg-surface">
                     {cat.imageUrl ? (
                       <Image
                         src={cat.imageUrl}
                         alt={cat.name ?? "Category"}
                         fill
-                        sizes="(max-width: 640px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 640px) 50vw, 20vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-surface">
-                        <span className="text-display font-bold text-border-strong/60 select-none">
+                      <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                        <span className="text-h2 font-bold text-border-strong/50 select-none" aria-hidden="true">
                           {(cat.name ?? "?").charAt(0).toUpperCase()}
                         </span>
                       </div>
                     )}
                   </div>
-                  <div className="text-center">
-                    <p className="text-body-sm font-medium text-foreground group-hover:text-foreground/70 transition-colors">
-                      {cat.name}
-                    </p>
-                    {cat.productCount != null && (
-                      <p className="text-caption text-foreground-muted mt-0.5">
-                        {cat.productCount} product{cat.productCount !== 1 ? "s" : ""}
+                  {/* Info */}
+                  <div className="px-3 pb-3 flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-body-sm font-semibold text-foreground truncate group-hover:text-foreground/70 transition-colors">
+                        {cat.name}
                       </p>
-                    )}
+                      {cat.productCount != null && (
+                        <p className="text-caption text-foreground-muted">{cat.productCount} products</p>
+                      )}
+                    </div>
+                    <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-foreground transition-colors shrink-0 mt-0.5" aria-hidden="true" />
                   </div>
                 </Link>
               </li>

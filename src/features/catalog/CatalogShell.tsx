@@ -155,10 +155,10 @@ export function CatalogShell({
         )}
 
         {/* Page heading */}
-        <div className="pt-5 pb-0">
-          <h1 className="text-h2 text-foreground">{heading}</h1>
+        <div className="pt-4 pb-0">
+          <h1 className="text-h3 font-bold text-foreground">{heading}</h1>
           {description && (
-            <p className="mt-2 text-body-sm text-foreground-muted max-w-2xl">
+            <p className="mt-1 text-body-sm text-foreground-muted max-w-2xl">
               {description}
             </p>
           )}
@@ -188,7 +188,7 @@ export function CatalogShell({
               <div
                 aria-busy="true"
                 aria-label="Loading products"
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"
               >
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} aria-hidden="true" className="flex flex-col gap-3">
