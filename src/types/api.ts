@@ -921,10 +921,10 @@ export interface IntegrationStatusResponse {
 }
 
 export interface UpdateRazorpayConfigRequest {
-  enabled?: boolean;
-  keyId?: string;
-  keySecret?: string;
-  webhookSecret?: string;
+  enabled: boolean;
+  keyId: string;
+  keySecret: string;
+  webhookSecret: string;
 }
 
 export interface UpdateGoogleOAuthConfigRequest {
