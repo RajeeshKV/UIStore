@@ -28,17 +28,31 @@ function Spinner() {
   );
 }
 
-function friendlyGoogleError(code: string): string {
-  switch (code) {
-    case "popup_closed_by_user":
-    case "popup_blocked_by_browser":
-      return "Sign-in was cancelled. Please try again.";
-    case "access_denied":
-      return "Access was denied. Please allow the permissions to continue.";
-    case "immediate_failed":
-      return "Automatic sign-in failed. Please click the button to sign in.";
-    default:
-      return "Google sign-in failed. Please try again.";
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential: string }) => void;
+            auto_select?: boolean;
+            use_fedcm_for_prompt?: boolean;
+          }) => void;
+          prompt: (callback?: (n: {
+            isNotDisplayed: () => boolean;
+            isSkippedMoment: () => boolean;
+            getDismissedReason: () => string;
+          }) => void) => void;
+          cancel: () => void;
+          renderButton: (
+            parent: HTMLElement,
+            options: Record<string, unknown>,
+            clickHandler?: () => void
+          ) => void;
+        };
+      };
+    };
   }
 }
 
@@ -56,34 +70,26 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // StoreContext now fetches live settings on every client mount — always fresh.
-  // Read googleClientId from live settings. Fall back to env var for local dev.
   const googleEnabled = settings?.auth?.googleOAuthEnabled !== false;
   const googleClientId: string =
-    settings?.auth?.googleClientId
-    || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-    || "";
+    settings?.auth?.googleClientId ||
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+    "";
 
   const handleGoogleLogin = useCallback(async () => {
     if (loading) return;
+    if (!googleClientId) {
+      setError("Google sign-in is not configured. Please contact support.");
+      return;
+    }
+
     setError(null);
     setLoading(true);
 
     try {
       await loadGoogleScript();
 
-      if (!googleClientId) {
-        setError("Google sign-in is not configured yet. Please contact support.");
-        setLoading(false);
-        return;
-      }
-
-      const idToken = await getGoogleIdToken(googleClientId);
-      if (!idToken) {
-        setError("Sign-in was cancelled. Please try again.");
-        setLoading(false);
-        return;
-      }
+      const idToken = await getGoogleIdTokenViaPopup(googleClientId);
 
       const result = await signInWithGoogle(idToken);
       if (result.ok) {
@@ -93,17 +99,22 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
         setLoading(false);
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        const code = (err as Error & { code?: string }).code ?? "";
-        setError(friendlyGoogleError(code));
-      } else {
-        setError("Sign-in failed. Please check your connection and try again.");
-      }
       setLoading(false);
+      if (err instanceof Error) {
+        const msg = err.message ?? "";
+        if (msg === "cancelled") {
+          setError("Sign-in was cancelled. Please try again.");
+        } else if (msg === "popup_blocked") {
+          setError("Popup was blocked. Please allow popups for this site and try again.");
+        } else {
+          setError("Google sign-in failed. Please try again.");
+        }
+      } else {
+        setError("Google sign-in failed. Please check your connection and try again.");
+      }
     }
   }, [loading, googleClientId, signInWithGoogle, router, redirectTo]);
 
-  // If Google OAuth is explicitly disabled in store settings, hide the button
   if (!googleEnabled) return null;
 
   return (
@@ -147,37 +158,15 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
   );
 }
 
-// ── Google Identity Services helpers ─────────────────────────────────────────
-
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: {
-            client_id: string;
-            callback: (response: { credential: string }) => void;
-            auto_select?: boolean;
-          }) => void;
-          prompt: (callback?: (notification: {
-            isNotDisplayed: () => boolean;
-            isSkippedMoment: () => boolean;
-            getDismissedReason: () => string;
-          }) => void) => void;
-          cancel: () => void;
-        };
-      };
-    };
-  }
-}
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function loadGoogleScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.google?.accounts) { resolve(); return; }
-    const existing = document.querySelector('script[src*="accounts.google.com"]');
+    const existing = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
     if (existing) {
       existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("Failed to load Google script")));
+      existing.addEventListener("error", () => reject(new Error("script_load_failed")));
       return;
     }
     const script = document.createElement("script");
@@ -185,36 +174,92 @@ function loadGoogleScript(): Promise<void> {
     script.async = true;
     script.defer = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Google sign-in. Check your connection."));
+    script.onerror = () => reject(new Error("script_load_failed"));
     document.head.appendChild(script);
   });
 }
 
-function getGoogleIdToken(clientId: string): Promise<string | null> {
+/**
+ * Gets a Google ID token by rendering a hidden button and clicking it.
+ *
+ * Why this approach instead of prompt():
+ * - prompt() uses One Tap overlay which is blocked by browsers in many contexts
+ *   (cross-origin iframes, domains not in authorized origins, previous dismissals)
+ * - renderButton() with a click handler opens a proper browser popup window
+ *   that ALWAYS works as long as the domain is in authorized JavaScript origins
+ *   in Google Cloud Console
+ *
+ * The flow:
+ * 1. Create a hidden div, render the Google button into it
+ * 2. google.accounts.id.initialize() sets up the callback
+ * 3. Programmatically click the rendered button — opens Google account picker popup
+ * 4. User selects account → callback fires with credential (ID token)
+ * 5. Resolve with the ID token
+ */
+function getGoogleIdTokenViaPopup(clientId: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (!window.google?.accounts?.id) {
-      reject(new Error("Google sign-in library failed to load. Please refresh and try again."));
+    const gid = window.google?.accounts?.id;
+    if (!gid) {
+      reject(new Error("Google library not loaded"));
       return;
     }
 
-    window.google.accounts.id.initialize({
+    let resolved = false;
+
+    gid.initialize({
       client_id: clientId,
       callback: (response) => {
-        if (response.credential) resolve(response.credential);
-        else resolve(null);
+        if (resolved) return;
+        resolved = true;
+        if (response.credential) {
+          resolve(response.credential);
+        } else {
+          reject(new Error("cancelled"));
+        }
       },
       auto_select: false,
+      use_fedcm_for_prompt: false,
     });
 
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        const reason = notification.getDismissedReason?.() ?? "unknown";
-        if (reason !== "credential_returned") {
-          const err = new Error(reason) as Error & { code: string };
-          err.code = "popup_closed_by_user";
-          reject(err);
+    // Create a hidden container for the Google button
+    const container = document.createElement("div");
+    container.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;";
+    document.body.appendChild(container);
+
+    // Render Google's button — this triggers the real popup flow (not One Tap)
+    gid.renderButton(container, {
+      type: "standard",
+      size: "large",
+      text: "continue_with",
+    });
+
+    // Click the rendered button to open the Google account picker
+    setTimeout(() => {
+      const btn = container.querySelector("div[role='button'], button") as HTMLElement | null;
+      if (btn) {
+        btn.click();
+      } else {
+        // renderButton may not have rendered yet — try the iframe button
+        const iframe = container.querySelector("iframe");
+        if (iframe) {
+          // Can't click inside cross-origin iframe — fall back to prompt
+          gid.prompt((notification) => {
+            if (!resolved && (notification.isNotDisplayed() || notification.isSkippedMoment())) {
+              if (!resolved) {
+                resolved = true;
+                reject(new Error("cancelled"));
+              }
+            }
+          });
+        } else {
+          reject(new Error("cancelled"));
         }
       }
-    });
+
+      // Cleanup container after a delay
+      setTimeout(() => {
+        try { document.body.removeChild(container); } catch { /* already removed */ }
+      }, 30000);
+    }, 100);
   });
 }
