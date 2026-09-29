@@ -8,6 +8,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Tag } from "lucide-react";
 import { cn, safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const r = await storeApi.getSettings();
   const name = r.ok ? (r.data.businessName ?? "Kromic Store") : "Kromic Store";

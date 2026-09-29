@@ -5,6 +5,8 @@ import { AccountLayout } from "@/features/account/AccountLayout";
 import { OrderDetailClient } from "@/features/account/OrderDetailClient";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 interface OrderDetailPageProps {
   params: Promise<{ orderId: string }>;
 }

@@ -4,6 +4,8 @@ import { storeApi } from "@/services/api/store";
 import { CartPageClient } from "@/features/cart/CartPageClient";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Your Cart",
   robots: { index: false, follow: false },

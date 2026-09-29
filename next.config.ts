@@ -8,6 +8,16 @@ import type { NextConfig } from "next";
  * Images: served via Next.js Image Optimization from any HTTPS source.
  */
 const nextConfig: NextConfig = {
+  // ── No caching — all pages fetch live from backend on every request ────────
+  // This ensures store settings, products, policies etc. are always up-to-date
+  // without requiring a redeploy when admin changes backend data.
+  experimental: {
+    staleTimes: {
+      dynamic: 0,
+      static: 0,
+    },
+  },
+
   // ── Images ──────────────────────────────────────────────────────────────────
   // Allow images from any HTTPS hostname (Cloudinary, backend CDN, Unsplash, etc.)
   // Customer-specific domains do not need to be hardcoded — the wildcard covers all.

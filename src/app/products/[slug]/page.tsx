@@ -9,6 +9,8 @@ import { ProductInformation } from "@/features/product/ProductInformation";
 import { RelatedProducts } from "@/features/product/RelatedProducts";
 import { env } from "@/config/env";
 
+export const dynamic = "force-dynamic";
+
 // Next.js 16: params is a Promise
 interface ProductPageProps {
   params: Promise<{ slug: string }>;

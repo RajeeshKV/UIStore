@@ -4,6 +4,8 @@ import { storeApi } from "@/services/api/store";
 import { StorefrontLayout } from "@/components/layout";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Policies",
   robots: { index: false, follow: true },

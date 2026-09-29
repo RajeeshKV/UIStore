@@ -5,6 +5,8 @@ import { AccountLayout } from "@/features/account/AccountLayout";
 import { AccountOverviewClient } from "@/features/account/AccountOverviewClient";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "My Account",
   robots: { index: false, follow: false },

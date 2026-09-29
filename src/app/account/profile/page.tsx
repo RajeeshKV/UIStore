@@ -5,6 +5,8 @@ import { AccountLayout } from "@/features/account/AccountLayout";
 import { ProfileClient } from "@/features/account/ProfileClient";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Profile",
   robots: { index: false, follow: false },

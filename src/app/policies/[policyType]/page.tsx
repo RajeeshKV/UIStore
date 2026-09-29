@@ -6,6 +6,8 @@ import { storeApi } from "@/services/api/store";
 import { StorefrontLayout } from "@/components/layout";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 interface PolicyPageProps {
   params: Promise<{ policyType: string }>;
 }

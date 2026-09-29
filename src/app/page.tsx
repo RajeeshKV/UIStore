@@ -16,6 +16,8 @@ import type {
   StorefrontProductSummaryResponse,
 } from "@/types/api";
 
+export const dynamic = "force-dynamic";
+
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export async function generateMetadata(): Promise<Metadata> {

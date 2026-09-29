@@ -9,6 +9,8 @@ import {
 } from "@/types/catalog";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 // Next.js 16: searchParams is a Promise
 interface ShopPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

@@ -7,6 +7,10 @@ import { StorefrontLayout } from "@/components/layout";
 import { GoogleLoginButton } from "@/features/auth/GoogleLoginButton";
 import { safeData } from "@/lib/utils";
 
+// Force dynamic rendering — this page needs live settings (googleClientId) at request time.
+// Static generation at build time hits the backend when it's unreachable → null settings.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Sign In",
   robots: { index: false, follow: false },

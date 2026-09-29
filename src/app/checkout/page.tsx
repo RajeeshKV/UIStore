@@ -4,6 +4,8 @@ import { storeApi } from "@/services/api/store";
 import { CheckoutClient } from "@/features/checkout/CheckoutClient";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Checkout",
   robots: { index: false, follow: false },

@@ -5,6 +5,8 @@ import { AccountLayout } from "@/features/account/AccountLayout";
 import { OrdersClient } from "@/features/account/OrdersClient";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "My Orders",
   robots: { index: false, follow: false },

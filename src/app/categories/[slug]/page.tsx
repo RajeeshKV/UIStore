@@ -10,6 +10,8 @@ import {
 } from "@/types/catalog";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 // Next.js 16: both params and searchParams are Promises
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;

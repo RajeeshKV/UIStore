@@ -4,6 +4,8 @@ import { storeApi } from "@/services/api/store";
 import { OrderSuccessClient } from "@/features/checkout/OrderSuccessClient";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 interface OrderSuccessPageProps {
   params: Promise<{ orderId: string }>;
 }

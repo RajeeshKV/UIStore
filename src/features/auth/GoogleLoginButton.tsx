@@ -56,13 +56,13 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // StoreContext now fetches live settings on every client mount — always fresh.
+  // Read googleClientId from live settings. Fall back to env var for local dev.
   const googleEnabled = settings?.auth?.googleOAuthEnabled !== false;
-  const googleClientId: string = (settings?.auth?.googleClientId)
-    ?? (typeof document !== "undefined"
-        ? (document.querySelector<HTMLMetaElement>('meta[name="google-signin-client_id"]')?.content ?? "")
-        : "")
-    ?? process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-    ?? "";
+  const googleClientId: string =
+    settings?.auth?.googleClientId
+    || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    || "";
 
   const handleGoogleLogin = useCallback(async () => {
     if (loading) return;

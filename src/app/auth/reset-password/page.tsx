@@ -5,6 +5,8 @@ import { storeApi } from "@/services/api/store";
 import { ResetPasswordForm } from "@/features/auth/ResetPasswordForm";
 import { safeData } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Set New Password",
   robots: { index: false, follow: false },
