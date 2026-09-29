@@ -1,4 +1,5 @@
 "use client";
+import { extractApiError } from "@/lib/utils";
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -51,7 +52,7 @@ export function ResetPasswordForm() {
     if (result.ok) {
       router.push("/auth/login?reset=1");
     } else {
-      const msg = "error" in result && "message" in result.error ? result.error.message : "Could not reset password. The link may have expired.";
+      const msg = extractApiError(result.error, "Could not reset password. The link may have expired.");
       setApiError(msg);
     }
   }

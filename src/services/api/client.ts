@@ -160,20 +160,30 @@ async function request<T>(
   }
 
   if (!res.ok) {
+    // Handle both ASP.NET ProblemDetails shape AND the custom { success, error: { code, message } } shape
     const p = payload as {
+      // ASP.NET ProblemDetails
       title?: string;
       detail?: string;
       errors?: Record<string, string[]>;
+      // Custom Kromic error shape
+      success?: boolean;
+      error?: { code?: string; message?: string };
     } | null;
 
     const message =
-      p?.detail ?? p?.title ?? normalizeStatusMessage(res.status);
+      p?.error?.message       // custom shape: { success: false, error: { message } }
+      ?? p?.detail            // ASP.NET ProblemDetails: detail
+      ?? p?.title             // ASP.NET ProblemDetails: title
+      ?? normalizeStatusMessage(res.status);
+
+    const code = p?.error?.code ?? String(res.status);
 
     return {
       ok: false,
       error: new ApiError(
         res.status,
-        String(res.status),
+        code,
         message,
         p?.errors,
       ),
@@ -186,14 +196,14 @@ async function request<T>(
 function normalizeStatusMessage(status: number): string {
   switch (status) {
     case 400: return "Invalid request. Please check your input.";
-    case 401: return "You need to be logged in to do that.";
+    case 401: return "Please sign in to continue.";
     case 403: return "You don't have permission to perform this action.";
     case 404: return "The requested resource was not found.";
-    case 409: return "A conflict occurred. The resource may already exist.";
+    case 409: return "This action cannot be completed due to a conflict.";
     case 422: return "Validation failed. Please review your input.";
     case 429: return "Too many requests. Please slow down.";
-    case 500: return "Something went wrong on our end. Please try again.";
-    default:  return "An unexpected error occurred. Please try again.";
+    case 500: return "Something went wrong on our end. Please try again or contact support.";
+    default:  return "Something went wrong. Please try again or contact support.";
   }
 }
 
@@ -220,16 +230,19 @@ export const apiClient = {
    * Passes FormData directly; does NOT set Content-Type (browser sets it with boundary).
    */
   postForm: <T>(path: string, formData: FormData, options?: Omit<RequestOptions, "method" | "body">) => {
-    // Must not set Content-Type header — browser auto-sets multipart/form-data with boundary
     const { headers: extraHeaders, ...rest } = options ?? {};
     const headers: Record<string, string> = { ...(extraHeaders as Record<string, string>) };
-    // Remove Content-Type so fetch sets it correctly for FormData
     delete headers["Content-Type"];
-    return request<T>(path, {
-      ...rest,
-      method: "POST",
-      headers,
-      body: formData as unknown,
-    });
+    return request<T>(path, { ...rest, method: "POST", headers, body: formData as unknown });
+  },
+
+  /**
+   * Multipart/form-data PUT — used for image replacement (category image, brand logo).
+   */
+  putForm: <T>(path: string, formData: FormData, options?: Omit<RequestOptions, "method" | "body">) => {
+    const { headers: extraHeaders, ...rest } = options ?? {};
+    const headers: Record<string, string> = { ...(extraHeaders as Record<string, string>) };
+    delete headers["Content-Type"];
+    return request<T>(path, { ...rest, method: "PUT", headers, body: formData as unknown });
   },
 };

@@ -4,8 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShoppingBag, Tag, X, Truck, CreditCard, Banknote, CheckCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { formatPrice } from "@/lib/utils";
+import { cn, formatPrice, extractApiError } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useCart } from "@/features/cart/CartContext";
 import { checkoutApi } from "@/services/api/checkout";
@@ -134,7 +133,7 @@ export function CheckoutClient({
     });
 
     if (!result.ok) {
-      const msg = "error" in result && "message" in result.error ? result.error.message : "Could not place order.";
+      const msg = extractApiError(result.error, "Could not place order.");
       setStepError(msg);
       setStep("failed");
       // Refresh cart in case stock changed

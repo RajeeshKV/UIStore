@@ -1,4 +1,5 @@
 "use client";
+import { extractApiError } from "@/lib/utils";
 
 import { useEffect, useState, useCallback } from "react";
 import { adminSettingsApi } from "@/services/api/admin";
@@ -41,7 +42,7 @@ export function AdminShippingClient() {
         maxDeliveryDays: d.maxDeliveryDays,
       });
     } else if (!res.ok) {
-      setError(res.error && "message" in res.error ? res.error.message : "Failed to load shipping settings.");
+      setError(extractApiError(res.error, "Failed to load shipping settings."));
     }
     setLoading(false);
   }, []);
@@ -59,7 +60,7 @@ export function AdminShippingClient() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } else {
-      setSaveError(res.error && "message" in res.error ? res.error.message : "Failed to save shipping settings.");
+      setSaveError(extractApiError(res.error, "Failed to save shipping settings."));
     }
   }
 

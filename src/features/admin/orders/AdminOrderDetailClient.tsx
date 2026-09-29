@@ -9,7 +9,7 @@ import { ConfirmDialog } from "@/features/admin/AdminDialog";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice , extractApiError } from "@/lib/utils";
 import type { OrderResponse } from "@/types/api";
 
 const ORDER_STATUSES = ["PendingPayment", "PaymentProcessing", "Confirmed", "Processing", "Packed", "Shipped", "Delivered", "Cancelled", "Failed", "RefundPending", "Refunded"];
@@ -40,7 +40,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
       setOrder(res.data);
       setNewStatus(res.data.status ?? "");
     } else {
-      setError(res.error && "message" in res.error ? res.error.message : "Failed to load order.");
+      setError(extractApiError(res.error, "Failed to load order."));
     }
     setLoading(false);
   }, [orderId]);
@@ -62,7 +62,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
       // Use response body directly — no re-fetch needed (was 204, now returns OrderResponse)
       setOrder(res.data);
     } else {
-      setUpdateError(res.error && "message" in res.error ? res.error.message : "Update failed.");
+      setUpdateError(extractApiError(res.error, "Update failed."));
     }
   }
 

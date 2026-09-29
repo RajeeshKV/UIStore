@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { extractApiError } from "@/lib/utils";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import type { OrderResponse } from "@/types/api";
 
@@ -48,7 +49,6 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
     const result = await ordersApi.cancel(orderId);
     setCancelOpen(false);
     if (result.ok) {
-      // POST /orders/{id}/cancel now returns OrderResponse — update directly
       if (result.data) {
         setOrder(result.data);
       } else {
@@ -56,10 +56,7 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
       }
       toastSuccess("Order cancelled", "Your order has been cancelled.");
     } else {
-      const msg = "error" in result && "message" in result.error
-        ? result.error.message
-        : "This order cannot be cancelled. Please contact support.";
-      toastError("Cancellation failed", msg);
+      toastError("Cancellation failed", extractApiError(result.error));
     }
     setCancelling(false);
   }

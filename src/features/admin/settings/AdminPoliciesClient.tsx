@@ -1,4 +1,5 @@
 "use client";
+import { extractApiError } from "@/lib/utils";
 
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Globe } from "lucide-react";
@@ -49,7 +50,7 @@ export function AdminPoliciesClient() {
     if (res.ok) {
       setPolicies(res.data);
     } else {
-      setError(res.error && "message" in res.error ? res.error.message : "Failed to load policies.");
+      setError(extractApiError(res.error, "Failed to load policies."));
     }
     setLoading(false);
   }, []);
@@ -86,7 +87,7 @@ export function AdminPoliciesClient() {
       setDialogOpen(false);
       void load();
     } else {
-      setApiError(res.error && "message" in res.error ? res.error.message : "Failed to save policy.");
+      setApiError(extractApiError(res.error, "Failed to save policy."));
     }
   }
 

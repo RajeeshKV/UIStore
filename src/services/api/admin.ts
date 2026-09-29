@@ -87,13 +87,21 @@ export const adminProductsApi = {
    * Contract: multipart/form-data with { file (binary), altText?, isPrimary? }
    * The backend does NOT accept a JSON URL — it requires a binary file upload.
    */
-  addImage: (productId: string, formData: FormData) =>
-    apiClient.postForm<ProductImageDto>(`/api/v1/products/${productId}/images`, formData),
+  /**
+   * POST /api/v1/products/{productId}/images — batch upload 1–10 files (multipart/form-data)
+   * Files sent as multiple `files` fields in a single FormData.
+   */
+  addImages: (productId: string, formData: FormData) =>
+    apiClient.postForm<ProductImageDto[]>(`/api/v1/products/${productId}/images`, formData),
+
+  /** PUT /api/v1/products/{productId}/images/{imageId}/set-primary */
+  setPrimaryImage: (productId: string, imageId: string) =>
+    apiClient.put<ProductImageDto>(`/api/v1/products/${productId}/images/${imageId}/set-primary`),
 
   deleteImage: (productId: string, imageId: string) =>
     apiClient.delete<void>(`/api/v1/products/${productId}/images/${imageId}`),
 
-  /** PUT /api/v1/products/{productId}/images/reorder — returns ordered image list */
+  /** PUT /api/v1/products/{productId}/images/reorder — returns ordered list */
   reorderImages: (productId: string, data: ReorderImagesRequest) =>
     apiClient.put<ProductImageDto[]>(`/api/v1/products/${productId}/images/reorder`, data),
 };
@@ -134,6 +142,14 @@ export const adminCategoriesApi = {
 
   delete: (id: string) =>
     apiClient.delete<void>(`/api/v1/categories/${id}`),
+
+  /** PUT /api/v1/categories/{id}/image — upload/replace category image (multipart/form-data) */
+  uploadImage: (id: string, formData: FormData) =>
+    apiClient.putForm<CategoryResponse>(`/api/v1/categories/${id}/image`, formData),
+
+  /** DELETE /api/v1/categories/{id}/image — remove category image */
+  deleteImage: (id: string) =>
+    apiClient.delete<void>(`/api/v1/categories/${id}/image`),
 };
 
 // ── Brands ────────────────────────────────────────────────────────────────────
@@ -153,6 +169,14 @@ export const adminBrandsApi = {
 
   delete: (id: string) =>
     apiClient.delete<void>(`/api/v1/brands/${id}`),
+
+  /** PUT /api/v1/brands/{id}/logo — upload/replace brand logo (multipart/form-data) */
+  uploadLogo: (id: string, formData: FormData) =>
+    apiClient.putForm<BrandResponse>(`/api/v1/brands/${id}/logo`, formData),
+
+  /** DELETE /api/v1/brands/{id}/logo — remove brand logo */
+  deleteLogo: (id: string) =>
+    apiClient.delete<void>(`/api/v1/brands/${id}/logo`),
 };
 
 // ── Orders ────────────────────────────────────────────────────────────────────

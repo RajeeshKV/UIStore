@@ -1,4 +1,5 @@
 "use client";
+import { extractApiError } from "@/lib/utils";
 
 import { useEffect, useState, useCallback } from "react";
 import { CreditCard } from "lucide-react";
@@ -55,7 +56,7 @@ export function AdminPaymentIntegrationClient() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } else {
-      setSaveError(res.error && "message" in res.error ? res.error.message : "Failed to save payment settings.");
+      setSaveError(extractApiError(res.error, "Failed to save payment settings."));
     }
   }
 

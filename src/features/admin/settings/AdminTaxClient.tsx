@@ -1,4 +1,5 @@
 "use client";
+import { extractApiError } from "@/lib/utils";
 
 import { useEffect, useState, useCallback } from "react";
 import { adminTaxApi } from "@/services/api/admin";
@@ -36,7 +37,7 @@ export function AdminTaxClient() {
         taxLabel: res.data.taxLabel ?? "",
       });
     } else {
-      setError(res.error && "message" in res.error ? res.error.message : "Failed to load tax settings.");
+      setError(extractApiError(res.error, "Failed to load tax settings."));
     }
     setLoading(false);
   }, []);
@@ -55,7 +56,7 @@ export function AdminTaxClient() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } else {
-      setSaveError(res.error && "message" in res.error ? res.error.message : "Failed to save tax settings.");
+      setSaveError(extractApiError(res.error, "Failed to save tax settings."));
     }
   }
 

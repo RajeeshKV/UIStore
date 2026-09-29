@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Star, Trash2, Pencil, MapPin } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn , extractApiError } from "@/lib/utils";
 import { addressesApi } from "@/services/api/addresses";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -41,7 +41,7 @@ export function AddressesClient() {
         setEditing(null);
         setFormOpen(false);
       } else {
-        toastError("Could not update address", "error" in result && "message" in result.error ? result.error.message : "Please try again.");
+        toastError("Could not update address", extractApiError(result.error, "Please try again."));
       }
     } else {
       const result = await addressesApi.create(data as CreateAddressRequest);
@@ -50,7 +50,7 @@ export function AddressesClient() {
         toastSuccess("Address added");
         setFormOpen(false);
       } else {
-        toastError("Could not add address", "error" in result && "message" in result.error ? result.error.message : "Please try again.");
+        toastError("Could not add address", extractApiError(result.error, "Please try again."));
       }
     }
     setMutating(false);
@@ -75,7 +75,7 @@ export function AddressesClient() {
       setAddresses((prev) => prev.filter((a) => a.id !== address.id));
       toastSuccess("Address removed");
     } else {
-      toastError("Could not remove address", "error" in result && "message" in result.error ? result.error.message : "Please try again.");
+      toastError("Could not remove address", extractApiError(result.error, "Please try again."));
       await load(); // resync
     }
     setDeleteTarget(null);

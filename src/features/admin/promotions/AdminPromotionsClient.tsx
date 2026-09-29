@@ -10,7 +10,7 @@ import { AdminStatusBadge } from "@/features/admin/AdminStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Pagination } from "@/components/ui/Pagination";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice , extractApiError } from "@/lib/utils";
 import type { PromotionSummaryResponse, CreatePromotionRequest } from "@/types/api";
 
 const PAGE_SIZE = 20;
@@ -54,7 +54,7 @@ export function AdminPromotionsClient() {
       setTotalPages(res.data.totalPages);
       setTotalCount(res.data.totalCount);
     } else {
-      setError(res.error && "message" in res.error ? res.error.message : "Failed to load promotions.");
+      setError(extractApiError(res.error, "Failed to load promotions."));
     }
     setLoading(false);
   }, [page]);
@@ -129,7 +129,7 @@ export function AdminPromotionsClient() {
       setDialogOpen(false);
       void load();
     } else {
-      setApiError(res.error && "message" in res.error ? res.error.message : "Failed to save promotion.");
+      setApiError(extractApiError(res.error, "Failed to save promotion."));
     }
   }
 

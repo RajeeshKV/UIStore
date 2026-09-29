@@ -1,4 +1,5 @@
 "use client";
+import { extractApiError } from "@/lib/utils";
 
 import { useEffect, useState, useCallback } from "react";
 import { adminSettingsApi } from "@/services/api/admin";
@@ -37,7 +38,7 @@ export function AdminSeoClient() {
         ogImageUrl: s.ogImageUrl ?? "",
       });
     } else if (!res.ok) {
-      setError(res.error && "message" in res.error ? res.error.message : "Failed to load SEO settings.");
+      setError(extractApiError(res.error, "Failed to load SEO settings."));
     }
     setLoading(false);
   }, []);
@@ -68,7 +69,7 @@ export function AdminSeoClient() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } else {
-      setSaveError(res.error && "message" in res.error ? res.error.message : "Failed to save SEO settings.");
+      setSaveError(extractApiError(res.error, "Failed to save SEO settings."));
     }
   }
 

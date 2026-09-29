@@ -1,4 +1,5 @@
 "use client";
+import { extractApiError } from "@/lib/utils";
 
 import { useEffect, useState, useCallback } from "react";
 import { adminSettingsApi } from "@/services/api/admin";
@@ -47,7 +48,7 @@ export function AdminBasicSettingsClient() {
         linkedInUrl: "",
       });
     } else {
-      setError(res.error && "message" in res.error ? res.error.message : "Failed to load settings.");
+      setError(extractApiError(res.error, "Failed to load settings."));
     }
     setLoading(false);
   }, []);
@@ -74,7 +75,7 @@ export function AdminBasicSettingsClient() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } else {
-      setSaveError(res.error && "message" in res.error ? res.error.message : "Failed to save settings.");
+      setSaveError(extractApiError(res.error, "Failed to save settings."));
     }
   }
 

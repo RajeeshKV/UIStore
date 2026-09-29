@@ -82,6 +82,18 @@ export interface MeResponse {
 
 // ── Store settings ────────────────────────────────────────────────────────────
 
+/**
+ * Public auth settings returned by GET /api/v1/store/settings.
+ * Includes googleOAuthEnabled and googleClientId for the storefront.
+ */
+export interface PublicAuthSettingsDto {
+  googleOAuthEnabled: boolean;
+  /** Public Google OAuth Client ID — safe to expose to browser */
+  googleClientId?: string;
+  emailPasswordEnabled?: boolean;
+  mobileOtpEnabled?: boolean;
+}
+
 export interface SeoSettingsDto {
   metaTitle?: string;
   metaDescription?: string;
@@ -130,6 +142,8 @@ export interface PublicBusinessSettingsResponse {
   seo?: SeoSettingsDto;
   delivery?: DeliverySettingsDto;
   tracking?: TrackingSettingsDto;
+  /** Auth settings — includes googleOAuthEnabled and googleClientId for storefront */
+  auth?: PublicAuthSettingsDto;
 }
 
 // ── Storefront: Categories ────────────────────────────────────────────────────
@@ -813,6 +827,8 @@ export interface StoreAuthSettingsDto {
   otpResendCooldownSeconds: number;
   otpMaxAttempts: number;
   smsProvider?: string;
+  /** Public Google OAuth Client ID — safe to expose to browser */
+  googleClientId?: string;
 }
 
 export interface UpdateBasicInfoRequest {

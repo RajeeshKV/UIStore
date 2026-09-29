@@ -8,7 +8,7 @@ import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { AdminTable, type Column } from "@/features/admin/AdminTable";
 import { AdminStatusBadge } from "@/features/admin/AdminStatusBadge";
 import { Pagination } from "@/components/ui/Pagination";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice , extractApiError } from "@/lib/utils";
 import type { OrderSummaryResponse } from "@/types/api";
 
 const PAGE_SIZE = 20;
@@ -49,7 +49,7 @@ export function AdminOrdersClient() {
       setTotalPages(res.data.totalPages);
       setTotalCount(res.data.totalCount);
     } else {
-      setError(res.error && "message" in res.error ? res.error.message : "Failed to load orders.");
+      setError(extractApiError(res.error, "Failed to load orders."));
     }
     setLoading(false);
   }, [page, debouncedSearch, status, paymentStatus]);

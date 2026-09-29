@@ -1,4 +1,5 @@
 "use client";
+import { extractApiError } from "@/lib/utils";
 
 import { useEffect, useState, useCallback } from "react";
 import { Mail } from "lucide-react";
@@ -70,7 +71,7 @@ export function AdminEmailIntegrationClient() {
       setIntegSuccess(true);
       setTimeout(() => setIntegSuccess(false), 3000);
     } else {
-      setIntegError(res.error && "message" in res.error ? res.error.message : "Failed to save email integration.");
+      setIntegError(extractApiError(res.error, "Failed to save email integration."));
     }
   }
 
@@ -89,7 +90,7 @@ export function AdminEmailIntegrationClient() {
       setSettingsSuccess(true);
       setTimeout(() => setSettingsSuccess(false), 3000);
     } else {
-      setSettingsError(res.error && "message" in res.error ? res.error.message : "Failed to save email settings.");
+      setSettingsError(extractApiError(res.error, "Failed to save email settings."));
     }
   }
 

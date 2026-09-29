@@ -15,7 +15,7 @@ export const ordersApi = {
   get: (orderId: string) =>
     apiClient.get<OrderResponse>(`/api/v1/orders/${orderId}`),
 
-  /** POST /api/v1/orders/{id}/cancel — now returns OrderResponse (was 204) */
-  cancel: (orderId: string) =>
-    apiClient.post<OrderResponse>(`/api/v1/orders/${orderId}/cancel`, {}),
+  /** POST /api/v1/orders/{id}/cancel — body accepts { reason? } or empty; returns OrderResponse */
+  cancel: (orderId: string, reason?: string) =>
+    apiClient.post<OrderResponse>(`/api/v1/orders/${orderId}/cancel`, reason ? { reason } : {}),
 };

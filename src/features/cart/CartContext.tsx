@@ -11,6 +11,7 @@ import {
 } from "react";
 import { cartApi, cartTokenStore } from "@/services/api/cart";
 import { useToast } from "@/components/ui/Toast";
+import { extractApiError } from "@/lib/utils";
 import type { CartResponse } from "@/types/api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -97,11 +98,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           applyCartResponse(result.data);
           setDrawerOpen(true);
         } else {
-          const msg =
-            "error" in result && "message" in result.error
-              ? result.error.message
-              : "Could not add item to cart.";
-          toastError("Couldn't add to cart", msg);
+          toastError("Couldn't add to cart", extractApiError(result.error));
         }
         mutatingRef.current = false;
       });
@@ -120,12 +117,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (result.ok) {
           applyCartResponse(result.data);
         } else {
-          const msg =
-            "error" in result && "message" in result.error
-              ? result.error.message
-              : "Could not update quantity.";
-          toastError("Update failed", msg);
-          await refresh(); // resync with server truth
+          toastError("Update failed", extractApiError(result.error));
+          await refresh();
         }
         mutatingRef.current = false;
       });

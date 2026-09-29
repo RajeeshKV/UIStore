@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Plus, GripVertical, X } from "lucide-react";
 import { adminProductsApi, adminVariantsApi } from "@/services/api/admin";
@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { ConfirmDialog } from "@/features/admin/AdminDialog";
 import { AdminStatusBadge } from "@/features/admin/AdminStatusBadge";
-import { formatPrice } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { formatPrice, cn, extractApiError } from "@/lib/utils";
 import type {
   ProductResponse,
   CreateProductRequest,
@@ -41,7 +40,7 @@ function Section({ title, children, className }: { title: string; children: Reac
   );
 }
 
-// ── Image manager ─────────────────────────────────────────────────────────────
+// ── Image manager — multi-upload with drag & drop ─────────────────────────────
 
 interface ImageManagerProps {
   productId: string;
@@ -50,42 +49,67 @@ interface ImageManagerProps {
 }
 
 function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [alt, setAlt] = useState("");
-  const [adding, setAdding] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [formError, setFormError] = useState("");
+  const [settingPrimary, setSettingPrimary] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  async function handleAdd() {
-    if (!file) { setFormError("Please select an image file."); return; }
-    setFormError("");
-    setAdding(true);
+  async function uploadFiles(files: FileList | File[]) {
+    const fileArr = Array.from(files).filter((f) => f.type.startsWith("image/")).slice(0, 10);
+    if (fileArr.length === 0) { setError("Please select image files (max 10)."); return; }
+    setError("");
+    setUploading(true);
     const formData = new FormData();
-    formData.append("file", file);
-    if (alt.trim()) formData.append("altText", alt.trim());
-    formData.append("isPrimary", images.length === 0 ? "true" : "false");
-    const res = await adminProductsApi.addImage(productId, formData);
-    setAdding(false);
+    fileArr.forEach((f) => formData.append("files", f));
+    const res = await adminProductsApi.addImages(productId, formData);
+    setUploading(false);
     if (res.ok) {
-      setFile(null);
-      setAlt("");
       onRefresh();
     } else {
-      setFormError(
-        res.error && "message" in res.error ? res.error.message : "Failed to add image.",
-      );
+      setError(extractApiError(res.error, "Failed to upload images."));
     }
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files?.length) await uploadFiles(e.target.files);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave() { setIsDragging(false); }
+
+  async function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    await uploadFiles(Array.from(e.dataTransfer.files));
+  }
+
+  async function handleSetPrimary(imageId: string) {
+    setSettingPrimary(imageId);
+    const res = await adminProductsApi.setPrimaryImage(productId, imageId);
+    setSettingPrimary(null);
+    if (res.ok) onRefresh();
+    else setError(extractApiError(res.error, "Failed to set primary image."));
   }
 
   async function handleDelete(imageId: string) {
     setDeleting(imageId);
-    await adminProductsApi.deleteImage(productId, imageId);
+    const res = await adminProductsApi.deleteImage(productId, imageId);
     setDeleting(null);
-    onRefresh();
+    if (res.ok) onRefresh();
+    else setError(extractApiError(res.error, "Failed to delete image."));
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {error && <p className="text-caption text-danger">{error}</p>}
+
       {/* Existing images */}
       {images.length > 0 && (
         <div className="flex flex-wrap gap-3">
@@ -95,49 +119,79 @@ function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) 
               <img
                 src={img.asset?.secureUrl ?? ""}
                 alt={img.asset?.altText ?? "Product image"}
-                className="h-20 w-20 rounded-md object-cover bg-surface border border-border"
+                className="h-24 w-24 rounded-lg object-cover bg-surface border border-border"
               />
-              {img.isPrimary && (
-                <span className="absolute bottom-0.5 left-0.5 text-[9px] font-medium bg-primary text-primary-foreground rounded px-1">
+              {/* Primary badge */}
+              {img.isPrimary ? (
+                <span className="absolute bottom-1 left-1 text-[9px] font-semibold bg-primary text-primary-foreground rounded px-1.5 py-0.5 pointer-events-none">
                   Primary
                 </span>
+              ) : (
+                <button
+                  aria-label="Set as primary image"
+                  onClick={() => handleSetPrimary(img.id)}
+                  disabled={settingPrimary === img.id}
+                  className="absolute bottom-1 left-1 hidden group-hover:flex text-[9px] font-medium bg-background/90 text-foreground rounded px-1.5 py-0.5 border border-border hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  {settingPrimary === img.id ? "…" : "Set primary"}
+                </button>
               )}
+              {/* Delete */}
               <button
                 aria-label="Delete image"
                 onClick={() => handleDelete(img.id)}
                 disabled={deleting === img.id}
-                className="absolute -top-1.5 -right-1.5 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-danger text-white"
+                className="absolute -top-1.5 -right-1.5 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-danger text-white disabled:opacity-60"
               >
-                <X className="size-2.5" />
+                {deleting === img.id ? <span className="text-[9px]">…</span> : <X className="size-2.5" />}
               </button>
             </div>
           ))}
         </div>
       )}
 
-      {/* Upload image file */}
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2 flex-wrap">
-          <input
-            type="file"
-            accept="image/*"
-            aria-label="Image file"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="flex-1 min-w-0 h-9 text-body-sm text-foreground file:mr-2 file:h-full file:rounded file:border-0 file:bg-muted file:px-3 file:text-body-sm file:font-medium file:text-foreground hover:file:bg-muted/80 cursor-pointer"
-          />
-          <input
-            type="text"
-            placeholder="Alt text (optional)"
-            value={alt}
-            onChange={(e) => setAlt(e.target.value)}
-            aria-label="Alt text"
-            className="w-36 h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus"
-          />
-          <Button size="sm" variant="outline" onClick={handleAdd} loading={adding} disabled={!file}>
-            <Plus className="size-3.5 mr-1" /> Upload
-          </Button>
-        </div>
-        {formError && <p className="text-caption text-danger">{formError}</p>}
+      {/* Drag & drop upload zone */}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Upload images by clicking or dragging"
+        onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={cn(
+          "relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed cursor-pointer",
+          "py-6 px-4 transition-colors duration-150",
+          isDragging
+            ? "border-primary bg-primary/5"
+            : "border-border hover:border-border-strong hover:bg-muted/30",
+          uploading && "pointer-events-none opacity-60",
+        )}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          aria-label="Image files"
+          onChange={handleFileChange}
+          className="sr-only"
+        />
+        {uploading ? (
+          <>
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="text-body-sm text-foreground-muted">Uploading…</p>
+          </>
+        ) : (
+          <>
+            <Plus className="size-5 text-foreground-muted" aria-hidden="true" />
+            <p className="text-body-sm text-foreground-muted text-center">
+              <span className="font-medium text-foreground">Click to upload</span> or drag & drop
+            </p>
+            <p className="text-caption text-foreground-muted">Up to 10 images · PNG, JPG, WebP</p>
+          </>
+        )}
       </div>
     </div>
   );
@@ -299,7 +353,7 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
       onRefresh();
     } else {
       setApiError(
-        res.error && "message" in res.error ? res.error.message : "Failed to save variant.",
+        extractApiError(res.error, "Failed to save variant."),
       );
     }
   }
@@ -460,6 +514,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [variants, setVariants] = useState<VariantResponse[]>(product?.variants ?? []);
 
   const refreshVariants = useCallback(async () => {
@@ -523,8 +578,24 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
       }
     } else {
       setApiError(
-        res.error && "message" in res.error ? res.error.message : "Failed to save product.",
+        extractApiError(res.error, "Failed to save product."),
       );
+    }
+  }
+
+  async function handlePublishToggle() {
+    if (!isEdit) return;
+    setPublishing(true);
+    setApiError("");
+    const isPublished = product.status === "Published";
+    const res = isPublished
+      ? await adminProductsApi.unpublish(product.id)
+      : await adminProductsApi.publish(product.id);
+    setPublishing(false);
+    if (res.ok) {
+      if (onRefresh) onRefresh();
+    } else {
+      setApiError(extractApiError(res.error, "Failed to update publish status."));
     }
   }
 
@@ -538,6 +609,17 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
             <Button variant="outline" size="sm" type="button" onClick={() => router.push("/admin/products")}>
               Cancel
             </Button>
+            {isEdit && (
+              <Button
+                variant={product.status === "Published" ? "outline" : "secondary"}
+                size="sm"
+                type="button"
+                loading={publishing}
+                onClick={handlePublishToggle}
+              >
+                {product.status === "Published" ? "Unpublish" : "Publish"}
+              </Button>
+            )}
             <Button variant="primary" size="sm" type="submit" loading={saving}>
               {isEdit ? "Save Changes" : "Create Product"}
             </Button>

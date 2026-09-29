@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ProductCard } from "./ProductCard";
+import { CartAwareProductCard } from "./CartAwareProductCard";
 import { ProductGridSkeleton } from "./Skeleton";
 import { EmptyState } from "./EmptyState";
 import { ErrorState } from "./ErrorState";
@@ -13,7 +13,6 @@ interface ProductGridProps {
   onRetry?: () => void;
   currency?: string;
   locale?: string;
-  onAddToCart?: (p: StorefrontProductSummaryResponse) => void;
   skeletonCount?: number;
   /** Number of grid columns at large breakpoint */
   cols?: 3 | 4 | 5;
@@ -35,7 +34,6 @@ export function ProductGrid({
   onRetry,
   currency,
   locale,
-  onAddToCart,
   skeletonCount = 8,
   cols = 4,
   className,
@@ -74,12 +72,11 @@ export function ProductGrid({
       )}
     >
       {products.map((p, i) => (
-        <ProductCard
+        <CartAwareProductCard
           key={p.id}
           product={p}
           currency={currency}
           locale={locale}
-          onAddToCart={onAddToCart}
           eager={i < eagerCount}
         />
       ))}

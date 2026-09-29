@@ -33,6 +33,23 @@ export function truncate(text: string, max: number): string {
 }
 
 /**
+ * Extract a human-readable error message from any ApiResult error.
+ * Falls back to a generic support message if nothing meaningful is available.
+ *
+ * Usage:
+ *   const msg = extractApiError(result.error);
+ *   toastError("Action failed", msg);
+ */
+export function extractApiError(
+  error: { message?: string } | null | undefined,
+  fallback = "Something went wrong. Please try again or contact support.",
+): string {
+  if (!error) return fallback;
+  const msg = "message" in error ? (error as { message?: string }).message : undefined;
+  return msg?.trim() || fallback;
+}
+
+/**
  * Safe extractor for Promise.allSettled results.
  * Returns the data if the promise fulfilled and the API call succeeded,
  * otherwise returns the provided fallback.

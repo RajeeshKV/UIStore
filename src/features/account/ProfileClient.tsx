@@ -1,4 +1,5 @@
 "use client";
+import { extractApiError } from "@/lib/utils";
 
 import { useState, useEffect } from "react";
 import { customerApi } from "@/services/api/customer";
@@ -58,7 +59,7 @@ export function ProfileClient() {
       setProfile(result.data);
       toastSuccess("Profile updated", "Your changes have been saved.");
     } else {
-      const msg = "error" in result && "message" in result.error ? result.error.message : "Could not save changes.";
+      const msg = extractApiError(result.error, "Could not save changes.");
       toastError("Update failed", msg);
       if ("error" in result && "errors" in result.error && result.error.errors) {
         const apiErrors: Record<string, string> = {};
