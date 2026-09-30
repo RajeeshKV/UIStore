@@ -22,10 +22,12 @@ export default async function CheckoutPage() {
   const currency = settings?.currencyCode ?? "INR";
   const locale = settings?.culture ?? "en-IN";
   const storeName = settings?.businessName ?? "Kromic Store";
-  // These are hints for initial payment method selection only.
-  // Availability is authoritative from CheckoutSummaryResponse.paymentMethods[].
+
+  // These are hints only — authoritative values come from CheckoutSummaryResponse.paymentMethods[].
   const razorpayEnabled = settings?.payment?.razorpayEnabled ?? false;
-  const codEnabled = settings?.payment?.codEnabled ?? settings?.delivery?.codEnabled ?? false;
+  // codEnabled drives the initial UI: hide the COD option unless the admin has configured it.
+  // delivery.codEnabled is the canonical field (set from Shipping settings).
+  const codEnabled = settings?.delivery?.codEnabled ?? false;
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>

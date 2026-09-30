@@ -34,11 +34,18 @@ export function AdminDialog({
     }
   }, [open]);
 
+  // Close on backdrop click
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const handler = (e: MouseEvent) => {
-      if (e.target === el) onClose();
+      const rect = el.getBoundingClientRect();
+      const outside =
+        e.clientX < rect.left ||
+        e.clientX > rect.right ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom;
+      if (outside) onClose();
     };
     el.addEventListener("click", handler);
     return () => el.removeEventListener("click", handler);
@@ -49,27 +56,33 @@ export function AdminDialog({
       ref={ref}
       onClose={onClose}
       className={cn(
-        "w-full max-w-lg rounded-xl border border-border bg-background shadow-xl",
-        "p-0 backdrop:bg-foreground/20 backdrop:backdrop-blur-sm",
+        // Centered via CSS margin: auto (native <dialog> is already centered in modern browsers via UA sheet)
+        // but we override to make it explicit and consistent.
+        "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0",
+        "w-full max-w-lg rounded-2xl border border-border bg-background shadow-2xl",
+        "p-0 backdrop:bg-foreground/30 backdrop:backdrop-blur-[2px]",
         "open:animate-scale-in",
         className,
       )}
     >
-      <div className="flex items-start justify-between border-b border-border px-6 py-4">
-        <div>
-          <h2 className="text-h4 font-semibold text-foreground">{title}</h2>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
+        <div className="min-w-0">
+          <h2 className="text-body font-semibold text-foreground leading-snug">{title}</h2>
           {description && (
-            <p className="mt-1 text-body-sm text-foreground-muted">{description}</p>
+            <p className="mt-0.5 text-caption text-foreground-muted">{description}</p>
           )}
         </div>
         <button
           onClick={onClose}
           aria-label="Close dialog"
-          className="ml-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
         >
-          <X className="size-4" />
+          <X className="size-3.5" />
         </button>
       </div>
+
+      {/* Body */}
       <div className="px-6 py-5">{children}</div>
     </dialog>
   );
@@ -103,16 +116,11 @@ export function ConfirmDialog({
       <div className="flex flex-col gap-5">
         {description && <p className="text-body-sm text-foreground-muted">{description}</p>}
         {children}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-2">
           <Button variant="outline" size="sm" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button
-            variant={confirmVariant}
-            size="sm"
-            onClick={onConfirm}
-            loading={loading}
-          >
+          <Button variant={confirmVariant} size="sm" onClick={onConfirm} loading={loading}>
             {confirmLabel}
           </Button>
         </div>

@@ -6,6 +6,7 @@ import { adminTaxApi } from "@/services/api/admin";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Toggle } from "@/components/ui/Toggle";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 import type { TaxConfigResponse, UpdateTaxConfigRequest } from "@/types/api";
@@ -62,9 +63,9 @@ export function AdminTaxClient() {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-48 w-full max-w-lg rounded-lg" />
+        <Skeleton className="h-40 w-full rounded-xl" />
       </div>
     );
   }
@@ -74,10 +75,10 @@ export function AdminTaxClient() {
   }
 
   return (
-    <form onSubmit={handleSave} noValidate className="flex flex-col gap-6">
+    <form onSubmit={handleSave} noValidate className="flex flex-col gap-5">
       <AdminPageHeader
         title="Tax"
-        description="Configure tax rates for your store."
+        description="Configure GST, VAT or any applicable tax for your store."
         action={
           <Button type="submit" variant="primary" size="sm" loading={saving}>
             Save Changes
@@ -86,62 +87,69 @@ export function AdminTaxClient() {
       />
 
       {saveError && (
-        <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-4 py-3 max-w-lg">
+        <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-lg px-4 py-3">
           {saveError}
         </p>
       )}
       {saveSuccess && (
-        <p className="text-body-sm text-success bg-success/5 border border-success/20 rounded-md px-4 py-3 max-w-lg">
-          Tax settings saved successfully.
+        <p className="text-body-sm text-success bg-success/5 border border-success/20 rounded-lg px-4 py-3">
+          Tax settings saved.
         </p>
       )}
 
-      <div className="rounded-lg border border-border bg-background p-6 flex flex-col gap-5 max-w-lg">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={form.taxEnabled}
-            onChange={(e) => setForm((f) => ({ ...f, taxEnabled: e.target.checked }))}
-            className="h-4 w-4 rounded border-border accent-primary"
-          />
-          <div>
-            <span className="text-body-sm font-medium text-foreground">Enable tax</span>
-            <p className="text-caption text-foreground-muted">Apply tax to orders.</p>
-          </div>
-        </label>
-
-        <Input
-          label="Tax percentage (%)"
-          type="number"
-          min={0}
-          max={100}
-          step={0.01}
-          value={form.taxPercentage}
-          onChange={(e) => setForm((f) => ({ ...f, taxPercentage: parseFloat(e.target.value) || 0 }))}
-          disabled={!form.taxEnabled}
+      <div className="rounded-xl border border-border bg-background p-5 flex flex-col gap-5">
+        {/* Enable row */}
+        <Toggle
+          id="tax-enabled"
+          label="Enable tax"
+          hint="Apply tax to all applicable orders."
+          checked={form.taxEnabled}
+          onChange={(v) => setForm((f) => ({ ...f, taxEnabled: v }))}
         />
 
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={form.isPriceInclusive}
-            onChange={(e) => setForm((f) => ({ ...f, isPriceInclusive: e.target.checked }))}
-            disabled={!form.taxEnabled}
-            className="h-4 w-4 rounded border-border accent-primary"
-          />
-          <div>
-            <span className="text-body-sm font-medium text-foreground">Tax-inclusive pricing</span>
-            <p className="text-caption text-foreground-muted">Product prices already include tax.</p>
-          </div>
-        </label>
+        {form.taxEnabled && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 pt-1 border-t border-border">
+            {/* Percentage + label side by side */}
+            <div className="flex flex-col gap-1">
+              <label className="text-caption font-medium text-foreground-muted uppercase tracking-wide">
+                Rate (%)
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
+                defaultValue={form.taxPercentage}
+                key={form.taxPercentage}
+                onBlur={(e) => {
+                  const n = parseFloat(e.target.value);
+                  if (!isNaN(n) && n >= 0 && n <= 100) setForm((f) => ({ ...f, taxPercentage: n }));
+                  else e.target.value = String(form.taxPercentage);
+                }}
+                className="h-9 px-3 rounded-lg border border-border bg-background text-body-sm text-foreground
+                           focus:outline-none focus:ring-2 focus:ring-focus
+                           [appearance:textfield] [-moz-appearance:textfield]
+                           [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+            </div>
 
-        <Input
-          label="Tax label (optional)"
-          value={form.taxLabel ?? ""}
-          onChange={(e) => setForm((f) => ({ ...f, taxLabel: e.target.value }))}
-          placeholder="e.g. GST, VAT"
-          disabled={!form.taxEnabled}
-        />
+            <Input
+              label="Tax label"
+              value={form.taxLabel ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, taxLabel: e.target.value }))}
+              placeholder="e.g. GST, VAT, IGST"
+            />
+
+            <div className="sm:col-span-2">
+              <Toggle
+                id="tax-inclusive"
+                label="Tax-inclusive pricing"
+                hint="Product prices already include tax — tax is not added on top."
+                checked={form.isPriceInclusive}
+                onChange={(v) => setForm((f) => ({ ...f, isPriceInclusive: v }))}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </form>
   );

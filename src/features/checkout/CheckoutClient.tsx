@@ -72,9 +72,9 @@ interface CheckoutClientProps {
   currency: string;
   locale: string;
   storeName: string;
-  // NOTE: §1.8 — these props are now hints for initial selection only.
-  // Payment method availability is authoritative from summary.paymentMethods[].
+  /** Hint for initial Razorpay availability; authoritative from summary.paymentMethods[] */
   razorpayEnabled: boolean;
+  /** Hint for initial COD availability; authoritative from summary.paymentMethods[] */
   codEnabled: boolean;
 }
 
@@ -128,8 +128,10 @@ export function CheckoutClient({
   const [savingAddress, setSavingAddress] = useState(false);
 
   // ── Payment ─────────────────────────────────────────────────────────────────
+  // Default to Razorpay when available; fall back to COD if Razorpay is disabled;
+  // COD is only shown when admin has configured it (codEnabled setting).
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
-    razorpayEnabled ? "Razorpay" : "CashOnDelivery",
+    razorpayEnabled ? "Razorpay" : codEnabled ? "CashOnDelivery" : "Razorpay",
   );
 
   // ── Checkout Summary (§1.2) ──────────────────────────────────────────────────
@@ -205,7 +207,7 @@ export function CheckoutClient({
   }, [isAuthenticated, loadAddresses]);
 
   // ── Re-fetch summary when payment method changes ────────────────────────────
-  // §3.3: codFee only appears once CashOnDelivery is selected
+  // §3.3: codFee only appears in summary once CashOnDelivery is selected
   const handlePaymentMethodChange = useCallback(
     (method: PaymentMethod) => {
       setPaymentMethod(method);

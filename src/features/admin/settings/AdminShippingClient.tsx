@@ -4,11 +4,51 @@ import { extractApiError } from "@/lib/utils";
 import { useEffect, useState, useCallback } from "react";
 import { adminSettingsApi } from "@/services/api/admin";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
-import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Toggle } from "@/components/ui/Toggle";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 import type { UpdateDeliverySettingsRequest } from "@/types/api";
+
+/** Plain number-only input — no spin arrows, parses on blur */
+function NumInput({
+  label, hint, value, onChange, min, disabled, suffix,
+}: {
+  label: string; hint?: string; value: number | undefined; suffix?: string;
+  onChange: (v: number | undefined) => void; min?: number; disabled?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-caption font-medium text-foreground-muted uppercase tracking-wide">
+        {label}
+      </label>
+      <div className="flex items-center gap-1.5">
+        <input
+          type="text"
+          inputMode="decimal"
+          pattern="[0-9]*\.?[0-9]*"
+          disabled={disabled}
+          defaultValue={value ?? ""}
+          key={value}                          // re-mount when value changes externally
+          onBlur={(e) => {
+            const v = e.target.value.trim();
+            if (v === "") { onChange(undefined); return; }
+            const n = parseFloat(v);
+            if (!isNaN(n) && (min === undefined || n >= min)) onChange(n);
+            else e.target.value = value !== undefined ? String(value) : "";
+          }}
+          className="w-full h-9 px-3 rounded-lg border border-border bg-background text-body-sm text-foreground
+                     placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus
+                     disabled:opacity-40 disabled:pointer-events-none
+                     [appearance:textfield] [-moz-appearance:textfield]
+                     [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        />
+        {suffix && <span className="text-caption text-foreground-muted shrink-0">{suffix}</span>}
+      </div>
+      {hint && <p className="text-caption text-foreground-muted">{hint}</p>}
+    </div>
+  );
+}
 
 export function AdminShippingClient() {
   const [loading, setLoading] = useState(true);
@@ -66,9 +106,9 @@ export function AdminShippingClient() {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-64 w-full max-w-lg rounded-lg" />
+        <Skeleton className="h-48 w-full rounded-xl" />
       </div>
     );
   }
@@ -82,10 +122,10 @@ export function AdminShippingClient() {
   }
 
   return (
-    <form onSubmit={handleSave} noValidate className="flex flex-col gap-6">
+    <form onSubmit={handleSave} noValidate className="flex flex-col gap-5">
       <AdminPageHeader
         title="Shipping"
-        description="Delivery fees and COD configuration."
+        description="Delivery fees, free-shipping threshold, COD and delivery timeline."
         action={
           <Button type="submit" variant="primary" size="sm" loading={saving}>
             Save Changes
@@ -94,82 +134,84 @@ export function AdminShippingClient() {
       />
 
       {saveError && (
-        <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-4 py-3 max-w-lg">{saveError}</p>
+        <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-lg px-4 py-3">
+          {saveError}
+        </p>
       )}
       {saveSuccess && (
-        <p className="text-body-sm text-success bg-success/5 border border-success/20 rounded-md px-4 py-3 max-w-lg">Shipping settings saved.</p>
+        <p className="text-body-sm text-success bg-success/5 border border-success/20 rounded-lg px-4 py-3">
+          Shipping settings saved.
+        </p>
       )}
 
-      <div className="rounded-lg border border-border bg-background p-6 flex flex-col gap-5 max-w-lg">
-        <h3 className="text-body font-semibold text-foreground border-b border-border pb-3">Delivery Fees</h3>
-
-        <Input
+      {/* Fees row */}
+      <div className="rounded-xl border border-border bg-background p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+        <div className="sm:col-span-2">
+          <h3 className="text-body-sm font-semibold text-foreground">Delivery Fees</h3>
+        </div>
+        <NumInput
           label="Flat shipping fee"
-          type="number"
-          min={0}
-          step={0.01}
           value={form.flatFeeAmount}
-          onChange={(e) => set("flatFeeAmount", parseFloat(e.target.value) || 0)}
-        />
-        <Input
-          label="Free shipping threshold (optional)"
-          type="number"
+          onChange={(v) => set("flatFeeAmount", v ?? 0)}
           min={0}
-          step={0.01}
-          value={form.freeShippingThreshold ?? ""}
-          onChange={(e) => set("freeShippingThreshold", e.target.value ? parseFloat(e.target.value) : undefined)}
-          hint="Orders above this amount get free shipping."
         />
+        <NumInput
+          label="Free shipping threshold"
+          hint="Orders above this amount ship free. Leave blank to disable."
+          value={form.freeShippingThreshold}
+          onChange={(v) => set("freeShippingThreshold", v)}
+          min={0}
+        />
+      </div>
 
-        <h3 className="text-body font-semibold text-foreground border-b border-border pb-3 mt-2">Cash on Delivery</h3>
-
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={form.codEnabled}
-            onChange={(e) => set("codEnabled", e.target.checked)}
-            className="h-4 w-4 rounded border-border accent-primary"
-          />
-          <span className="text-body-sm font-medium text-foreground">Enable COD</span>
-        </label>
-
-        {/* §1.8: only show/edit the COD fee input when COD is enabled.
-            codExtraFee persists across disable/re-enable; hide it to avoid
-            confusion about a non-zero fee on a disabled feature. */}
+      {/* COD */}
+      <div className="rounded-xl border border-border bg-background p-5 flex flex-col gap-4">
+        <h3 className="text-body-sm font-semibold text-foreground">Cash on Delivery</h3>
+        <Toggle
+          id="cod-enabled"
+          label="Enable COD"
+          hint="Allow customers to pay cash on delivery."
+          checked={form.codEnabled}
+          onChange={(v) => set("codEnabled", v)}
+        />
+        {/* §1.8: COD fee hidden when COD is off */}
         {form.codEnabled && (
-          <Input
-            label="COD extra fee"
-            type="number"
-            min={0}
-            step={0.01}
-            value={form.codExtraFee}
-            onChange={(e) => set("codExtraFee", parseFloat(e.target.value) || 0)}
-          />
+          <div className="max-w-xs">
+            <NumInput
+              label="COD extra fee"
+              hint="Added to order total when COD is selected."
+              value={form.codExtraFee}
+              onChange={(v) => set("codExtraFee", v ?? 0)}
+              min={0}
+            />
+          </div>
         )}
+      </div>
 
-        <h3 className="text-body font-semibold text-foreground border-b border-border pb-3 mt-2">Delivery Timeline</h3>
-
-        <div className="grid grid-cols-3 gap-3">
-          <Input
+      {/* Timeline */}
+      <div className="rounded-xl border border-border bg-background p-5 flex flex-col gap-4">
+        <h3 className="text-body-sm font-semibold text-foreground">Delivery Timeline</h3>
+        <div className="grid grid-cols-3 gap-4">
+          <NumInput
             label="Processing days"
-            type="number"
-            min={0}
             value={form.processingDays}
-            onChange={(e) => set("processingDays", parseInt(e.target.value) || 0)}
+            onChange={(v) => set("processingDays", v ?? 0)}
+            min={0}
+            suffix="d"
           />
-          <Input
+          <NumInput
             label="Min delivery days"
-            type="number"
-            min={0}
             value={form.minDeliveryDays}
-            onChange={(e) => set("minDeliveryDays", parseInt(e.target.value) || 0)}
-          />
-          <Input
-            label="Max delivery days"
-            type="number"
+            onChange={(v) => set("minDeliveryDays", v ?? 0)}
             min={0}
+            suffix="d"
+          />
+          <NumInput
+            label="Max delivery days"
             value={form.maxDeliveryDays}
-            onChange={(e) => set("maxDeliveryDays", parseInt(e.target.value) || 0)}
+            onChange={(v) => set("maxDeliveryDays", v ?? 0)}
+            min={0}
+            suffix="d"
           />
         </div>
       </div>

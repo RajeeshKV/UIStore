@@ -27,6 +27,8 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
   const [notFound, setNotFound] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  /** §3 CONCURRENCY_CONFLICT: show retryable notice */
+  const [concurrencyNote, setConcurrencyNote] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,15 +55,34 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
     // Do NOT mark it cancelled; show the server's message as-is.
     if (!result.ok) {
       const err = result.error as { code?: string; message?: string; status?: number };
+
       if (err?.code === "REFUND_FAILED") {
         toastError(
           "Refund failed",
           err.message ?? "Your refund could not be processed. The order remains active. Please contact support.",
         );
-        // Leave order state exactly as the server last reported it
         setCancelling(false);
         return;
       }
+
+      // §3 INVENTORY_RESTORE_FAILED: order NOT cancelled, stock not returned.
+      if (err?.code === "INVENTORY_RESTORE_FAILED") {
+        toastError(
+          "Cancellation failed",
+          err.message ?? "Stock could not be restored. Your order was NOT cancelled. Please contact support.",
+        );
+        setCancelling(false);
+        return;
+      }
+
+      // §3 CONCURRENCY_CONFLICT: retryable — refresh then let customer retry.
+      if (err?.code === "CONCURRENCY_CONFLICT") {
+        setConcurrencyNote(true);
+        await load();
+        setCancelling(false);
+        return;
+      }
+
       toastError("Cancellation failed", extractApiError(result.error));
       setCancelling(false);
       return;
@@ -117,6 +138,14 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
         <ArrowLeft className="size-3.5" aria-hidden="true" />
         Back to Orders
       </Link>
+
+      {/* §3 Concurrency note: order refreshed, customer can retry */}
+      {concurrencyNote && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg bg-warning/5 border border-warning/20 px-4 py-3 text-body-sm text-foreground">
+          <span className="flex-1">Your order was updated. The page has been refreshed — please review and try again if needed.</span>
+          <button onClick={() => setConcurrencyNote(false)} className="text-foreground-muted hover:text-foreground shrink-0">✕</button>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

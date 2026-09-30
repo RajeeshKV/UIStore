@@ -31,6 +31,8 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState("");
+  /** §3 CONCURRENCY_CONFLICT: show retryable notice above the order */
+  const [concurrencyNote, setConcurrencyNote] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,13 +59,37 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
       trackingProvider: trackingProvider.trim() || undefined,
     });
     setUpdating(false);
+
     if (res.ok) {
       setStatusDialogOpen(false);
-      // Use response body directly — no re-fetch needed (was 204, now returns OrderResponse)
       setOrder(res.data);
-    } else {
-      setUpdateError(extractApiError(res.error, "Update failed."));
+      // §5 Refetch checklist: after Confirmed or Cancelled, stock moves. Re-load order
+      // so any embedded stock data is fresh (order detail carries latest status).
+      return;
     }
+
+    const err = res.error as { code?: string; message?: string };
+    const code = err?.code ?? "";
+
+    // §3 CONCURRENCY_CONFLICT: two requests raced. Retryable — refetch and let admin retry.
+    if (code === "CONCURRENCY_CONFLICT") {
+      setStatusDialogOpen(false);
+      setUpdateError("");
+      setConcurrencyNote(true);
+      await load();
+      return;
+    }
+
+    // §3 INVENTORY_RESTORE_FAILED: order not cancelled, stock not returned. Operational error.
+    if (code === "INVENTORY_RESTORE_FAILED") {
+      setUpdateError(
+        err.message ??
+        "Stock could not be returned. The order was NOT cancelled. Please reconcile inventory manually before retrying."
+      );
+      return;
+    }
+
+    setUpdateError(extractApiError(res.error, "Update failed."));
   }
 
   if (loading) {
@@ -85,6 +111,13 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
   return (
     <>
       <div className="flex flex-col gap-6">
+        {/* §3 Concurrency notice */}
+        {concurrencyNote && (
+          <div role="alert" className="flex items-center justify-between gap-3 rounded-lg bg-warning/5 border border-warning/20 px-4 py-3 text-body-sm text-foreground">
+            <span>Order was updated by another session. The data below is now refreshed — you can retry the status change.</span>
+            <button onClick={() => setConcurrencyNote(false)} className="shrink-0 text-foreground-muted hover:text-foreground">✕</button>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center gap-4">
           <button
@@ -156,7 +189,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-foreground-muted">Subtotal</dt>
-                  <dd className="text-foreground">{formatPrice(order.grandTotal - order.shippingAmount - order.taxAmount - (order.codFee ?? 0) + order.discountAmount, currency)}</dd>
+                  <dd className="text-foreground">{formatPrice(order.subtotal ?? (order.grandTotal - order.shippingAmount - order.taxAmount - (order.codFee ?? 0) + order.discountAmount), currency)}</dd>
                 </div>
                 {order.discountAmount > 0 && (
                   <div className="flex justify-between">
