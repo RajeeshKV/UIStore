@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Copy, Check, CreditCard, ExternalLink } from "lucide-react";
-import { adminIntegrationsApi } from "@/services/api/admin";
+import { Copy, Check, CreditCard, ExternalLink, Banknote, Loader2 } from "lucide-react";
+import { adminIntegrationsApi, adminSettingsApi } from "@/services/api/admin";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -88,13 +88,51 @@ function ReadOnlyRow({ label, value, hint }: { label: string; value: string; hin
   );
 }
 
+// ── Toggle switch ─────────────────────────────────────────────────────────────
+
+function ToggleSwitch({
+  id,
+  checked,
+  onChange,
+  disabled,
+}: {
+  id: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      id={id}
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent",
+        "transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        checked ? "bg-primary" : "bg-border-strong",
+      )}
+    >
+      <span
+        className={cn(
+          "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200",
+          checked ? "translate-x-5" : "translate-x-0.5",
+        )}
+      />
+    </button>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function AdminPaymentIntegrationClient() {
   const [status, setStatus] = useState<IntegrationStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Credentials — secrets always blank (write-only)
+  // Razorpay credentials — secrets always blank (write-only)
   const [keyId, setKeyId] = useState("");
   const [keySecret, setKeySecret] = useState("");
   const [webhookSecret, setWebhookSecret] = useState("");
@@ -103,6 +141,13 @@ export function AdminPaymentIntegrationClient() {
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // COD toggle
+  const [codEnabled, setCodEnabled] = useState(false);
+  const [codLoading, setCodLoading] = useState(true);
+  const [codSaving, setCodSaving] = useState(false);
+  const [codError, setCodError] = useState("");
+  const [codSuccess, setCodSuccess] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     const res = await adminIntegrationsApi.getPayment();
@@ -110,13 +155,23 @@ export function AdminPaymentIntegrationClient() {
       const d = res.data;
       setStatus(d);
       setEnabled(d.enabled);
-      // Pre-fill Key ID with masked value — admin can overwrite
       if (d.maskedKeyId) setKeyId(d.maskedKeyId);
     }
     setLoading(false);
   }, []);
 
+  // Load COD state from admin settings (delivery.codEnabled is the source of truth)
+  const loadCod = useCallback(async () => {
+    setCodLoading(true);
+    const res = await adminSettingsApi.get();
+    if (res.ok) {
+      setCodEnabled(res.data.delivery?.codEnabled ?? false);
+    }
+    setCodLoading(false);
+  }, []);
+
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void loadCod(); }, [loadCod]);
 
   const webhookUrl = (status?.publicFields as Record<string, string> | null)?.webhookUrl ?? "";
   const suggestedWebhookSecret = !status?.hasSecret
@@ -128,7 +183,6 @@ export function AdminPaymentIntegrationClient() {
     setSaveError("");
     setSaveSuccess(false);
 
-    // All four fields are required by the contract
     if (!keyId.trim()) { setSaveError("Key ID is required."); return; }
     if (!keySecret) { setSaveError("Key Secret is required."); return; }
     if (!webhookSecret) { setSaveError("Webhook Secret is required."); return; }
@@ -142,7 +196,6 @@ export function AdminPaymentIntegrationClient() {
     });
     setSaving(false);
     if (res.ok) {
-      // Re-fetch to get fresh status + masked key
       await load();
       setKeySecret("");
       setWebhookSecret("");
@@ -153,10 +206,26 @@ export function AdminPaymentIntegrationClient() {
     }
   }
 
+  async function handleCodToggle(next: boolean) {
+    setCodError("");
+    setCodSuccess(false);
+    setCodSaving(true);
+    const res = await adminIntegrationsApi.updateCod(next);
+    setCodSaving(false);
+    if (res.ok) {
+      setCodEnabled(next);
+      setCodSuccess(true);
+      setTimeout(() => setCodSuccess(false), 3000);
+    } else {
+      setCodError(extractApiError(res.error, "Failed to update COD setting."));
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      <AdminPageHeader title="Payment" description="Razorpay integration for online payments." />
+      <AdminPageHeader title="Payment" description="Configure online payments and cash on delivery." />
 
+      {/* ── Razorpay card ── */}
       <div className="rounded-lg border border-border bg-background overflow-hidden max-w-2xl">
         {/* Header with status */}
         <div className="flex items-center gap-4 border-b border-border px-6 py-4">
@@ -172,7 +241,7 @@ export function AdminPaymentIntegrationClient() {
 
         <div className="px-6 py-5 flex flex-col gap-6">
 
-          {/* Section 1 — Webhook URL (always visible) */}
+          {/* Section 1 — Webhook URL */}
           <div className="flex flex-col gap-4">
             <div>
               <h3 className="text-body font-semibold text-foreground">Setup Instructions</h3>
@@ -203,7 +272,7 @@ export function AdminPaymentIntegrationClient() {
             )}
           </div>
 
-          {/* Section 2 — Suggested webhook secret (only when hasSecret = false) */}
+          {/* Section 2 — Suggested webhook secret */}
           {!loading && suggestedWebhookSecret && (
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex flex-col gap-3">
               <div className="flex items-start gap-2">
@@ -289,6 +358,83 @@ export function AdminPaymentIntegrationClient() {
               Save Configuration
             </Button>
           </form>
+        </div>
+      </div>
+
+      {/* ── Cash on Delivery card ── */}
+      <div className="rounded-lg border border-border bg-background overflow-hidden max-w-2xl">
+        <div className="flex items-center gap-4 border-b border-border px-6 py-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+            <Banknote className="size-5 text-foreground-muted" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-body font-semibold text-foreground">Cash on Delivery</p>
+            <p className="text-caption text-foreground-muted">Allow customers to pay when their order arrives.</p>
+          </div>
+          {/* Live status dot */}
+          {codLoading ? (
+            <Skeleton className="h-6 w-16 rounded-full" />
+          ) : (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-caption font-medium",
+                codEnabled
+                  ? "border-success/30 bg-success/10 text-success"
+                  : "border-border bg-muted text-foreground-muted",
+              )}
+            >
+              <span className={cn("h-1.5 w-1.5 rounded-full", codEnabled ? "bg-success" : "bg-foreground-muted")} />
+              {codEnabled ? "Enabled" : "Disabled"}
+            </span>
+          )}
+        </div>
+
+        <div className="px-6 py-5 flex flex-col gap-4">
+          <p className="text-body-sm text-foreground-muted">
+            COD is disabled by default for new stores. Enabling it allows customers to select
+            &quot;Cash on Delivery&quot; at checkout. You can set the COD fee and eligibility in{" "}
+            <a href="/admin/settings/delivery" className="underline underline-offset-2 hover:text-foreground">
+              Delivery Settings
+            </a>.
+          </p>
+
+          {codError && (
+            <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-4 py-3">
+              {codError}
+            </p>
+          )}
+          {codSuccess && (
+            <p className="text-body-sm text-success bg-success/5 border border-success/20 rounded-md px-4 py-3">
+              Cash on Delivery {codEnabled ? "enabled" : "disabled"} successfully.
+            </p>
+          )}
+
+          {/* Toggle row */}
+          <div className="flex items-center justify-between gap-4 p-4 rounded-lg border border-border bg-surface">
+            <div>
+              <p className="text-body-sm font-medium text-foreground">
+                {codLoading ? "Loading…" : codEnabled ? "COD is enabled" : "COD is disabled"}
+              </p>
+              <p className="text-caption text-foreground-muted mt-0.5">
+                {codEnabled
+                  ? "Customers can choose to pay on delivery."
+                  : "Customers must pay online at checkout."}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {codSaving && <Loader2 className="size-4 animate-spin text-foreground-muted" aria-label="Saving…" />}
+              {codLoading ? (
+                <Skeleton className="h-6 w-11 rounded-full" />
+              ) : (
+                <ToggleSwitch
+                  id="cod-toggle"
+                  checked={codEnabled}
+                  onChange={handleCodToggle}
+                  disabled={codSaving}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

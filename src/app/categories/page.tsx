@@ -30,7 +30,7 @@ export default async function CategoriesPage() {
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>
-      <div className="container-x mx-auto py-6 md:py-8 min-h-[60vh]">
+      <div className="container-x mx-auto py-6 md:py-8">
         <CatalogBreadcrumb items={[{ label: "Home", href: "/" }, { label: "Categories" }]} className="mb-4" />
         <div className="flex items-center justify-between mb-5">
           <div>

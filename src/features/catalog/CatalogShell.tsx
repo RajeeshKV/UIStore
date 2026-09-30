@@ -144,7 +144,7 @@ export function CatalogShell({
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       <div className="container-x mx-auto">
 
         {/* Breadcrumb */}
