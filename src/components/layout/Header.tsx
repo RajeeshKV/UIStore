@@ -36,6 +36,8 @@ interface HeaderProps {
   logoUrl?: string | null;
   /** Opens cart drawer instead of navigating to /cart */
   onCartClick?: () => void;
+  /** Hide the Brands nav item when the store has no brands */
+  hasBrands?: boolean;
 }
 
 export function Header({
@@ -43,10 +45,16 @@ export function Header({
   storeName = "Kromic",
   logoUrl,
   onCartClick,
+  hasBrands = true,
 }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // Filter nav items based on store configuration
+  const navItems = NAV_ITEMS.filter(
+    (item) => !(item.label === "Brands" && !hasBrands),
+  );
 
   // Scroll shadow
   useEffect(() => {
@@ -97,7 +105,7 @@ export function Header({
             aria-label="Main navigation"
             className="hidden md:flex items-center gap-0.5 ml-6"
           >
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <DesktopNavItem key={item.label} item={item} />
             ))}
           </nav>
@@ -174,7 +182,7 @@ export function Header({
             className="md:hidden border-t border-border bg-background"
           >
             <ul className="container-x mx-auto py-3 flex flex-col">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}

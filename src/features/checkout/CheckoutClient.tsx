@@ -227,6 +227,15 @@ export function CheckoutClient({
             ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || undefined
             : undefined;
 
+      // Format phone for Razorpay — needs country code prefix (+91 for India)
+      // Falls back in order: selected address → inline form → user profile
+      const rawPhone = addr?.phone || inlineForm.phone || user?.phoneNumber;
+      const prefillContact = rawPhone
+        ? rawPhone.startsWith("+")
+          ? rawPhone                            // already has country code: +919876543210
+          : `+91${rawPhone.replace(/^0+/, "")}` // prefix +91, strip leading zeros
+        : undefined;
+
       openRazorpay({
         key: checkout.razorpayKeyId,
         amount: Math.round(checkout.grandTotal * 100), // paise — server total
@@ -237,7 +246,7 @@ export function CheckoutClient({
         prefill: {
           name: prefillName,
           email: user?.email,
-          contact: addr?.phone || inlineForm.phone || user?.phoneNumber,
+          contact: prefillContact, // pre-fills the widget; user can still edit it
         },
         theme: { color: "#09090b" },
         handler: async (response) => {
