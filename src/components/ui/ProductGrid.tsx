@@ -14,13 +14,14 @@ interface ProductGridProps {
   currency?: string;
   locale?: string;
   skeletonCount?: number;
-  cols?: 4 | 5 | 6;
+  cols?: 3 | 4 | 5 | 6;
   className?: string;
   eagerCount?: number;
 }
 
 // 5 per row on desktop — compact catalog grid
 const colClasses: Record<number, string> = {
+  3: "grid-cols-2 sm:grid-cols-3",
   4: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4",
   5: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
   6: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6",
@@ -34,7 +35,7 @@ export function ProductGrid({
   currency,
   locale,
   skeletonCount = 10,
-  cols = 5,
+  cols = 4,
   className,
   eagerCount = 0,
 }: ProductGridProps) {
