@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ShoppingBag, Tag, X, Truck, CreditCard, Banknote, CheckCircle,
-  Plus, Star, AlertTriangle,
+  Plus, Star, AlertTriangle, RefreshCw, XCircle,
 } from "lucide-react";
 import { cn, formatPrice, extractApiError } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useCart } from "@/features/cart/CartContext";
 import { checkoutApi } from "@/services/api/checkout";
+import { ordersApi } from "@/services/api/orders";
 import { addressesApi } from "@/services/api/addresses";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -18,9 +19,15 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
 import { AddressForm } from "@/features/account/AddressForm";
 import { loadRazorpayScript, openRazorpay } from "@/lib/razorpay";
-import type { CustomerAddressResponse, CouponValidationResponse, CreateAddressRequest } from "@/types/api";
+import { pendingPaymentStore } from "@/lib/pendingPayment";
+import type {
+  CustomerAddressResponse,
+  CouponValidationResponse,
+  CreateAddressRequest,
+  CheckoutResponse,
+} from "@/types/api";
 
-// ── UUID v4 generator ─────────────────────────────────────────────────────────
+// ── UUID v4 ───────────────────────────────────────────────────────────────────
 function generateIdempotencyKey(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -28,7 +35,7 @@ function generateIdempotencyKey(): string {
   });
 }
 
-// ── Inline address form state ─────────────────────────────────────────────────
+// ── Inline address form ───────────────────────────────────────────────────────
 interface InlineAddressForm {
   firstName: string;
   lastName: string;
@@ -59,6 +66,7 @@ function validateInlineAddress(f: InlineAddressForm): Record<string, string> {
   return e;
 }
 
+// ── Types ─────────────────────────────────────────────────────────────────────
 interface CheckoutClientProps {
   currency: string;
   locale: string;
@@ -71,12 +79,27 @@ interface CheckoutClientProps {
 }
 
 type PaymentMethod = "Razorpay" | "CashOnDelivery";
+
+/**
+ * Step machine:
+ *  idle        → user is filling the form
+ *  placing     → POST /checkout in-flight
+ *  rzp_loading → loading Razorpay SDK
+ *  rzp_open    → Razorpay widget is open
+ *  verifying   → POST /payments/verify in-flight
+ *  dismissed   → user closed widget; show Retry / Cancel choices
+ *  cancelling  → POST /orders/{id}/cancel in-flight
+ *  success     → order confirmed
+ *  failed      → unrecoverable error
+ */
 type CheckoutStep =
   | "idle"
   | "placing"
-  | "razorpay_loading"
-  | "razorpay_open"
+  | "rzp_loading"
+  | "rzp_open"
   | "verifying"
+  | "dismissed"
+  | "cancelling"
   | "success"
   | "failed";
 
@@ -99,11 +122,11 @@ export function CheckoutClient({
   const [addressesLoading, setAddressesLoading] = useState(true);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
-  // Inline form — only used when addresses.length === 0
+  // Inline form — only rendered when addresses.length === 0
   const [inlineForm, setInlineForm] = useState<InlineAddressForm>(emptyInlineAddress());
   const [inlineErrors, setInlineErrors] = useState<Record<string, string>>({});
 
-  // Modal for adding a new address when the user already has saved ones
+  // Modal for adding additional addresses when user already has saved ones
   const [addAddressOpen, setAddAddressOpen] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
 
@@ -118,16 +141,19 @@ export function CheckoutClient({
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
 
-  // ── Checkout flow ────────────────────────────────────────────────────────────
+  // ── Checkout flow ─────────────────────────────────────────────────────────
   const [step, setStep] = useState<CheckoutStep>("idle");
   const [stepError, setStepError] = useState("");
   const idempotencyRef = useRef(generateIdempotencyKey());
+
+  // We keep the confirmed checkout response after POST /checkout so we can
+  // reopen Razorpay on retry without a new POST /checkout call.
+  const [confirmedCheckout, setConfirmedCheckout] = useState<CheckoutResponse | null>(null);
 
   const items = cart?.items ?? [];
   const subtotal = cart?.subtotal ?? 0;
   const effectiveCurrency = cart?.currency ?? currency;
 
-  // Estimated shipping (display only — backend is authoritative at checkout)
   const estimatedShipping =
     freeShippingThreshold != null && subtotal >= freeShippingThreshold
       ? 0
@@ -141,7 +167,6 @@ export function CheckoutClient({
     const result = await addressesApi.list();
     if (result.ok) {
       setAddresses(result.data);
-      // Auto-select default or first saved address
       const defaultAddr = result.data.find((a) => a.isDefault) ?? result.data[0];
       if (defaultAddr) setSelectedAddressId((prev) => prev ?? defaultAddr.id);
     }
@@ -152,7 +177,7 @@ export function CheckoutClient({
     if (isAuthenticated) void loadAddresses();
   }, [isAuthenticated, loadAddresses]);
 
-  // ── Add address via modal (only when user already has saved addresses) ───────
+  // ── Add address via modal (when user already has saved addresses) ─────────
   const handleModalAddAddress = useCallback(async (data: CreateAddressRequest) => {
     setSavingAddress(true);
     const result = await addressesApi.create(data);
@@ -190,25 +215,111 @@ export function CheckoutClient({
     setCouponError("");
   }, []);
 
+  // ── Open Razorpay (shared between first attempt and retry) ────────────────
+  const openRazorpayWidget = useCallback(
+    (checkout: CheckoutResponse, addr: CustomerAddressResponse | null) => {
+      if (!checkout.providerOrderId || !checkout.razorpayKeyId) return;
+
+      const prefillName =
+        addr
+          ? [addr.firstName, addr.lastName].filter(Boolean).join(" ") || undefined
+          : user
+            ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || undefined
+            : undefined;
+
+      openRazorpay({
+        key: checkout.razorpayKeyId,
+        amount: Math.round(checkout.grandTotal * 100), // paise — server total
+        currency: checkout.currency ?? effectiveCurrency,
+        name: storeName,
+        description: `Order #${checkout.orderNumber ?? checkout.orderId}`,
+        order_id: checkout.providerOrderId,
+        prefill: {
+          name: prefillName,
+          email: user?.email,
+          contact: addr?.phone || inlineForm.phone || user?.phoneNumber,
+        },
+        theme: { color: "#09090b" },
+        handler: async (response) => {
+          setStep("verifying");
+          const verifyResult = await checkoutApi.verifyPayment(checkout.orderId, {
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpaySignature: response.razorpay_signature,
+          });
+          if (verifyResult.ok) {
+            // Payment confirmed — clear persisted state
+            pendingPaymentStore.clear();
+            setStep("success");
+            router.push(`/order-success/${checkout.orderId}`);
+          } else {
+            // Spec: do NOT let user retry silently — payment may already be captured.
+            pendingPaymentStore.clear();
+            setStepError(
+              `Payment could not be verified. Please contact support with your order number: ${checkout.orderNumber ?? checkout.orderId}`,
+            );
+            setStep("failed");
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            // Order is in PendingPayment state. Show Retry / Cancel options.
+            // Keep same idempotency key — backend returns the existing order on retry.
+            setStep("dismissed");
+          },
+        },
+      });
+    },
+    [user, storeName, effectiveCurrency, inlineForm.phone, router],
+  );
+
+  // ── Retry: reopen Razorpay with same providerOrderId (no new /checkout) ──
+  const handleRetryPayment = useCallback(async () => {
+    if (!confirmedCheckout) return;
+    setStep("rzp_loading");
+    const sdkLoaded = await loadRazorpayScript();
+    if (!sdkLoaded) {
+      setStepError("Payment SDK failed to load. Check your connection and try again.");
+      setStep("failed");
+      return;
+    }
+    setStep("rzp_open");
+    const addr = addresses.find((a) => a.id === selectedAddressId) ?? null;
+    openRazorpayWidget(confirmedCheckout, addr);
+  }, [confirmedCheckout, addresses, selectedAddressId, openRazorpayWidget]);
+
+  // ── Cancel: release the PendingPayment order ──────────────────────────────
+  const handleCancelOrder = useCallback(async () => {
+    if (!confirmedCheckout) return;
+    setStep("cancelling");
+    await ordersApi.cancel(confirmedCheckout.orderId, "Customer cancelled pending payment");
+    pendingPaymentStore.clear();
+    setConfirmedCheckout(null);
+    // Generate a fresh idempotency key so user can start a new order
+    idempotencyRef.current = generateIdempotencyKey();
+    setStep("idle");
+    setStepError("");
+  }, [confirmedCheckout]);
+
   // ── Place order ─────────────────────────────────────────────────────────────
   const handlePlaceOrder = useCallback(async () => {
     if (step !== "idle" && step !== "failed") return;
     setStepError("");
 
-    // ── Resolve address ID ─────────────────────────────────────────────────────
-    // Case A: user has saved addresses → selectedAddressId is already set
-    // Case B: no saved addresses → inline form is shown; save the address first
+    // ── Resolve address ID ────────────────────────────────────────────────────
     let resolvedAddressId = selectedAddressId;
+    let resolvedAddr: CustomerAddressResponse | null =
+      addresses.find((a) => a.id === resolvedAddressId) ?? null;
 
     if (!resolvedAddressId) {
-      // Validate inline form before saving
+      // No saved addresses: validate and save inline form first
       const errs = validateInlineAddress(inlineForm);
       if (Object.keys(errs).length) {
         setInlineErrors(errs);
         return;
       }
       setInlineErrors({});
-      setStep("placing"); // show spinner while saving address + placing order
+      setStep("placing");
 
       const saveResult = await addressesApi.create({
         firstName: inlineForm.firstName || undefined,
@@ -231,14 +342,14 @@ export function CheckoutClient({
 
       const savedAddr = saveResult.data;
       resolvedAddressId = savedAddr.id;
-      // Update local state so the address shows in subsequent renders
+      resolvedAddr = savedAddr;
       setAddresses([savedAddr]);
       setSelectedAddressId(savedAddr.id);
     } else {
       setStep("placing");
     }
 
-    // ── POST /checkout ─────────────────────────────────────────────────────────
+    // ── POST /checkout ────────────────────────────────────────────────────────
     const result = await checkoutApi.placeOrder({
       addressId: resolvedAddressId,
       paymentMethod,
@@ -251,10 +362,7 @@ export function CheckoutClient({
       const code = "code" in err ? (err as { code?: string }).code : undefined;
       const msg = extractApiError(err, "Could not place order. Please try again.");
 
-      if (code === "CART_EMPTY") {
-        router.push("/cart");
-        return;
-      }
+      if (code === "CART_EMPTY") { router.push("/cart"); return; }
 
       if (err && "status" in err && (err as { status: number }).status === 409) {
         setStepError("This order was already placed. Redirecting to your orders…");
@@ -271,46 +379,55 @@ export function CheckoutClient({
       }
 
       if (code === "PRODUCT_UNAVAILABLE") {
-        setStepError(msg);
-        setStep("failed");
-        await refreshCart();
-        return;
+        setStepError(msg); setStep("failed"); await refreshCart(); return;
       }
 
-      if (
-        code === "INSUFFICIENT_INVENTORY" ||
-        code === "COUPON_INVALID" ||
-        code === "COUPON_USAGE_LIMIT"
-      ) {
-        setStepError(msg);
-        setStep("failed");
+      if (code === "INSUFFICIENT_INVENTORY" || code === "COUPON_INVALID" || code === "COUPON_USAGE_LIMIT") {
+        setStepError(msg); setStep("failed");
         if (code === "INSUFFICIENT_INVENTORY") await refreshCart();
         return;
       }
 
-      setStepError(msg);
-      setStep("failed");
-      return;
+      setStepError(msg); setStep("failed"); return;
     }
 
     const checkout = result.data;
 
-    // ── COD: done ─────────────────────────────────────────────────────────────
+    // ── COD ───────────────────────────────────────────────────────────────────
     if (paymentMethod === "CashOnDelivery") {
       setStep("success");
       router.push(`/order-success/${checkout.orderId}`);
       return;
     }
 
-    // ── Razorpay ──────────────────────────────────────────────────────────────
-    // Spec: if providerOrderId is null, Razorpay order creation failed on backend
-    if (!checkout.providerOrderId || !checkout.razorpayKeyId) {
-      setStepError("Payment initialisation failed. Please try again.");
+    // ── Razorpay: validate the response ───────────────────────────────────────
+    // Spec: only proceed when orderStatus is "PendingPayment" AND both IDs are non-null.
+    // If providerOrderId is null the backend Razorpay order creation failed.
+    if (
+      checkout.orderStatus !== "PendingPayment" ||
+      !checkout.providerOrderId ||
+      !checkout.razorpayKeyId
+    ) {
+      setStepError(
+        "Payment initialisation failed. Please try again.",
+      );
       setStep("failed");
       return;
     }
 
-    setStep("razorpay_loading");
+    // Persist to localStorage BEFORE opening the widget
+    pendingPaymentStore.save({
+      orderId: checkout.orderId,
+      orderNumber: checkout.orderNumber,
+      providerOrderId: checkout.providerOrderId,
+      razorpayKeyId: checkout.razorpayKeyId,
+      grandTotal: checkout.grandTotal,
+      currency: checkout.currency ?? effectiveCurrency,
+    });
+
+    setConfirmedCheckout(checkout);
+
+    setStep("rzp_loading");
     const sdkLoaded = await loadRazorpayScript();
     if (!sdkLoaded) {
       setStepError("Payment SDK failed to load. Check your connection and try again.");
@@ -318,67 +435,17 @@ export function CheckoutClient({
       return;
     }
 
-    setStep("razorpay_open");
-    const orderId = checkout.orderId;
-
-    // Resolve prefill from saved addresses list (includes freshly-saved inline addr)
-    const addr = addresses.find((a) => a.id === resolvedAddressId);
-    const prefillName = addr
-      ? [addr.firstName, addr.lastName].filter(Boolean).join(" ") ||
-        `${inlineForm.firstName} ${inlineForm.lastName}`.trim()
-      : user
-        ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
-        : undefined;
-
-    openRazorpay({
-      key: checkout.razorpayKeyId,                       // from POST /checkout response
-      amount: Math.round(checkout.grandTotal * 100),     // paise — server total
-      currency: checkout.currency ?? effectiveCurrency,
-      name: storeName,                                   // from GET /store/settings
-      description: `Order #${checkout.orderNumber ?? orderId}`,
-      order_id: checkout.providerOrderId,                // from POST /checkout response
-      prefill: {
-        name: prefillName || undefined,
-        email: user?.email,
-        contact: addr?.phone || inlineForm.phone || user?.phoneNumber,
-      },
-      theme: { color: "#09090b" },
-      handler: async (response) => {
-        setStep("verifying");
-        const verifyResult = await checkoutApi.verifyPayment(orderId, {
-          razorpayPaymentId: response.razorpay_payment_id,
-          razorpayOrderId: response.razorpay_order_id,
-          razorpaySignature: response.razorpay_signature,
-        });
-        if (verifyResult.ok) {
-          setStep("success");
-          router.push(`/order-success/${orderId}`);
-        } else {
-          // Spec: do NOT let user retry silently — payment may already be captured.
-          setStepError(
-            `Payment could not be verified. Please contact support with your order number: ${checkout.orderNumber ?? orderId}`,
-          );
-          setStep("failed");
-        }
-      },
-      modal: {
-        ondismiss: () => {
-          // Spec: order is in PendingPayment state — let user retry.
-          // Keep the SAME idempotency key so backend returns the existing order on retry.
-          setStepError("Payment was cancelled. You can retry payment for this order.");
-          setStep("failed");
-        },
-      },
-    });
+    setStep("rzp_open");
+    openRazorpayWidget(checkout, resolvedAddr);
   }, [
     step, selectedAddressId, inlineForm, paymentMethod, coupon,
-    router, refreshCart, user, storeName, effectiveCurrency, addresses,
+    router, refreshCart, effectiveCurrency, addresses, openRazorpayWidget,
   ]);
 
-  // ── Loading states ──────────────────────────────────────────────────────────
+  // ── Loading ──────────────────────────────────────────────────────────────────
   if (authLoading || cartLoading) return <CheckoutSkeleton />;
 
-  // ── Auth guard ──────────────────────────────────────────────────────────────
+  // ── Auth guard ───────────────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
       <div className="container-x mx-auto py-16 max-w-lg text-center min-h-[60vh]">
@@ -398,7 +465,7 @@ export function CheckoutClient({
     );
   }
 
-  // ── Empty cart ──────────────────────────────────────────────────────────────
+  // ── Empty cart ───────────────────────────────────────────────────────────────
   if (items.length === 0) {
     return (
       <div className="container-x mx-auto py-16 max-w-lg text-center min-h-[60vh]">
@@ -416,24 +483,28 @@ export function CheckoutClient({
     );
   }
 
+  // ── Derived UI state ─────────────────────────────────────────────────────────
   const isProcessing =
-    step === "placing" || step === "razorpay_loading" || step === "verifying";
+    step === "placing" || step === "rzp_loading" || step === "verifying" || step === "cancelling";
 
-  // "Place Order" is always enabled as long as:
-  // - a saved address is selected, OR
-  // - no saved addresses exist (inline form handles validation on submit)
+  const isResuming = step === "rzp_loading" || step === "rzp_open";
+  const isCancelling = step === "cancelling";
+
   const canSubmit =
     !isProcessing &&
-    step !== "razorpay_open" &&
+    step !== "rzp_open" &&
+    step !== "dismissed" &&
     step !== "success" &&
     !addressesLoading;
 
   const stepLabel: Record<CheckoutStep, string> = {
     idle: "Place Order",
     placing: "Creating order…",
-    razorpay_loading: "Loading payment…",
-    razorpay_open: "Complete payment in popup",
+    rzp_loading: "Loading payment…",
+    rzp_open: "Complete payment in popup",
     verifying: "Verifying payment…",
+    dismissed: "Retry Payment",
+    cancelling: "Cancelling order…",
     success: "Order placed!",
     failed: paymentMethod === "Razorpay" ? "Retry Payment" : "Retry Order",
   };
@@ -449,7 +520,8 @@ export function CheckoutClient({
       <h1 className="text-h2 font-bold text-foreground mb-8">Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
-        {/* ── LEFT: form ── */}
+
+        {/* ── LEFT ── */}
         <div className="lg:col-span-2 flex flex-col gap-8">
 
           {/* ── Delivery address ── */}
@@ -467,87 +539,29 @@ export function CheckoutClient({
                 <Skeleton className="h-24 w-full rounded-xl" />
               </div>
             ) : addresses.length === 0 ? (
-              /* ── No saved addresses: show inline form ─────────────────────── */
+              /* ── No saved addresses: inline form ─── */
               <div className="rounded-xl border border-border p-5 flex flex-col gap-3">
                 <p className="text-caption text-foreground-muted -mt-1 mb-1">
-                  Enter your delivery address below. It will be saved to your account.
+                  Enter your delivery address. It will be saved to your account.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="First Name"
-                    value={inlineForm.firstName}
-                    onChange={setInline("firstName")}
-                    autoComplete="given-name"
-                  />
-                  <Input
-                    label="Last Name"
-                    value={inlineForm.lastName}
-                    onChange={setInline("lastName")}
-                    autoComplete="family-name"
-                  />
+                  <Input label="First Name" value={inlineForm.firstName} onChange={setInline("firstName")} autoComplete="given-name" />
+                  <Input label="Last Name" value={inlineForm.lastName} onChange={setInline("lastName")} autoComplete="family-name" />
                 </div>
-                <Input
-                  label="Phone"
-                  type="tel"
-                  required
-                  value={inlineForm.phone}
-                  onChange={setInline("phone")}
-                  error={inlineErrors.phone}
-                  autoComplete="tel"
-                />
-                <Input
-                  label="Address Line 1"
-                  required
-                  value={inlineForm.addressLine1}
-                  onChange={setInline("addressLine1")}
-                  error={inlineErrors.addressLine1}
-                  autoComplete="address-line1"
-                />
-                <Input
-                  label="Address Line 2 (optional)"
-                  value={inlineForm.addressLine2}
-                  onChange={setInline("addressLine2")}
-                  autoComplete="address-line2"
-                />
+                <Input label="Phone" type="tel" required value={inlineForm.phone} onChange={setInline("phone")} error={inlineErrors.phone} autoComplete="tel" />
+                <Input label="Address Line 1" required value={inlineForm.addressLine1} onChange={setInline("addressLine1")} error={inlineErrors.addressLine1} autoComplete="address-line1" />
+                <Input label="Address Line 2 (optional)" value={inlineForm.addressLine2} onChange={setInline("addressLine2")} autoComplete="address-line2" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="City"
-                    required
-                    value={inlineForm.city}
-                    onChange={setInline("city")}
-                    error={inlineErrors.city}
-                    autoComplete="address-level2"
-                  />
-                  <Input
-                    label="State"
-                    required
-                    value={inlineForm.state}
-                    onChange={setInline("state")}
-                    error={inlineErrors.state}
-                    autoComplete="address-level1"
-                  />
+                  <Input label="City" required value={inlineForm.city} onChange={setInline("city")} error={inlineErrors.city} autoComplete="address-level2" />
+                  <Input label="State" required value={inlineForm.state} onChange={setInline("state")} error={inlineErrors.state} autoComplete="address-level1" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="Postal Code"
-                    required
-                    value={inlineForm.postalCode}
-                    onChange={setInline("postalCode")}
-                    error={inlineErrors.postalCode}
-                    autoComplete="postal-code"
-                  />
-                  <Input
-                    label="Country Code"
-                    required
-                    value={inlineForm.countryCode}
-                    onChange={setInline("countryCode")}
-                    placeholder="IN"
-                    autoComplete="country"
-                  />
+                  <Input label="Postal Code" required value={inlineForm.postalCode} onChange={setInline("postalCode")} error={inlineErrors.postalCode} autoComplete="postal-code" />
+                  <Input label="Country Code" required value={inlineForm.countryCode} onChange={setInline("countryCode")} placeholder="IN" autoComplete="country" />
                 </div>
               </div>
             ) : (
-              /* ── Has saved addresses: radio picker ────────────────────────── */
+              /* ── Has saved addresses: radio picker ── */
               <div className="flex flex-col gap-3">
                 <div
                   className="grid grid-cols-1 sm:grid-cols-2 gap-3"
@@ -576,9 +590,7 @@ export function CheckoutClient({
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-body-sm font-medium text-foreground truncate">
-                          {[addr.firstName, addr.lastName].filter(Boolean).join(" ") ||
-                            addr.label ||
-                            "Address"}
+                          {[addr.firstName, addr.lastName].filter(Boolean).join(" ") || addr.label || "Address"}
                           {addr.isDefault && (
                             <span className="ml-2 inline-flex items-center gap-0.5 text-caption text-foreground-muted">
                               <Star className="size-3 fill-foreground-muted" aria-hidden="true" />
@@ -620,7 +632,6 @@ export function CheckoutClient({
                 <CreditCard className="size-4" aria-hidden="true" /> Payment Method
               </h2>
               <div className="flex flex-col gap-3" role="radiogroup" aria-label="Select payment method">
-                {/* spec: hide entirely if razorpayEnabled=false, never show disabled */}
                 {razorpayEnabled && (
                   <PaymentOption
                     id="pm-razorpay"
@@ -668,11 +679,7 @@ export function CheckoutClient({
                     {formatPrice(coupon.discountAmount, effectiveCurrency, locale)} discount applied
                   </p>
                 </div>
-                <button
-                  onClick={handleRemoveCoupon}
-                  aria-label="Remove coupon"
-                  className="text-foreground-muted hover:text-foreground"
-                >
+                <button onClick={handleRemoveCoupon} aria-label="Remove coupon" className="text-foreground-muted hover:text-foreground">
                   <X className="size-4" />
                 </button>
               </div>
@@ -682,21 +689,12 @@ export function CheckoutClient({
                   <Input
                     placeholder="Enter coupon code"
                     value={couponCode}
-                    onChange={(e) => {
-                      setCouponCode(e.target.value);
-                      setCouponError("");
-                    }}
+                    onChange={(e) => { setCouponCode(e.target.value); setCouponError(""); }}
                     error={couponError}
                     aria-label="Coupon code"
                   />
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={handleApplyCoupon}
-                  loading={couponLoading}
-                  disabled={!couponCode.trim()}
-                  className="shrink-0 self-start mt-0"
-                >
+                <Button variant="outline" onClick={handleApplyCoupon} loading={couponLoading} disabled={!couponCode.trim()} className="shrink-0 self-start mt-0">
                   Apply
                 </Button>
               </div>
@@ -709,7 +707,6 @@ export function CheckoutClient({
           <div className="rounded-xl border border-border bg-surface-elevated p-6 flex flex-col gap-4">
             <h2 className="text-h4 font-semibold text-foreground">Order Summary</h2>
 
-            {/* Items */}
             <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto">
               {items.map((item) => (
                 <li key={item.id} className="flex items-center gap-2 text-body-sm">
@@ -725,30 +722,15 @@ export function CheckoutClient({
             <div className="flex flex-col gap-2 text-body-sm border-t border-border pt-3">
               <SummaryRow label="Subtotal" value={formatPrice(subtotal, effectiveCurrency, locale)} />
               <SummaryRow
-                label={
-                  estimatedShipping === 0 && freeShippingThreshold != null
-                    ? "Shipping (Free)"
-                    : "Shipping (est.)"
-                }
-                value={
-                  estimatedShipping === 0
-                    ? "FREE"
-                    : formatPrice(estimatedShipping, effectiveCurrency, locale)
-                }
+                label={estimatedShipping === 0 && freeShippingThreshold != null ? "Shipping (Free)" : "Shipping (est.)"}
+                value={estimatedShipping === 0 ? "FREE" : formatPrice(estimatedShipping, effectiveCurrency, locale)}
                 highlight={estimatedShipping === 0}
               />
               {couponDiscount > 0 && (
-                <SummaryRow
-                  label="Discount"
-                  value={`−${formatPrice(couponDiscount, effectiveCurrency, locale)}`}
-                  highlight
-                />
+                <SummaryRow label="Discount" value={`−${formatPrice(couponDiscount, effectiveCurrency, locale)}`} highlight />
               )}
               {estimatedCod > 0 && (
-                <SummaryRow
-                  label="COD Fee"
-                  value={formatPrice(estimatedCod, effectiveCurrency, locale)}
-                />
+                <SummaryRow label="COD Fee" value={formatPrice(estimatedCod, effectiveCurrency, locale)} />
               )}
               <SummaryRow label="Tax" value="Calculated at order" muted />
             </div>
@@ -757,38 +739,69 @@ export function CheckoutClient({
               Final total will be confirmed after placing your order.
             </p>
 
+            {/* ── Step: error ── */}
             {stepError && (
-              <div
-                role="alert"
-                className="flex items-start gap-2 text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-3 py-2"
-              >
+              <div role="alert" className="flex items-start gap-2 text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-3 py-2">
                 <AlertTriangle className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
                 <span>{stepError}</span>
               </div>
             )}
 
-            {step === "razorpay_open" && (
+            {/* ── Step: widget open ── */}
+            {step === "rzp_open" && (
               <p className="text-body-sm text-foreground-muted text-center animate-pulse">
                 Complete payment in the popup window…
               </p>
             )}
 
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              disabled={!canSubmit}
-              loading={isProcessing}
-              onClick={handlePlaceOrder}
-              aria-live="polite"
-            >
-              {stepLabel[step]}
-            </Button>
+            {/* ── Step: dismissed — Retry / Cancel ── */}
+            {step === "dismissed" && (
+              <div className="flex flex-col gap-2">
+                <p className="text-body-sm text-foreground-muted text-center">
+                  Payment was not completed. Your order is reserved.
+                </p>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  loading={isResuming}
+                  onClick={handleRetryPayment}
+                  iconLeft={<RefreshCw className="size-4" />}
+                >
+                  Retry Payment
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  fullWidth
+                  loading={isCancelling}
+                  onClick={handleCancelOrder}
+                  iconLeft={<XCircle className="size-4" />}
+                >
+                  Cancel Order
+                </Button>
+              </div>
+            )}
+
+            {/* ── Step: normal CTA ── */}
+            {step !== "dismissed" && (
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                disabled={!canSubmit}
+                loading={isProcessing}
+                onClick={handlePlaceOrder}
+                aria-live="polite"
+              >
+                {stepLabel[step]}
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── Add address modal — only shown when user already has saved addresses ── */}
+      {/* ── Add address modal (when user already has saved addresses) ── */}
       <Modal
         open={addAddressOpen}
         onClose={() => setAddAddressOpen(false)}
@@ -805,18 +818,14 @@ export function CheckoutClient({
   );
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Sub-components ─────────────────────────────────────────────────────────────
 
 function PaymentOption({
   id, value, selected, onSelect, icon, label, description,
 }: {
-  id: string;
-  value: string;
-  selected: boolean;
-  onSelect: () => void;
-  icon: React.ReactNode;
-  label: string;
-  description: string;
+  id: string; value: string; selected: boolean;
+  onSelect: () => void; icon: React.ReactNode;
+  label: string; description: string;
 }) {
   return (
     <label
@@ -826,15 +835,7 @@ function PaymentOption({
         selected ? "border-foreground bg-muted/30" : "border-border hover:border-border-strong",
       )}
     >
-      <input
-        id={id}
-        type="radio"
-        name="paymentMethod"
-        value={value}
-        checked={selected}
-        onChange={onSelect}
-        className="mt-0.5 accent-foreground"
-      />
+      <input id={id} type="radio" name="paymentMethod" value={value} checked={selected} onChange={onSelect} className="mt-0.5 accent-foreground" />
       <span className="mt-0.5 text-foreground-muted">{icon}</span>
       <div>
         <p className="text-body-sm font-medium text-foreground">{label}</p>
@@ -845,25 +846,12 @@ function PaymentOption({
 }
 
 function SummaryRow({
-  label,
-  value,
-  highlight,
-  muted,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-  muted?: boolean;
-}) {
+  label, value, highlight, muted,
+}: { label: string; value: string; highlight?: boolean; muted?: boolean }) {
   return (
     <div className="flex justify-between">
       <span className={cn("text-foreground-muted", highlight && "text-success")}>{label}</span>
-      <span
-        className={cn(
-          "font-medium tabular-nums",
-          highlight ? "text-success" : muted ? "text-foreground-muted" : "text-foreground",
-        )}
-      >
+      <span className={cn("font-medium tabular-nums", highlight ? "text-success" : muted ? "text-foreground-muted" : "text-foreground")}>
         {value}
       </span>
     </div>

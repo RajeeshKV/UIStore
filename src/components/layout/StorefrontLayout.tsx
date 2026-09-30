@@ -3,6 +3,7 @@ import { CartProvider } from "@/features/cart/CartContext";
 import { CartDrawer } from "@/features/cart/CartDrawer";
 import { CartAwareHeader } from "./CartAwareHeader";
 import { AuthProvider } from "@/features/auth/AuthContext";
+import { PendingPaymentResumeDialog } from "@/features/checkout/PendingPaymentResumeDialog";
 import type {
   PublicBusinessSettingsResponse,
   StorePolicyResponse,
@@ -43,6 +44,7 @@ export function StorefrontLayout({
           <Footer settings={settings} policies={policyList} />
         </div>
         <CartDrawer currency={currency} locale={locale} />
+        <PendingPaymentResumeDialog />
       </CartProvider>
     </AuthProvider>
   );
