@@ -34,7 +34,7 @@ export function CategoryShowcase({ categories, loading = false, error = false, o
         {!loading && !error && categories.length > 0 && (
           <ul
             role="list"
-            className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8"
+            className="grid gap-2 md:gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8"
           >
             {categories.slice(0, 16).map((cat) => (
               <li key={cat.id}>
@@ -55,8 +55,8 @@ function CategoryCard({ category }: { category: StorefrontCategoryResponse }) {
       className="group flex flex-col items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-focus rounded-lg"
       aria-label={`${category.name}${category.productCount ? ` — ${category.productCount} products` : ""}`}
     >
-      {/* Image — aspect-[4/3] keeps cards compact */}
-      <div className="relative w-full aspect-[4/3] overflow-hidden rounded-md bg-surface border border-border">
+      {/* Image — aspect-square matches product card */}
+      <div className="relative w-full aspect-square overflow-hidden rounded-md bg-muted border border-border">
         {category.imageUrl ? (
           <Image
             src={category.imageUrl}

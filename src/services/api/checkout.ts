@@ -18,7 +18,7 @@ export const checkoutApi = {
 
   /** POST /api/v1/payments/verify?orderId={orderId} — orderId is a query param per contract */
   verifyPayment: (orderId: string, data: RazorpayCallbackRequest) =>
-    apiClient.post<{ success: boolean; orderId: string }>(
+    apiClient.post<{ orderId: string; orderNumber?: string; status: string; paidAt?: string }>(
       `/api/v1/payments/verify?orderId=${encodeURIComponent(orderId)}`,
       data,
     ),

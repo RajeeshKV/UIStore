@@ -35,7 +35,7 @@ export function FeaturedProducts({ products, loading = false, error = false, onR
         {error && !loading && <ErrorState title="Couldn't load featured products" onRetry={onRetry} inline />}
 
         {!loading && !error && products.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3">
             {products.slice(0, 12).map((product, i) => (
               <CartAwareProductCard key={product.id} product={product} currency={currency} locale={locale} eager={i < 6} />
             ))}

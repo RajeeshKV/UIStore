@@ -480,7 +480,8 @@ export interface UpdateCustomerProfileRequest {
 // ── Checkout ──────────────────────────────────────────────────────────────────
 
 export interface CheckoutRequest {
-  shippingAddress: ShippingAddressDto;
+  /** ID of a saved customer address from GET /api/v1/customer/addresses */
+  addressId: string;
   /** Exact enum values per backend contract */
   paymentMethod: "Razorpay" | "CashOnDelivery";
   couponCode?: string;
