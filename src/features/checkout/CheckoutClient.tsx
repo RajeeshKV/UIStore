@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ShoppingBag, Tag, X, Truck, CreditCard, Banknote, CheckCircle,
-  Plus, Star, MapPin, AlertTriangle,
+  Plus, Star, AlertTriangle,
 } from "lucide-react";
 import { cn, formatPrice, extractApiError } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -22,11 +22,41 @@ import type { CustomerAddressResponse, CouponValidationResponse, CreateAddressRe
 
 // ── UUID v4 generator ─────────────────────────────────────────────────────────
 function generateIdempotencyKey(): string {
-  // RFC 4122 v4 UUID
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
+}
+
+// ── Inline address form state ─────────────────────────────────────────────────
+interface InlineAddressForm {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  countryCode: string;
+}
+
+function emptyInlineAddress(): InlineAddressForm {
+  return {
+    firstName: "", lastName: "", phone: "",
+    addressLine1: "", addressLine2: "",
+    city: "", state: "", postalCode: "", countryCode: "IN",
+  };
+}
+
+function validateInlineAddress(f: InlineAddressForm): Record<string, string> {
+  const e: Record<string, string> = {};
+  if (!f.phone.trim()) e.phone = "Phone number is required.";
+  if (!f.addressLine1.trim()) e.addressLine1 = "Address is required.";
+  if (!f.city.trim()) e.city = "City is required.";
+  if (!f.state.trim()) e.state = "State is required.";
+  if (!f.postalCode.trim()) e.postalCode = "Postal code is required.";
+  return e;
 }
 
 interface CheckoutClientProps {
@@ -68,6 +98,12 @@ export function CheckoutClient({
   const [addresses, setAddresses] = useState<CustomerAddressResponse[]>([]);
   const [addressesLoading, setAddressesLoading] = useState(true);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
+  // Inline form — only used when addresses.length === 0
+  const [inlineForm, setInlineForm] = useState<InlineAddressForm>(emptyInlineAddress());
+  const [inlineErrors, setInlineErrors] = useState<Record<string, string>>({});
+
+  // Modal for adding a new address when the user already has saved ones
   const [addAddressOpen, setAddAddressOpen] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
 
@@ -105,7 +141,7 @@ export function CheckoutClient({
     const result = await addressesApi.list();
     if (result.ok) {
       setAddresses(result.data);
-      // Auto-select default or first address
+      // Auto-select default or first saved address
       const defaultAddr = result.data.find((a) => a.isDefault) ?? result.data[0];
       if (defaultAddr) setSelectedAddressId((prev) => prev ?? defaultAddr.id);
     }
@@ -116,8 +152,8 @@ export function CheckoutClient({
     if (isAuthenticated) void loadAddresses();
   }, [isAuthenticated, loadAddresses]);
 
-  // ── Add new address inline ──────────────────────────────────────────────────
-  const handleAddAddress = useCallback(async (data: CreateAddressRequest) => {
+  // ── Add address via modal (only when user already has saved addresses) ───────
+  const handleModalAddAddress = useCallback(async (data: CreateAddressRequest) => {
     setSavingAddress(true);
     const result = await addressesApi.create(data);
     if (result.ok) {
@@ -157,17 +193,54 @@ export function CheckoutClient({
   // ── Place order ─────────────────────────────────────────────────────────────
   const handlePlaceOrder = useCallback(async () => {
     if (step !== "idle" && step !== "failed") return;
+    setStepError("");
 
-    if (!selectedAddressId) {
-      setStepError("Please select a delivery address before placing your order.");
-      return;
+    // ── Resolve address ID ─────────────────────────────────────────────────────
+    // Case A: user has saved addresses → selectedAddressId is already set
+    // Case B: no saved addresses → inline form is shown; save the address first
+    let resolvedAddressId = selectedAddressId;
+
+    if (!resolvedAddressId) {
+      // Validate inline form before saving
+      const errs = validateInlineAddress(inlineForm);
+      if (Object.keys(errs).length) {
+        setInlineErrors(errs);
+        return;
+      }
+      setInlineErrors({});
+      setStep("placing"); // show spinner while saving address + placing order
+
+      const saveResult = await addressesApi.create({
+        firstName: inlineForm.firstName || undefined,
+        lastName: inlineForm.lastName || undefined,
+        phone: inlineForm.phone,
+        addressLine1: inlineForm.addressLine1,
+        addressLine2: inlineForm.addressLine2 || undefined,
+        city: inlineForm.city,
+        state: inlineForm.state,
+        postalCode: inlineForm.postalCode,
+        countryCode: inlineForm.countryCode,
+        isDefault: true,
+      });
+
+      if (!saveResult.ok) {
+        setStepError("Could not save your address. Please try again.");
+        setStep("failed");
+        return;
+      }
+
+      const savedAddr = saveResult.data;
+      resolvedAddressId = savedAddr.id;
+      // Update local state so the address shows in subsequent renders
+      setAddresses([savedAddr]);
+      setSelectedAddressId(savedAddr.id);
+    } else {
+      setStep("placing");
     }
 
-    setStepError("");
-    setStep("placing");
-
+    // ── POST /checkout ─────────────────────────────────────────────────────────
     const result = await checkoutApi.placeOrder({
-      addressId: selectedAddressId,
+      addressId: resolvedAddressId,
       paymentMethod,
       couponCode: coupon?.isValid ? coupon.couponCode ?? undefined : undefined,
       idempotencyKey: idempotencyRef.current,
@@ -184,7 +257,6 @@ export function CheckoutClient({
       }
 
       if (err && "status" in err && (err as { status: number }).status === 409) {
-        // Idempotency: order already exists — navigate to orders list
         setStepError("This order was already placed. Redirecting to your orders…");
         setTimeout(() => router.push("/account/orders"), 2000);
         setStep("failed");
@@ -223,18 +295,17 @@ export function CheckoutClient({
 
     const checkout = result.data;
 
-    // ── COD: done after this call ─────────────────────────────────────────────
+    // ── COD: done ─────────────────────────────────────────────────────────────
     if (paymentMethod === "CashOnDelivery") {
       setStep("success");
       router.push(`/order-success/${checkout.orderId}`);
       return;
     }
 
-    // ── Razorpay online payment ────────────────────────────────────────────────
+    // ── Razorpay ──────────────────────────────────────────────────────────────
+    // Spec: if providerOrderId is null, Razorpay order creation failed on backend
     if (!checkout.providerOrderId || !checkout.razorpayKeyId) {
-      setStepError(
-        "Payment initialisation failed. Please try again.",
-      );
+      setStepError("Payment initialisation failed. Please try again.");
       setStep("failed");
       return;
     }
@@ -250,25 +321,26 @@ export function CheckoutClient({
     setStep("razorpay_open");
     const orderId = checkout.orderId;
 
-    // Resolve the selected address for prefill
-    const addr = addresses.find((a) => a.id === selectedAddressId);
+    // Resolve prefill from saved addresses list (includes freshly-saved inline addr)
+    const addr = addresses.find((a) => a.id === resolvedAddressId);
     const prefillName = addr
-      ? [addr.firstName, addr.lastName].filter(Boolean).join(" ")
+      ? [addr.firstName, addr.lastName].filter(Boolean).join(" ") ||
+        `${inlineForm.firstName} ${inlineForm.lastName}`.trim()
       : user
         ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
         : undefined;
 
     openRazorpay({
-      key: checkout.razorpayKeyId,             // from POST /checkout response
-      amount: Math.round(checkout.grandTotal * 100), // paise — server total
+      key: checkout.razorpayKeyId,                       // from POST /checkout response
+      amount: Math.round(checkout.grandTotal * 100),     // paise — server total
       currency: checkout.currency ?? effectiveCurrency,
-      name: storeName,                          // from GET /store/settings
+      name: storeName,                                   // from GET /store/settings
       description: `Order #${checkout.orderNumber ?? orderId}`,
-      order_id: checkout.providerOrderId,       // from POST /checkout response
+      order_id: checkout.providerOrderId,                // from POST /checkout response
       prefill: {
-        name: prefillName,
+        name: prefillName || undefined,
         email: user?.email,
-        contact: addr?.phone || user?.phoneNumber,
+        contact: addr?.phone || inlineForm.phone || user?.phoneNumber,
       },
       theme: { color: "#09090b" },
       handler: async (response) => {
@@ -299,7 +371,7 @@ export function CheckoutClient({
       },
     });
   }, [
-    step, selectedAddressId, paymentMethod, coupon,
+    step, selectedAddressId, inlineForm, paymentMethod, coupon,
     router, refreshCart, user, storeName, effectiveCurrency, addresses,
   ]);
 
@@ -347,6 +419,15 @@ export function CheckoutClient({
   const isProcessing =
     step === "placing" || step === "razorpay_loading" || step === "verifying";
 
+  // "Place Order" is always enabled as long as:
+  // - a saved address is selected, OR
+  // - no saved addresses exist (inline form handles validation on submit)
+  const canSubmit =
+    !isProcessing &&
+    step !== "razorpay_open" &&
+    step !== "success" &&
+    !addressesLoading;
+
   const stepLabel: Record<CheckoutStep, string> = {
     idle: "Place Order",
     placing: "Creating order…",
@@ -356,6 +437,12 @@ export function CheckoutClient({
     success: "Order placed!",
     failed: paymentMethod === "Razorpay" ? "Retry Payment" : "Retry Order",
   };
+
+  const setInline = (field: keyof InlineAddressForm) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInlineForm((f) => ({ ...f, [field]: e.target.value }));
+      setInlineErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
+    };
 
   return (
     <div className="container-x mx-auto py-8 md:py-12">
@@ -380,24 +467,87 @@ export function CheckoutClient({
                 <Skeleton className="h-24 w-full rounded-xl" />
               </div>
             ) : addresses.length === 0 ? (
-              <div className="flex flex-col items-center gap-4 p-6 rounded-xl border border-dashed border-border text-center">
-                <MapPin className="size-8 text-foreground-muted" aria-hidden="true" />
-                <div>
-                  <p className="text-body-sm font-medium text-foreground">No saved addresses</p>
-                  <p className="text-caption text-foreground-muted mt-1">
-                    Add an address to continue.
-                  </p>
+              /* ── No saved addresses: show inline form ─────────────────────── */
+              <div className="rounded-xl border border-border p-5 flex flex-col gap-3">
+                <p className="text-caption text-foreground-muted -mt-1 mb-1">
+                  Enter your delivery address below. It will be saved to your account.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
+                    label="First Name"
+                    value={inlineForm.firstName}
+                    onChange={setInline("firstName")}
+                    autoComplete="given-name"
+                  />
+                  <Input
+                    label="Last Name"
+                    value={inlineForm.lastName}
+                    onChange={setInline("lastName")}
+                    autoComplete="family-name"
+                  />
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  iconLeft={<Plus className="size-3.5" />}
-                  onClick={() => setAddAddressOpen(true)}
-                >
-                  Add Address
-                </Button>
+                <Input
+                  label="Phone"
+                  type="tel"
+                  required
+                  value={inlineForm.phone}
+                  onChange={setInline("phone")}
+                  error={inlineErrors.phone}
+                  autoComplete="tel"
+                />
+                <Input
+                  label="Address Line 1"
+                  required
+                  value={inlineForm.addressLine1}
+                  onChange={setInline("addressLine1")}
+                  error={inlineErrors.addressLine1}
+                  autoComplete="address-line1"
+                />
+                <Input
+                  label="Address Line 2 (optional)"
+                  value={inlineForm.addressLine2}
+                  onChange={setInline("addressLine2")}
+                  autoComplete="address-line2"
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
+                    label="City"
+                    required
+                    value={inlineForm.city}
+                    onChange={setInline("city")}
+                    error={inlineErrors.city}
+                    autoComplete="address-level2"
+                  />
+                  <Input
+                    label="State"
+                    required
+                    value={inlineForm.state}
+                    onChange={setInline("state")}
+                    error={inlineErrors.state}
+                    autoComplete="address-level1"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
+                    label="Postal Code"
+                    required
+                    value={inlineForm.postalCode}
+                    onChange={setInline("postalCode")}
+                    error={inlineErrors.postalCode}
+                    autoComplete="postal-code"
+                  />
+                  <Input
+                    label="Country Code"
+                    required
+                    value={inlineForm.countryCode}
+                    onChange={setInline("countryCode")}
+                    placeholder="IN"
+                    autoComplete="country"
+                  />
+                </div>
               </div>
             ) : (
+              /* ── Has saved addresses: radio picker ────────────────────────── */
               <div className="flex flex-col gap-3">
                 <div
                   className="grid grid-cols-1 sm:grid-cols-2 gap-3"
@@ -441,9 +591,7 @@ export function CheckoutClient({
                           {addr.city && <span>{addr.city}, </span>}
                           {addr.state && <span>{addr.state} </span>}
                           {addr.postalCode && <span>{addr.postalCode}</span>}
-                          {addr.phone && (
-                            <span className="block">{addr.phone}</span>
-                          )}
+                          {addr.phone && <span className="block">{addr.phone}</span>}
                         </address>
                       </div>
                     </label>
@@ -629,13 +777,7 @@ export function CheckoutClient({
               variant="primary"
               size="lg"
               fullWidth
-              disabled={
-                isProcessing ||
-                step === "razorpay_open" ||
-                step === "success" ||
-                addressesLoading ||
-                addresses.length === 0
-              }
+              disabled={!canSubmit}
               loading={isProcessing}
               onClick={handlePlaceOrder}
               aria-live="polite"
@@ -646,7 +788,7 @@ export function CheckoutClient({
         </div>
       </div>
 
-      {/* ── Add address modal ── */}
+      {/* ── Add address modal — only shown when user already has saved addresses ── */}
       <Modal
         open={addAddressOpen}
         onClose={() => setAddAddressOpen(false)}
@@ -654,7 +796,7 @@ export function CheckoutClient({
         size="max-w-lg"
       >
         <AddressForm
-          onSave={handleAddAddress}
+          onSave={handleModalAddAddress}
           saving={savingAddress}
           onCancel={() => setAddAddressOpen(false)}
         />
