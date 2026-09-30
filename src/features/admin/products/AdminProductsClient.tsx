@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Plus, Search, MoreHorizontal, Pencil, Archive, Eye, EyeOff } from "lucide-react";
+import { Plus, Search, Pencil, Archive, Eye, EyeOff } from "lucide-react";
 import { adminProductsApi } from "@/services/api/admin";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { AdminTable, type Column } from "@/features/admin/AdminTable";
@@ -10,8 +10,7 @@ import { AdminStatusBadge } from "@/features/admin/AdminStatusBadge";
 import { ConfirmDialog } from "@/features/admin/AdminDialog";
 import { Button } from "@/components/ui/Button";
 import { Pagination } from "@/components/ui/Pagination";
-import { formatPrice } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { formatPrice, cn } from "@/lib/utils";
 import type { ProductSummaryResponse } from "@/types/api";
 
 const PAGE_SIZE = 20;
@@ -27,11 +26,10 @@ export function AdminProductsClient() {
   const [error, setError] = useState<string | null>(null);
 
   // Action state
-  const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<ProductSummaryResponse | null>(null);
   const [archiving, setArchiving] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const menuRef = useRef<HTMLDivElement>(null);
 
   // Debounce search
   useEffect(() => {
@@ -64,32 +62,18 @@ export function AdminProductsClient() {
     setLoading(false);
   }, [page, debouncedSearch]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  // Close action menu on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setActionMenuId(null);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  useEffect(() => { void load(); }, [load]);
 
   async function handlePublish(product: ProductSummaryResponse) {
-    setActionMenuId(null);
+    setPublishingId(product.id);
     const fn =
       product.status === "Published"
         ? adminProductsApi.unpublish
         : adminProductsApi.publish;
     const res = await fn(product.id);
+    setPublishingId(null);
     if (res.ok) {
-      setToastMsg(
-        product.status === "Published" ? "Product unpublished." : "Product published.",
-      );
+      setToastMsg(product.status === "Published" ? "Product unpublished." : "Product published.");
       void load();
     } else {
       setToastMsg("Action failed. Please try again.");
@@ -142,26 +126,20 @@ export function AdminProductsClient() {
       header: "Price",
       className: "whitespace-nowrap",
       render: (row) => (
-        <span className="text-body-sm text-foreground">
-          {formatPrice(row.price, "INR")}
-        </span>
+        <span className="text-body-sm text-foreground">{formatPrice(row.price, "INR")}</span>
       ),
     },
     {
       key: "category",
       header: "Category",
       render: (row) => (
-        <span className="text-body-sm text-foreground-muted truncate">
-          {row.categoryName ?? "—"}
-        </span>
+        <span className="text-body-sm text-foreground-muted truncate">{row.categoryName ?? "—"}</span>
       ),
     },
     {
       key: "status",
       header: "Status",
-      render: (row) => (
-        <AdminStatusBadge status={row.status ?? "Draft"} />
-      ),
+      render: (row) => <AdminStatusBadge status={row.status ?? "Draft"} />,
     },
     {
       key: "featured",
@@ -175,44 +153,46 @@ export function AdminProductsClient() {
     {
       key: "actions",
       header: "",
-      className: "w-10",
+      // Wide enough for all three inline actions
+      className: "w-44",
       render: (row) => (
-        <div className="relative" ref={actionMenuId === row.id ? menuRef : undefined}>
-          <button
-            aria-label="Product actions"
-            onClick={() => setActionMenuId(actionMenuId === row.id ? null : row.id)}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
+        <div className="flex items-center justify-end gap-1">
+          {/* Edit — icon */}
+          <Link
+            href={`/admin/products/${row.id}`}
+            aria-label="Edit product"
+            className="flex h-7 w-7 items-center justify-center rounded text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
           >
-            <MoreHorizontal className="size-4" />
+            <Pencil className="size-3.5" />
+          </Link>
+
+          {/* Publish / Unpublish — text button (prominent) */}
+          <button
+            onClick={() => handlePublish(row)}
+            disabled={publishingId === row.id}
+            className={cn(
+              "flex items-center gap-1 h-7 px-2.5 rounded text-body-sm font-medium transition-colors",
+              row.status === "Published"
+                ? "text-foreground-muted hover:bg-muted hover:text-foreground"
+                : "text-primary hover:bg-primary/10",
+              publishingId === row.id && "opacity-50 pointer-events-none",
+            )}
+          >
+            {row.status === "Published" ? (
+              <><EyeOff className="size-3.5" /> Unpublish</>
+            ) : (
+              <><Eye className="size-3.5" /> Publish</>
+            )}
           </button>
-          {actionMenuId === row.id && (
-            <div className="absolute right-0 top-full mt-1 z-20 w-44 rounded-lg border border-border bg-background shadow-md py-1">
-              <Link
-                href={`/admin/products/${row.id}`}
-                className="flex items-center gap-2 px-3 py-2 text-body-sm text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
-                onClick={() => setActionMenuId(null)}
-              >
-                <Pencil className="size-3.5" /> Edit
-              </Link>
-              <button
-                onClick={() => handlePublish(row)}
-                className="flex w-full items-center gap-2 px-3 py-2 text-body-sm text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
-              >
-                {row.status === "Published" ? (
-                  <><EyeOff className="size-3.5" /> Unpublish</>
-                ) : (
-                  <><Eye className="size-3.5" /> Publish</>
-                )}
-              </button>
-              <div className="border-t border-border my-1" />
-              <button
-                onClick={() => { setActionMenuId(null); setArchiveTarget(row); }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-body-sm text-danger hover:bg-danger/5 transition-colors"
-              >
-                <Archive className="size-3.5" /> Archive
-              </button>
-            </div>
-          )}
+
+          {/* Archive — icon (danger) */}
+          <button
+            aria-label="Archive product"
+            onClick={() => setArchiveTarget(row)}
+            className="flex h-7 w-7 items-center justify-center rounded text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors"
+          >
+            <Archive className="size-3.5" />
+          </button>
         </div>
       ),
     },
@@ -267,11 +247,7 @@ export function AdminProductsClient() {
         />
 
         {totalPages > 1 && (
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         )}
       </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Toggle } from "@/components/ui/Toggle";
 import { adminPromotionsApi } from "@/services/api/admin";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { AdminTable, type Column } from "@/features/admin/AdminTable";
@@ -24,6 +25,7 @@ const emptyForm: CreatePromotionRequest = {
   discountValue: 0,
   applicability: "EntireOrder",
   isFirstOrderOnly: false,
+  isActive: true,
 };
 
 export function AdminPromotionsClient() {
@@ -88,6 +90,7 @@ export function AdminPromotionsClient() {
       expiresAt: d.expiresAt ? d.expiresAt.slice(0, 16) : "",
       applicability: d.applicability ?? "EntireOrder",
       isFirstOrderOnly: d.isFirstOrderOnly,
+      isActive: d.isActive ?? true,
     });
     setFormErrors({});
     setApiError("");
@@ -305,10 +308,22 @@ export function AdminPromotionsClient() {
             </select>
           </div>
 
-          <label className="flex items-center gap-2.5 cursor-pointer">
-            <input type="checkbox" checked={form.isFirstOrderOnly ?? false} onChange={(e) => set("isFirstOrderOnly", e.target.checked)} className="h-4 w-4 rounded border-border accent-primary" />
-            <span className="text-body-sm text-foreground">First order only</span>
-          </label>
+          <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
+            <Toggle
+              id="promo-isActive"
+              label="Active"
+              hint="Inactive promotions are saved but not applied at checkout."
+              checked={form.isActive ?? true}
+              onChange={(v) => set("isActive", v)}
+            />
+            <Toggle
+              id="promo-firstOrder"
+              label="First order only"
+              hint="Limit this promotion to customers placing their first order."
+              checked={form.isFirstOrderOnly ?? false}
+              onChange={(v) => set("isFirstOrderOnly", v)}
+            />
+          </div>
 
           <div className="flex justify-end gap-2 pt-2 border-t border-border">
             <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>

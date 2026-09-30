@@ -14,19 +14,42 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, hint, iconLeft, iconRight, className, id, ...props }, ref) => {
+  ({ label, error, hint, iconLeft, iconRight, className, id, type, step, onKeyDown, ...props }, ref) => {
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const hintId = `${inputId}-hint`;
     const errorId = `${inputId}-error`;
 
+    // Convert type="number" → type="text" with numeric key filtering.
+    // Removes browser spin arrows without CSS hacks; works globally for every <Input type="number">.
+    const isNumeric = type === "number";
+    const allowDecimal = isNumeric && step !== undefined && String(step) !== "1";
+    const resolvedType = isNumeric ? "text" : type;
+    const inputMode = isNumeric ? (allowDecimal ? "decimal" : "numeric") : undefined;
+
+    function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+      if (isNumeric) {
+        const allowed = [
+          "Backspace", "Delete", "Tab", "Escape", "Enter",
+          "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End",
+        ];
+        const isDigit = /^\d$/.test(e.key);
+        const isMinus = e.key === "-" && e.currentTarget.selectionStart === 0;
+        const isDecimalPoint =
+          allowDecimal && e.key === "." && !e.currentTarget.value.includes(".");
+        const isCtrl = e.ctrlKey || e.metaKey; // allow Ctrl+A, Ctrl+C, Ctrl+V
+
+        if (!allowed.includes(e.key) && !isDigit && !isMinus && !isDecimalPoint && !isCtrl) {
+          e.preventDefault();
+        }
+      }
+      onKeyDown?.(e);
+    }
+
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label
-            htmlFor={inputId}
-            className="text-label text-foreground"
-          >
+          <label htmlFor={inputId} className="text-label text-foreground">
             {label}
             {props.required && (
               <span className="ml-1 text-danger" aria-hidden="true">*</span>
@@ -44,9 +67,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
+            type={resolvedType}
+            inputMode={inputMode}
+            onKeyDown={handleKeyDown}
             aria-describedby={
-              [hint && hintId, error && errorId].filter(Boolean).join(" ") ||
-              undefined
+              [hint && hintId, error && errorId].filter(Boolean).join(" ") || undefined
             }
             aria-invalid={!!error}
             className={cn(
@@ -72,14 +97,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {hint && !error && (
-          <p id={hintId} className="text-caption text-foreground-muted">
-            {hint}
-          </p>
+          <p id={hintId} className="text-caption text-foreground-muted">{hint}</p>
         )}
         {error && (
-          <p id={errorId} className="text-caption text-danger" role="alert">
-            {error}
-          </p>
+          <p id={errorId} className="text-caption text-danger" role="alert">{error}</p>
         )}
       </div>
     );

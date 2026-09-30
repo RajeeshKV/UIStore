@@ -937,6 +937,7 @@ export interface CreatePromotionRequest {
   expiresAt?: string;
   applicability?: string;
   isFirstOrderOnly?: boolean;
+  isActive?: boolean;
   targetProductIds?: string[];
   targetCategoryIds?: string[];
 }
