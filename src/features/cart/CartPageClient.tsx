@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Tag, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -20,6 +20,8 @@ export function CartPageClient({ currency, locale }: CartPageClientProps) {
   const items = cart?.items ?? [];
   const subtotal = cart?.subtotal ?? 0;
   const effectiveCurrency = cart?.currency ?? currency;
+  // §1.1: couponCode shows applied chip — subtotal is pre-discount
+  const appliedCouponCode = cart?.couponCode ?? null;
 
   if (isLoading) return <CartPageSkeleton />;
 
@@ -121,6 +123,15 @@ export function CartPageClient({ currency, locale }: CartPageClientProps) {
                   <span className="text-foreground-muted">Calculated at checkout</span>
                 </div>
               </div>
+
+              {/* §1.1: coupon chip — shown when couponCode is present on cart */}
+              {appliedCouponCode && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-success/5 border border-success/20 text-body-sm">
+                  <Tag className="size-3.5 text-success shrink-0" aria-hidden="true" />
+                  <span className="text-foreground font-medium">{appliedCouponCode}</span>
+                  <span className="text-foreground-muted">applied — discount shown at checkout</span>
+                </div>
+              )}
 
               <div className="flex justify-between py-3 border-t border-border text-body font-semibold">
                 <span className="text-foreground">Estimated Total</span>

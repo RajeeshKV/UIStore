@@ -223,10 +223,24 @@ export interface ProductAttributeDto {
 }
 
 /**
+ * §1.6: Resolved variant attribute — added to both StorefrontVariantResponse and VariantResponse.
+ * Use this for display; do NOT assume it matches attributeValueIds in length
+ * (values deleted from an attribute are omitted here but may still appear in attributeValueIds).
+ */
+export interface VariantAttributeValueResponse {
+  attributeValueId: string;
+  attributeId: string;
+  attributeName: string; // e.g. "Storage"
+  value: string;         // e.g. "128GB"
+}
+
+/**
  * Actual StorefrontVariantResponse from the API.
  * Note: no 'name' field — variant identity is from attribute values.
  * 'effectivePrice' is the backend-calculated final price (not 'price').
  * 'attributeValueIds' is a comma-separated string of AttributeValue IDs.
+ * §1.6 ADDED: attributes — resolved display names (optional, backward-compatible).
+ * §1.7: inactive variants are excluded from purchase; canPurchase is now false for inactive variants regardless of stock.
  */
 export interface StorefrontVariantResponse {
   id: string;
@@ -234,10 +248,13 @@ export interface StorefrontVariantResponse {
   effectivePrice: number;
   sortOrder: number;
   isActive: boolean;
-  /** Comma-separated AttributeValue IDs (e.g. "uuid1,uuid2") */
+  /** Comma-separated AttributeValue IDs (e.g. "uuid1,uuid2") — legacy echo, use attributes for display */
   attributeValueIds?: string;
   stockAvailability: StockAvailability;
+  /** §1.7: now false for inactive variant regardless of stock */
   canPurchase: boolean;
+  /** §1.6 NEW — resolved attribute values; use for display labels */
+  attributes?: VariantAttributeValueResponse[];
 }
 
 export interface DeliveryEstimateDto {
@@ -311,6 +328,8 @@ export interface CartItemResponse {
  * 'cartId' is the cart identifier (used as X-Cart-Token).
  * 'totalItems' is the item count (not 'itemCount').
  * No 'cartToken' field — the 'cartId' (UUID) is sent as X-Cart-Token.
+ * §1.1: couponCode is ADDED — normalised upper-case code in effect, or null.
+ * CRITICAL: subtotal is pre-discount. The payable total is grandTotal from CheckoutSummaryResponse.
  */
 export interface CartResponse {
   cartId: string;
@@ -319,6 +338,8 @@ export interface CartResponse {
   currency?: string;
   totalItems: number;
   isEmpty: boolean;
+  /** §1.1 NEW — normalised, upper-cased coupon code currently applied, or null */
+  couponCode: string | null;
 }
 
 export interface AddCartItemRequest {
@@ -479,6 +500,100 @@ export interface UpdateCustomerProfileRequest {
 
 // ── Checkout ──────────────────────────────────────────────────────────────────
 
+/**
+ * §1.2 NEW — GET /api/v1/checkout/summary query parameters.
+ * Omit paymentMethod while the customer is still choosing.
+ * A blank/whitespace couponCode means "no override" — does NOT remove the cart coupon.
+ */
+export interface GetCheckoutSummaryParams {
+  paymentMethod?: "Razorpay" | "CashOnDelivery";
+  /** Overrides the cart coupon for this call only; blank = no override */
+  couponCode?: string;
+}
+
+export type CheckoutSummaryPaymentMethod = "Razorpay" | "CashOnDelivery";
+export type CheckoutSummaryDiscountType  = "Percentage" | "FixedAmount";
+export type CheckoutSummaryStockAvailability = "InStock" | "LowStock" | "OutOfStock";
+
+/**
+ * §1.2 NEW — GET /api/v1/checkout/summary response.
+ * This is the AUTHORITATIVE quote. grandTotal is what gets charged.
+ * NEVER add taxAmount to grandTotal — it is already included regardless of isPriceInclusive.
+ *
+ * Coupon trap: appliedCouponCode !== null does NOT mean the coupon is active.
+ * When a coupon is rejected, appliedCouponCode still carries the submitted code
+ * while discountAmount === 0 and couponErrorCode is set.
+ * Branch on: couponErrorCode === null && appliedCouponCode !== null
+ */
+export interface CheckoutSummaryResponse {
+  // ── Lines ────────────────────────────────────────────────────────────────
+  items: Array<{
+    cartItemId: string;
+    productId: string;
+    variantId: string | null;
+    productName: string;
+    productSlug: string;
+    variantDescription: string | null;
+    sku: string | null;
+    unitPrice: number;
+    quantity: number;
+    lineTotal: number;
+    stockAvailability: CheckoutSummaryStockAvailability;
+    canPurchase: boolean;
+    primaryImageUrl: string | null;
+  }>;
+
+  // ── Payable breakdown ─────────────────────────────────────────────────────
+  subtotal: number;
+  discountAmount: number;
+  taxAmount: number;
+  taxLabel: string;           // e.g. "GST"
+  isPriceInclusive: boolean;
+  shippingAmount: number;
+  codFee: number;             // always 0 when paymentMethod is omitted or COD is unavailable
+  grandTotal: number;         // ← the amount that will be charged; display this directly
+  currency: string;
+
+  // ── Coupon ───────────────────────────────────────────────────────────────
+  /**
+   * ⚠️ HIGH RISK: appliedCouponCode can be non-null even when the coupon was rejected.
+   * Always check couponErrorCode === null before treating coupon as applied.
+   */
+  appliedCouponCode: string | null;
+  discountType: CheckoutSummaryDiscountType | null;
+  eligibleSubtotal: number;
+  couponErrorCode: string | null;
+  couponErrorMessage: string | null;
+
+  // ── Shipping / COD ───────────────────────────────────────────────────────
+  isFreeShipping: boolean;
+  freeShippingThreshold: number | null;
+  remainingForFreeShipping: number;
+  isCodAvailable: boolean;
+  deliveryEstimate: {
+    earliestDate: string;
+    latestDate: string;
+    displayText: string;
+  } | null;
+
+  // ── Payment methods ──────────────────────────────────────────────────────
+  isRazorpayConfigured: boolean;
+  paymentMethods: Array<{
+    method: CheckoutSummaryPaymentMethod;
+    isAvailable: boolean;
+    unavailableReason: string | null;
+  }>;
+
+  // ── Readiness ────────────────────────────────────────────────────────────
+  isReadyToCheckout: boolean;
+  blockingReasons: Array<{ code: string; message: string }>;
+}
+
+/** §1.3 NEW — POST /api/v1/cart/coupon request body */
+export interface ApplyCouponRequest {
+  couponCode: string; // exactly as customer typed; normalised server-side
+}
+
 export interface CheckoutRequest {
   /** ID of a saved customer address from GET /api/v1/customer/addresses */
   addressId: string;
@@ -525,6 +640,41 @@ export interface CouponValidationResponse {
 
 export interface ValidateCouponRequest {
   couponCode?: string;
+}
+
+// ── Product Attributes (Admin) ───────────────────────────────────────────────
+
+/**
+ * §2.4 NEW — GET /api/v1/products/{productId}/attributes response.
+ * A product with no attributes returns attributes: [] and behaves as single-variant.
+ */
+export interface ProductAttributeValueItem {
+  id: string;
+  value: string;
+  sortOrder: number;
+}
+
+export interface ProductAttributeItem {
+  id: string;
+  name: string;  // e.g. "Storage"
+  sortOrder: number;
+  values: ProductAttributeValueItem[];
+}
+
+export interface ProductAttributesResponse {
+  productId: string;
+  attributes: ProductAttributeItem[];
+}
+
+/**
+ * §2.5 NEW — PUT /api/v1/products/{productId}/attributes request.
+ * Replaces ONE attribute and its value list — not the whole product.
+ * Matched by name; existing attribute with same name is updated, otherwise created.
+ * ⚠️ Send the COMPLETE value list; omitting a value deletes it.
+ */
+export interface UpsertProductAttributeRequest {
+  name: string;
+  values: Array<{ value: string; id?: string }>;
 }
 
 // ── Policies ──────────────────────────────────────────────────────────────────
@@ -605,9 +755,11 @@ export interface VariantResponse {
   priceOverride?: number;
   sortOrder: number;
   isActive: boolean;
-  /** Comma-separated AttributeValue IDs (response only) */
+  /** Comma-separated AttributeValue IDs (response only) — use attributes for display */
   attributeValueIds?: string;
   availableStock?: number;
+  /** §1.6 NEW — resolved attribute values; use for display labels */
+  attributes?: VariantAttributeValueResponse[];
 }
 
 /**

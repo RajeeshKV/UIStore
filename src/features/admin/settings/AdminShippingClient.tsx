@@ -133,15 +133,19 @@ export function AdminShippingClient() {
           <span className="text-body-sm font-medium text-foreground">Enable COD</span>
         </label>
 
-        <Input
-          label="COD extra fee"
-          type="number"
-          min={0}
-          step={0.01}
-          value={form.codExtraFee}
-          onChange={(e) => set("codExtraFee", parseFloat(e.target.value) || 0)}
-          disabled={!form.codEnabled}
-        />
+        {/* §1.8: only show/edit the COD fee input when COD is enabled.
+            codExtraFee persists across disable/re-enable; hide it to avoid
+            confusion about a non-zero fee on a disabled feature. */}
+        {form.codEnabled && (
+          <Input
+            label="COD extra fee"
+            type="number"
+            min={0}
+            step={0.01}
+            value={form.codExtraFee}
+            onChange={(e) => set("codExtraFee", parseFloat(e.target.value) || 0)}
+          />
+        )}
 
         <h3 className="text-body font-semibold text-foreground border-b border-border pb-3 mt-2">Delivery Timeline</h3>
 

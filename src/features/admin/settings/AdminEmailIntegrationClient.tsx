@@ -80,10 +80,12 @@ export function AdminEmailIntegrationClient() {
     setSettingsSaving(true);
     setSettingsError("");
     setSettingsSuccess(false);
+    const isKromicManaged = emailSettings.mode === "KromicManaged";
     const res = await adminSettingsApi.updateEmailSettings({
       mode: emailSettings.mode?.trim() || undefined,
       senderName: emailSettings.senderName?.trim() || undefined,
-      senderEmail: emailSettings.senderEmail?.trim() || undefined,
+      // §1.9: KromicManaged — omit senderEmail entirely (sending it is a 400)
+      senderEmail: isKromicManaged ? undefined : (emailSettings.senderEmail?.trim() || undefined),
     });
     setSettingsSaving(false);
     if (res.ok) {
@@ -177,13 +179,22 @@ export function AdminEmailIntegrationClient() {
             onChange={(e) => setEmailSettings((f) => ({ ...f, senderName: e.target.value }))}
             placeholder="e.g. Kromic Store"
           />
-          <Input
-            label="Sender email"
-            type="email"
-            value={emailSettings.senderEmail ?? ""}
-            onChange={(e) => setEmailSettings((f) => ({ ...f, senderEmail: e.target.value }))}
-            placeholder="e.g. noreply@yourstore.com"
-          />
+          {/* §1.9: senderEmail hidden and omitted in KromicManaged mode */}
+          {emailSettings.mode !== "KromicManaged" && (
+            <Input
+              label="Sender email"
+              type="email"
+              value={emailSettings.senderEmail ?? ""}
+              onChange={(e) => setEmailSettings((f) => ({ ...f, senderEmail: e.target.value }))}
+              placeholder="e.g. noreply@yourstore.com"
+              hint={emailSettings.mode === "CustomerBrevo" ? "Must include a valid domain (e.g. you@example.com)" : undefined}
+            />
+          )}
+          {emailSettings.mode === "KromicManaged" && (
+            <p className="text-caption text-foreground-muted">
+              Sender address is managed by Kromic in this mode.
+            </p>
+          )}
           <Button type="submit" variant="primary" size="sm" loading={settingsSaving} className="self-start">
             Save Sender Settings
           </Button>

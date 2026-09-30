@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ShoppingBag, Tag, X, Truck, CreditCard, Banknote, CheckCircle,
-  Plus, Star, AlertTriangle, RefreshCw, XCircle,
+  Plus, Star, AlertTriangle, RefreshCw, XCircle, Info,
 } from "lucide-react";
 import { cn, formatPrice, extractApiError } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useCart } from "@/features/cart/CartContext";
 import { checkoutApi } from "@/services/api/checkout";
+import { cartApi } from "@/services/api/cart";
 import { ordersApi } from "@/services/api/orders";
 import { addressesApi } from "@/services/api/addresses";
 import { Button } from "@/components/ui/Button";
@@ -22,9 +23,9 @@ import { loadRazorpayScript, openRazorpay } from "@/lib/razorpay";
 import { pendingPaymentStore } from "@/lib/pendingPayment";
 import type {
   CustomerAddressResponse,
-  CouponValidationResponse,
   CreateAddressRequest,
   CheckoutResponse,
+  CheckoutSummaryResponse,
 } from "@/types/api";
 
 // ── UUID v4 ───────────────────────────────────────────────────────────────────
@@ -71,11 +72,10 @@ interface CheckoutClientProps {
   currency: string;
   locale: string;
   storeName: string;
+  // NOTE: §1.8 — these props are now hints for initial selection only.
+  // Payment method availability is authoritative from summary.paymentMethods[].
   razorpayEnabled: boolean;
   codEnabled: boolean;
-  freeShippingThreshold?: number;
-  flatDeliveryFee: number;
-  codExtraFee: number;
 }
 
 type PaymentMethod = "Razorpay" | "CashOnDelivery";
@@ -109,9 +109,6 @@ export function CheckoutClient({
   storeName,
   razorpayEnabled,
   codEnabled,
-  freeShippingThreshold,
-  flatDeliveryFee,
-  codExtraFee,
 }: CheckoutClientProps) {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { cart, isLoading: cartLoading, refresh: refreshCart } = useCart();
@@ -135,9 +132,14 @@ export function CheckoutClient({
     razorpayEnabled ? "Razorpay" : "CashOnDelivery",
   );
 
+  // ── Checkout Summary (§1.2) ──────────────────────────────────────────────────
+  // This is the authoritative quote. grandTotal is what gets charged.
+  const [summary, setSummary] = useState<CheckoutSummaryResponse | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState("");
+
   // ── Coupon ──────────────────────────────────────────────────────────────────
-  const [couponCode, setCouponCode] = useState("");
-  const [coupon, setCoupon] = useState<CouponValidationResponse | null>(null);
+  const [couponInput, setCouponInput] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
 
@@ -150,16 +152,36 @@ export function CheckoutClient({
   // reopen Razorpay on retry without a new POST /checkout call.
   const [confirmedCheckout, setConfirmedCheckout] = useState<CheckoutResponse | null>(null);
 
-  const items = cart?.items ?? [];
-  const subtotal = cart?.subtotal ?? 0;
   const effectiveCurrency = cart?.currency ?? currency;
 
-  const estimatedShipping =
-    freeShippingThreshold != null && subtotal >= freeShippingThreshold
-      ? 0
-      : flatDeliveryFee;
-  const estimatedCod = paymentMethod === "CashOnDelivery" ? codExtraFee : 0;
-  const couponDiscount = coupon?.isValid ? coupon.discountAmount : 0;
+  // ── §1.2 Coupon active check — NEVER branch on appliedCouponCode alone ──────
+  // Correct: couponErrorCode === null && appliedCouponCode !== null
+  const couponActive =
+    summary !== null &&
+    summary.couponErrorCode === null &&
+    summary.appliedCouponCode !== null;
+
+  // ── Fetch checkout summary ──────────────────────────────────────────────────
+  const fetchSummary = useCallback(
+    async (method?: PaymentMethod) => {
+      setSummaryLoading(true);
+      setSummaryError("");
+      const result = await checkoutApi.getSummary(
+        method ? { paymentMethod: method } : undefined,
+      );
+      setSummaryLoading(false);
+      if (result.ok) {
+        setSummary(result.data);
+        // If summary shows a coupon error, surface it to the coupon section
+        if (result.data.couponErrorCode && result.data.couponErrorMessage) {
+          setCouponError(result.data.couponErrorMessage);
+        }
+      } else {
+        setSummaryError("Could not load order summary. Please refresh.");
+      }
+    },
+    [],
+  );
 
   // ── Load saved addresses ────────────────────────────────────────────────────
   const loadAddresses = useCallback(async () => {
@@ -174,8 +196,23 @@ export function CheckoutClient({
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) void loadAddresses();
+    if (isAuthenticated) {
+      void loadAddresses();
+      void fetchSummary(paymentMethod);
+    }
+    // fetchSummary intentionally not in deps — only runs on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, loadAddresses]);
+
+  // ── Re-fetch summary when payment method changes ────────────────────────────
+  // §3.3: codFee only appears once CashOnDelivery is selected
+  const handlePaymentMethodChange = useCallback(
+    (method: PaymentMethod) => {
+      setPaymentMethod(method);
+      void fetchSummary(method);
+    },
+    [fetchSummary],
+  );
 
   // ── Add address via modal (when user already has saved addresses) ─────────
   const handleModalAddAddress = useCallback(async (data: CreateAddressRequest) => {
@@ -189,30 +226,41 @@ export function CheckoutClient({
     setSavingAddress(false);
   }, []);
 
-  // ── Coupon ──────────────────────────────────────────────────────────────────
+  // ── §3.2 Coupon: apply ──────────────────────────────────────────────────────
   const handleApplyCoupon = useCallback(async () => {
-    if (!couponCode.trim()) return;
+    if (!couponInput.trim()) return;
     setCouponLoading(true);
     setCouponError("");
-    const result = await checkoutApi.validateCoupon({ couponCode: couponCode.trim() });
+    const result = await cartApi.applyCoupon({ couponCode: couponInput.trim() });
     setCouponLoading(false);
     if (result.ok) {
-      if (result.data.isValid) {
-        setCoupon(result.data);
+      setSummary(result.data);
+      // §1.2 coupon trap: branch on couponErrorCode === null
+      if (result.data.couponErrorCode !== null) {
+        // Coupon was rejected; appliedCouponCode is still set but discount is 0
+        setCouponError(result.data.couponErrorMessage ?? "Coupon could not be applied.");
       } else {
-        setCoupon(null);
-        setCouponError(result.data.errorMessage ?? "Invalid or expired coupon.");
+        // Coupon accepted
+        setCouponInput("");
+        setCouponError("");
       }
     } else {
-      setCoupon(null);
-      setCouponError("Could not validate coupon. Please try again.");
+      // 400 — cart unchanged, coupon rejected at the HTTP level
+      setCouponError(extractApiError(result.error, "Coupon could not be applied."));
     }
-  }, [couponCode]);
+  }, [couponInput]);
 
-  const handleRemoveCoupon = useCallback(() => {
-    setCoupon(null);
-    setCouponCode("");
+  // ── §3.2 Coupon: remove ─────────────────────────────────────────────────────
+  const handleRemoveCoupon = useCallback(async () => {
+    setCouponLoading(true);
     setCouponError("");
+    const result = await cartApi.removeCoupon();
+    setCouponLoading(false);
+    if (result.ok) {
+      setSummary(result.data);
+      setCouponInput("");
+    }
+    // Idempotent — safe even if no coupon was applied
   }, []);
 
   // ── Open Razorpay (shared between first attempt and retry) ────────────────
@@ -297,23 +345,60 @@ export function CheckoutClient({
     openRazorpayWidget(confirmedCheckout, addr);
   }, [confirmedCheckout, addresses, selectedAddressId, openRazorpayWidget]);
 
-  // ── Cancel: release the PendingPayment order ──────────────────────────────
+  // ── §3.4 Cancel: release the PendingPayment order ────────────────────────
   const handleCancelOrder = useCallback(async () => {
     if (!confirmedCheckout) return;
     setStep("cancelling");
-    await ordersApi.cancel(confirmedCheckout.orderId, "Customer cancelled pending payment");
+    const cancelResult = await ordersApi.cancel(confirmedCheckout.orderId, "Customer cancelled pending payment");
+
+    // §1.11 / §3.4 — 409 REFUND_FAILED: order is genuinely still live
+    if (!cancelResult.ok) {
+      const err = cancelResult.error;
+      const code = "code" in err ? (err as { code?: string }).code : undefined;
+      if (code === "REFUND_FAILED") {
+        setStepError(
+          "code" in err && "message" in err
+            ? String((err as { message?: string }).message)
+            : "Refund failed. Your order is still active. Please contact support.",
+        );
+        setStep("dismissed"); // stay on the retry/cancel UI, order unchanged
+        return;
+      }
+    }
+
+    // 200 — refund accepted by provider (not yet settled; funds arrive in 5–7 days)
     pendingPaymentStore.clear();
     setConfirmedCheckout(null);
     // Generate a fresh idempotency key so user can start a new order
     idempotencyRef.current = generateIdempotencyKey();
     setStep("idle");
     setStepError("");
-  }, [confirmedCheckout]);
+    // Re-fetch summary after cart is freed
+    void fetchSummary(paymentMethod);
+  }, [confirmedCheckout, fetchSummary, paymentMethod]);
 
   // ── Place order ─────────────────────────────────────────────────────────────
   const handlePlaceOrder = useCallback(async () => {
     if (step !== "idle" && step !== "failed") return;
     setStepError("");
+
+    // ── §3.1: Re-fetch summary immediately before POST /checkout ─────────────
+    const latestSummaryResult = await checkoutApi.getSummary({ paymentMethod });
+    if (!latestSummaryResult.ok) {
+      setStepError("Could not verify order total. Please try again.");
+      setStep("failed");
+      return;
+    }
+    const latestSummary = latestSummaryResult.data;
+    setSummary(latestSummary);
+
+    // Check readiness
+    if (!latestSummary.isReadyToCheckout) {
+      const reason = latestSummary.blockingReasons[0]?.message ?? "Your cart cannot be checked out.";
+      setStepError(reason);
+      setStep("failed");
+      return;
+    }
 
     // ── Resolve address ID ────────────────────────────────────────────────────
     let resolvedAddressId = selectedAddressId;
@@ -362,7 +447,8 @@ export function CheckoutClient({
     const result = await checkoutApi.placeOrder({
       addressId: resolvedAddressId,
       paymentMethod,
-      couponCode: coupon?.isValid ? coupon.couponCode ?? undefined : undefined,
+      // Only pass couponCode if summary shows it as validly applied
+      couponCode: couponActive && summary?.appliedCouponCode ? summary.appliedCouponCode : undefined,
       idempotencyKey: idempotencyRef.current,
     });
 
@@ -381,20 +467,14 @@ export function CheckoutClient({
       }
 
       if (code === "COD_NOT_AVAILABLE") {
-        setPaymentMethod("Razorpay");
+        handlePaymentMethodChange("Razorpay");
         setStepError("Cash on Delivery is not available right now. Please pay online.");
         setStep("failed");
         return;
       }
 
-      if (code === "PRODUCT_UNAVAILABLE") {
+      if (code?.startsWith("PRODUCT_UNAVAILABLE") || code?.startsWith("VARIANT_UNAVAILABLE") || code?.startsWith("INSUFFICIENT_STOCK")) {
         setStepError(msg); setStep("failed"); await refreshCart(); return;
-      }
-
-      if (code === "INSUFFICIENT_INVENTORY" || code === "COUPON_INVALID" || code === "COUPON_USAGE_LIMIT") {
-        setStepError(msg); setStep("failed");
-        if (code === "INSUFFICIENT_INVENTORY") await refreshCart();
-        return;
       }
 
       setStepError(msg); setStep("failed"); return;
@@ -447,8 +527,9 @@ export function CheckoutClient({
     setStep("rzp_open");
     openRazorpayWidget(checkout, resolvedAddr);
   }, [
-    step, selectedAddressId, inlineForm, paymentMethod, coupon,
+    step, selectedAddressId, inlineForm, paymentMethod, couponActive, summary,
     router, refreshCart, effectiveCurrency, addresses, openRazorpayWidget,
+    handlePaymentMethodChange,
   ]);
 
   // ── Loading ──────────────────────────────────────────────────────────────────
@@ -474,8 +555,9 @@ export function CheckoutClient({
     );
   }
 
-  // ── Empty cart ───────────────────────────────────────────────────────────────
-  if (items.length === 0) {
+  // ── Empty cart (also handles blockingReasons CART_EMPTY — 200 with zeroed totals) ─
+  const cartItems = cart?.items ?? [];
+  if (cartItems.length === 0) {
     return (
       <div className="container-x mx-auto py-16 max-w-lg text-center min-h-[60vh]">
         <ShoppingBag className="size-12 text-foreground-muted mx-auto mb-4" />
@@ -504,7 +586,8 @@ export function CheckoutClient({
     step !== "rzp_open" &&
     step !== "dismissed" &&
     step !== "success" &&
-    !addressesLoading;
+    !addressesLoading &&
+    (summary?.isReadyToCheckout ?? true); // allow attempt if summary not loaded yet
 
   const stepLabel: Record<CheckoutStep, string> = {
     idle: "Place Order",
@@ -523,6 +606,15 @@ export function CheckoutClient({
       setInlineForm((f) => ({ ...f, [field]: e.target.value }));
       setInlineErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
     };
+
+  // ── §3.3 Payment methods: render from summary.paymentMethods[] ──────────────
+  const availablePaymentMethods = summary?.paymentMethods ?? [];
+  const razorpayMethod = availablePaymentMethods.find((m) => m.method === "Razorpay");
+  const codMethod = availablePaymentMethods.find((m) => m.method === "CashOnDelivery");
+  // Fall back to props while summary is loading
+  const showRazorpay = razorpayMethod ? razorpayMethod.isAvailable : razorpayEnabled;
+  const showCod = codMethod ? codMethod.isAvailable : codEnabled;
+  const codUnavailableReason = codMethod?.isAvailable === false ? codMethod.unavailableReason : null;
 
   return (
     <div className="container-x mx-auto py-8 md:py-12">
@@ -632,7 +724,7 @@ export function CheckoutClient({
           </section>
 
           {/* ── Payment method ── */}
-          {(razorpayEnabled || codEnabled) && (
+          {(showRazorpay || showCod || codUnavailableReason) && (
             <section aria-labelledby="pay-heading">
               <h2
                 id="pay-heading"
@@ -641,31 +733,40 @@ export function CheckoutClient({
                 <CreditCard className="size-4" aria-hidden="true" /> Payment Method
               </h2>
               <div className="flex flex-col gap-3" role="radiogroup" aria-label="Select payment method">
-                {razorpayEnabled && (
+                {/* §3.3: render from paymentMethods[]; fall back to props while loading */}
+                {(razorpayMethod?.isAvailable ?? razorpayEnabled) && (
                   <PaymentOption
                     id="pm-razorpay"
                     value="Razorpay"
                     selected={paymentMethod === "Razorpay"}
-                    onSelect={() => setPaymentMethod("Razorpay")}
+                    onSelect={() => handlePaymentMethodChange("Razorpay")}
                     icon={<CreditCard className="size-4" />}
                     label="Pay Online"
                     description="Cards, UPI, Net Banking, Wallets — powered by Razorpay"
                   />
                 )}
-                {codEnabled && (
+                {(codMethod?.isAvailable ?? codEnabled) && (
                   <PaymentOption
                     id="pm-cod"
                     value="CashOnDelivery"
                     selected={paymentMethod === "CashOnDelivery"}
-                    onSelect={() => setPaymentMethod("CashOnDelivery")}
+                    onSelect={() => handlePaymentMethodChange("CashOnDelivery")}
                     icon={<Banknote className="size-4" />}
                     label="Cash on Delivery"
                     description={
-                      codExtraFee > 0
-                        ? `+${formatPrice(codExtraFee, effectiveCurrency, locale)} COD fee`
+                      // §3.3: only show codFee after method is selected (from summary)
+                      paymentMethod === "CashOnDelivery" && summary && summary.codFee > 0
+                        ? `+${formatPrice(summary.codFee, effectiveCurrency, locale)} COD fee`
                         : "Pay when your order arrives"
                     }
                   />
+                )}
+                {/* Unavailable COD reason */}
+                {codUnavailableReason && (
+                  <p className="text-caption text-foreground-muted flex items-center gap-1.5">
+                    <Info className="size-3.5" aria-hidden="true" />
+                    {codUnavailableReason}
+                  </p>
                 )}
               </div>
             </section>
@@ -679,16 +780,22 @@ export function CheckoutClient({
             >
               <Tag className="size-4" aria-hidden="true" /> Coupon / Promo
             </h2>
-            {coupon?.isValid ? (
+            {/* §3.2: couponActive = couponErrorCode === null && appliedCouponCode !== null */}
+            {couponActive && summary?.appliedCouponCode ? (
               <div className="flex items-center gap-3 p-3 rounded-lg border border-success/30 bg-success/5">
                 <CheckCircle className="size-4 text-success shrink-0" />
                 <div className="flex-1">
-                  <p className="text-body-sm font-medium text-foreground">{coupon.couponCode}</p>
+                  <p className="text-body-sm font-medium text-foreground">{summary.appliedCouponCode}</p>
                   <p className="text-caption text-success">
-                    {formatPrice(coupon.discountAmount, effectiveCurrency, locale)} discount applied
+                    {formatPrice(summary.discountAmount, effectiveCurrency, locale)} discount applied
                   </p>
                 </div>
-                <button onClick={handleRemoveCoupon} aria-label="Remove coupon" className="text-foreground-muted hover:text-foreground">
+                <button
+                  onClick={handleRemoveCoupon}
+                  disabled={couponLoading}
+                  aria-label="Remove coupon"
+                  className="text-foreground-muted hover:text-foreground disabled:opacity-50"
+                >
                   <X className="size-4" />
                 </button>
               </div>
@@ -697,13 +804,19 @@ export function CheckoutClient({
                 <div className="flex-1">
                   <Input
                     placeholder="Enter coupon code"
-                    value={couponCode}
-                    onChange={(e) => { setCouponCode(e.target.value); setCouponError(""); }}
+                    value={couponInput}
+                    onChange={(e) => { setCouponInput(e.target.value); setCouponError(""); }}
                     error={couponError}
                     aria-label="Coupon code"
                   />
                 </div>
-                <Button variant="outline" onClick={handleApplyCoupon} loading={couponLoading} disabled={!couponCode.trim()} className="shrink-0 self-start mt-0">
+                <Button
+                  variant="outline"
+                  onClick={handleApplyCoupon}
+                  loading={couponLoading}
+                  disabled={!couponInput.trim()}
+                  className="shrink-0 self-start mt-0"
+                >
                   Apply
                 </Button>
               </div>
@@ -716,9 +829,10 @@ export function CheckoutClient({
           <div className="rounded-xl border border-border bg-surface-elevated p-6 flex flex-col gap-4">
             <h2 className="text-h4 font-semibold text-foreground">Order Summary</h2>
 
+            {/* Line items from summary or cart */}
             <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-              {items.map((item) => (
-                <li key={item.id} className="flex items-center gap-2 text-body-sm">
+              {(summary?.items ?? cartItems).map((item) => (
+                <li key={"cartItemId" in item ? item.cartItemId : item.id} className="flex items-center gap-2 text-body-sm">
                   <span className="flex-1 truncate text-foreground">{item.productName}</span>
                   <span className="text-foreground-muted shrink-0">×{item.quantity}</span>
                   <span className="font-medium text-foreground shrink-0 tabular-nums">
@@ -728,25 +842,93 @@ export function CheckoutClient({
               ))}
             </ul>
 
-            <div className="flex flex-col gap-2 text-body-sm border-t border-border pt-3">
-              <SummaryRow label="Subtotal" value={formatPrice(subtotal, effectiveCurrency, locale)} />
-              <SummaryRow
-                label={estimatedShipping === 0 && freeShippingThreshold != null ? "Shipping (Free)" : "Shipping (est.)"}
-                value={estimatedShipping === 0 ? "FREE" : formatPrice(estimatedShipping, effectiveCurrency, locale)}
-                highlight={estimatedShipping === 0}
-              />
-              {couponDiscount > 0 && (
-                <SummaryRow label="Discount" value={`−${formatPrice(couponDiscount, effectiveCurrency, locale)}`} highlight />
-              )}
-              {estimatedCod > 0 && (
-                <SummaryRow label="COD Fee" value={formatPrice(estimatedCod, effectiveCurrency, locale)} />
-              )}
-              <SummaryRow label="Tax" value="Calculated at order" muted />
-            </div>
+            {summaryLoading && (
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            )}
 
-            <p className="text-caption text-foreground-muted">
-              Final total will be confirmed after placing your order.
-            </p>
+            {summaryError && (
+              <p className="text-caption text-warning">{summaryError}</p>
+            )}
+
+            {!summaryLoading && summary && (
+              <div className="flex flex-col gap-2 text-body-sm border-t border-border pt-3">
+                <SummaryRow label="Subtotal" value={formatPrice(summary.subtotal, effectiveCurrency, locale)} />
+                <SummaryRow
+                  label={summary.isFreeShipping ? "Shipping (Free)" : "Shipping"}
+                  value={summary.isFreeShipping ? "FREE" : formatPrice(summary.shippingAmount, effectiveCurrency, locale)}
+                  highlight={summary.isFreeShipping}
+                />
+                {/* §3.3: only show codFee after method is selected */}
+                {paymentMethod === "CashOnDelivery" && summary.codFee > 0 && (
+                  <SummaryRow label="COD Fee" value={formatPrice(summary.codFee, effectiveCurrency, locale)} />
+                )}
+                {/* §1.2: coupon active = couponErrorCode === null */}
+                {couponActive && summary.discountAmount > 0 && (
+                  <SummaryRow
+                    label="Discount"
+                    value={`−${formatPrice(summary.discountAmount, effectiveCurrency, locale)}`}
+                    highlight
+                  />
+                )}
+                {/* §1.2: tax row — never add to grandTotal */}
+                {summary.taxAmount > 0 && (
+                  <SummaryRow
+                    label={summary.isPriceInclusive
+                      ? `${summary.taxLabel} (incl.)`
+                      : summary.taxLabel || "Tax"}
+                    value={formatPrice(summary.taxAmount, effectiveCurrency, locale)}
+                    muted={summary.isPriceInclusive}
+                  />
+                )}
+                {/* Free shipping progress */}
+                {!summary.isFreeShipping && summary.freeShippingThreshold && summary.remainingForFreeShipping > 0 && (
+                  <p className="text-caption text-foreground-muted">
+                    Add {formatPrice(summary.remainingForFreeShipping, effectiveCurrency, locale)} more for free shipping
+                  </p>
+                )}
+              </div>
+            )}
+
+            {!summaryLoading && summary && (
+              <div className="flex justify-between py-3 border-t border-border text-body font-semibold">
+                <span className="text-foreground">Total</span>
+                {/* §1.2: grandTotal is what gets charged — display directly */}
+                <span className="text-foreground tabular-nums">
+                  {formatPrice(summary.grandTotal, effectiveCurrency, locale)}
+                </span>
+              </div>
+            )}
+
+            {!summaryLoading && !summary && (
+              <>
+                <p className="text-caption text-foreground-muted">
+                  Final total will be confirmed after placing your order.
+                </p>
+              </>
+            )}
+
+            {/* §1.2: blocking reasons — shown as informational when not ready */}
+            {summary && !summary.isReadyToCheckout && summary.blockingReasons.length > 0 && (
+              <div role="alert" className="flex flex-col gap-1.5 text-body-sm text-warning bg-warning/5 border border-warning/20 rounded-md px-3 py-2">
+                {summary.blockingReasons.map((r) => (
+                  <div key={r.code} className="flex items-start gap-2">
+                    <AlertTriangle className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
+                    <span>{r.message}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── Delivery estimate ── */}
+            {summary?.deliveryEstimate && (
+              <p className="text-caption text-foreground-muted">
+                🚚 {summary.deliveryEstimate.displayText}
+              </p>
+            )}
 
             {/* ── Step: error ── */}
             {stepError && (

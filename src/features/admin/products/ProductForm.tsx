@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Plus, GripVertical, X } from "lucide-react";
-import { adminProductsApi, adminVariantsApi } from "@/services/api/admin";
+import { Trash2, Plus, GripVertical, X, ChevronDown, ChevronUp } from "lucide-react";
+import { adminProductsApi, adminVariantsApi, adminAttributesApi } from "@/services/api/admin";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
@@ -18,6 +18,8 @@ import type {
   VariantResponse,
   CreateVariantRequest,
   UpdateVariantRequest,
+  ProductAttributeItem,
+  ProductAttributeValueItem,
 } from "@/types/api";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -206,6 +208,13 @@ interface VariantRowProps {
 }
 
 function VariantRow({ variant, onEdit, onDelete }: VariantRowProps) {
+  // §1.6: use resolved attributes for display; fall back to raw IDs only when absent
+  const attrLabel = variant.attributes && variant.attributes.length > 0
+    ? variant.attributes.map((a) => `${a.attributeName}: ${a.value}`).join(" / ")
+    : variant.attributeValueIds
+      ? `IDs: ${variant.attributeValueIds}`
+      : null;
+
   return (
     <div className="flex items-center gap-3 rounded-md border border-border bg-surface px-3 py-2">
       <GripVertical className="size-4 text-foreground-muted shrink-0 cursor-grab" aria-hidden="true" />
@@ -221,6 +230,10 @@ function VariantRow({ variant, onEdit, onDelete }: VariantRowProps) {
           {variant.isActive ? "Active" : "Inactive"}
           {variant.availableStock != null && ` · Stock: ${variant.availableStock}`}
         </p>
+        {/* §1.6: show resolved attribute labels */}
+        {attrLabel && (
+          <p className="text-caption text-foreground-muted">{attrLabel}</p>
+        )}
       </div>
       <div className="flex gap-1 shrink-0">
         <button
@@ -247,6 +260,7 @@ function VariantRow({ variant, onEdit, onDelete }: VariantRowProps) {
 interface VariantFormState {
   sku: string;
   priceOverride: string;
+  /** Blank means null (append at end per §1.5). Non-blank = explicit position. */
   sortOrder: string;
   isActive: boolean;
   attributeValueIds: string;
@@ -255,7 +269,7 @@ interface VariantFormState {
 const emptyVariantForm: VariantFormState = {
   sku: "",
   priceOverride: "",
-  sortOrder: "0",
+  sortOrder: "", // §1.5: blank → null → server appends at end
   isActive: true,
   attributeValueIds: "",
 };
@@ -313,9 +327,12 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
     const price = parseFloat(form.priceOverride);
     if (form.priceOverride !== "" && (isNaN(price) || price < 0))
       e.priceOverride = "Price override must be a non-negative number.";
-    const sort = parseInt(form.sortOrder);
-    if (isNaN(sort) || sort < 0)
-      e.sortOrder = "Sort order must be a non-negative integer.";
+    // §1.5: blank sortOrder is valid (means null = append at end)
+    if (form.sortOrder !== "") {
+      const sort = parseInt(form.sortOrder);
+      if (isNaN(sort) || sort < 0)
+        e.sortOrder = "Sort order must be a non-negative integer, or leave blank to append.";
+    }
     return e;
   }
 
@@ -334,7 +351,9 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
     const createPayload: CreateVariantRequest = {
       sku: form.sku.trim() || undefined,
       priceOverride: form.priceOverride !== "" ? parseFloat(form.priceOverride) : undefined,
-      sortOrder: parseInt(form.sortOrder),
+      // §1.5: blank sortOrder → null → server appends after current max
+      // Do NOT default to 0 (that would position at the top)
+      sortOrder: form.sortOrder.trim() !== "" ? parseInt(form.sortOrder) : undefined,
       attributeValueIds: attrIds,
     };
 
@@ -423,12 +442,13 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
               error={formErrors.priceOverride}
             />
             <Input
-              label="Sort order"
+              label="Sort order (leave blank to append)"
               type="number"
               min={0}
               value={form.sortOrder}
               onChange={(e) => setForm((f) => ({ ...f, sortOrder: e.target.value }))}
               error={formErrors.sortOrder}
+              hint="Blank = add after last variant. Set explicitly only to control position."
             />
             <div className="flex flex-col gap-1.5">
               <label className="text-body-sm font-medium text-foreground">Status</label>
@@ -478,6 +498,252 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
     </div>
   );
 }
+
+// ── Attribute editor (§2.4/§2.5/§2.6) ───────────────────────────────────────
+// Manages attribute axes (e.g. "Storage", "Color") and their values.
+// Called from ProductForm on existing products only.
+
+interface AttributeEditorProps {
+  productId: string;
+  onRefresh: () => void; // refresh variants after attribute changes
+}
+
+function AttributeEditor({ productId, onRefresh }: AttributeEditorProps) {
+  const [attributes, setAttributes] = useState<ProductAttributeItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [expanded, setExpanded] = useState(false);
+
+  // Form state for adding/editing a single attribute
+  const [editAttr, setEditAttr] = useState<ProductAttributeItem | null>(null);
+  const [attrName, setAttrName] = useState("");
+  // Each value: { id?: string (existing); value: string; _deleted?: boolean }
+  type EditValue = { id?: string; value: string; _key: string };
+  const [editValues, setEditValues] = useState<EditValue[]>([]);
+  const [formOpen, setFormOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<ProductAttributeItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    const res = await adminAttributesApi.get(productId);
+    if (res.ok) {
+      setAttributes(res.data.attributes);
+    } else {
+      setError("Failed to load attributes.");
+    }
+    setLoading(false);
+  }, [productId]);
+
+  useEffect(() => { void load(); }, [load]);
+  // useEffect needs to be imported — it is already imported at top via useState
+
+  function openNew() {
+    setEditAttr(null);
+    setAttrName("");
+    setEditValues([{ value: "", _key: crypto.randomUUID() }]);
+    setSaveError("");
+    setFormOpen(true);
+  }
+
+  function openEdit(attr: ProductAttributeItem) {
+    setEditAttr(attr);
+    setAttrName(attr.name);
+    setEditValues(
+      attr.values
+        .slice()
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((v) => ({ id: v.id, value: v.value, _key: v.id }))
+    );
+    setSaveError("");
+    setFormOpen(true);
+  }
+
+  function closeForm() {
+    setFormOpen(false);
+    setEditAttr(null);
+    setAttrName("");
+    setEditValues([]);
+  }
+
+  function addValue() {
+    setEditValues((prev) => [...prev, { value: "", _key: crypto.randomUUID() }]);
+  }
+
+  function updateValue(key: string, val: string) {
+    setEditValues((prev) => prev.map((v) => v._key === key ? { ...v, value: val } : v));
+  }
+
+  function removeValue(key: string) {
+    setEditValues((prev) => prev.filter((v) => v._key !== key));
+  }
+
+  async function handleSave() {
+    if (!attrName.trim()) { setSaveError("Attribute name is required."); return; }
+    const cleanValues = editValues.filter((v) => v.value.trim());
+    if (cleanValues.length === 0) { setSaveError("At least one value is required."); return; }
+    setSaving(true);
+    setSaveError("");
+    // §2.5: send complete value list; include id for existing values
+    const res = await adminAttributesApi.upsert(productId, {
+      name: attrName.trim(),
+      values: cleanValues.map((v) => ({ value: v.value.trim(), ...(v.id ? { id: v.id } : {}) })),
+    });
+    setSaving(false);
+    if (res.ok) {
+      setAttributes(res.data.attributes);
+      closeForm();
+      onRefresh(); // variants may gain/lose attribute data
+    } else {
+      setSaveError(extractApiError(res.error, "Failed to save attribute."));
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    await adminAttributesApi.delete(productId, deleteTarget.id);
+    setDeleting(false);
+    setDeleteTarget(null);
+    await load();
+    onRefresh();
+  }
+
+  const toggle = () => setExpanded((v) => !v);
+
+  return (
+    <div className="flex flex-col gap-3">
+      <button
+        type="button"
+        onClick={toggle}
+        className="flex items-center gap-2 text-body-sm font-medium text-foreground-muted hover:text-foreground transition-colors self-start"
+        aria-expanded={expanded}
+      >
+        {expanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+        {expanded ? "Hide" : "Manage"} Attribute Axes
+        {attributes.length > 0 && (
+          <span className="text-caption text-foreground-muted">({attributes.length} axis{attributes.length !== 1 ? "es" : ""})</span>
+        )}
+      </button>
+
+      {expanded && (
+        <>
+          {loading && <p className="text-caption text-foreground-muted">Loading…</p>}
+          {error && <p className="text-caption text-danger">{error}</p>}
+
+          {/* Existing attribute list */}
+          {!loading && attributes.map((attr) => (
+            <div key={attr.id} className="rounded-md border border-border bg-surface px-3 py-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-body-sm font-medium text-foreground">{attr.name}</p>
+                  <p className="text-caption text-foreground-muted">
+                    {attr.values.map((v) => v.value).join(" / ")}
+                  </p>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <button
+                    type="button"
+                    aria-label={`Edit ${attr.name}`}
+                    onClick={() => openEdit(attr)}
+                    className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
+                  >
+                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Delete ${attr.name}`}
+                    onClick={() => setDeleteTarget(attr)}
+                    className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Inline form for add/edit */}
+          {formOpen && (
+            <div className="rounded-lg border border-border bg-surface-elevated p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <p className="text-body-sm font-semibold text-foreground">
+                  {editAttr ? `Edit “${editAttr.name}”` : "New Attribute"}
+                </p>
+                <button type="button" onClick={closeForm} aria-label="Close" className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-muted">
+                  <X className="size-4" />
+                </button>
+              </div>
+              {saveError && <p className="text-caption text-danger">{saveError}</p>}
+              <Input
+                label="Attribute name (e.g. Storage)"
+                value={attrName}
+                onChange={(e) => setAttrName(e.target.value)}
+                placeholder="e.g. Color"
+              />
+              <div className="flex flex-col gap-2">
+                <p className="text-body-sm font-medium text-foreground">Values</p>
+                {/* §2.5: send the complete list; include id for existing values */}
+                {editValues.map((ev) => (
+                  <div key={ev._key} className="flex gap-2">
+                    <Input
+                      value={ev.value}
+                      onChange={(e) => updateValue(ev._key, e.target.value)}
+                      placeholder="e.g. 128GB"
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remove value"
+                      onClick={() => removeValue(ev._key)}
+                      disabled={editValues.length <= 1}
+                      className="h-9 w-9 flex items-center justify-center rounded border border-border text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors disabled:opacity-30"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addValue}
+                  className="flex items-center gap-1.5 text-caption text-foreground-muted hover:text-foreground transition-colors self-start"
+                >
+                  <Plus className="size-3" /> Add value
+                </button>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" size="sm" type="button" onClick={closeForm} disabled={saving}>Cancel</Button>
+                <Button variant="primary" size="sm" type="button" onClick={handleSave} loading={saving}>Save</Button>
+              </div>
+            </div>
+          )}
+
+          {!formOpen && (
+            <Button variant="outline" size="sm" className="self-start" type="button" onClick={openNew}>
+              <Plus className="size-3.5 mr-1.5" /> Add Attribute
+            </Button>
+          )}
+
+          <ConfirmDialog
+            open={!!deleteTarget}
+            onClose={() => setDeleteTarget(null)}
+            onConfirm={handleDelete}
+            title="Delete attribute"
+            description={`Delete “${deleteTarget?.name}” and all its values? Any variant referencing these values will become unconfigured.`}
+            confirmLabel="Delete"
+            confirmVariant="danger"
+            loading={deleting}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── useEffect import needed for AttributeEditor ────────────────────────────────
+// (useEffect is re-imported below to be added at top of the file)
 
 // ── Main product form ─────────────────────────────────────────────────────────
 
@@ -710,6 +976,19 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 productId={productId}
                 images={product.images}
                 onRefresh={() => { if (onRefresh) onRefresh(); }}
+              />
+            </Section>
+          )}
+
+          {/* Attributes — only for existing products (§2.4/§2.5/§2.6) */}
+          {isEdit && productId && (
+            <Section title="Attribute Axes">
+              <p className="text-caption text-foreground-muted -mt-1">
+                Define dimensions like “Storage” or “Color”. Variants are then configured with combinations of values.
+              </p>
+              <AttributeEditor
+                productId={productId}
+                onRefresh={refreshVariants}
               />
             </Section>
           )}

@@ -46,6 +46,8 @@ import type {
   AdjustStockRequest,
   ProductImageDto,
   ReorderImagesRequest,
+  ProductAttributesResponse,
+  UpsertProductAttributeRequest,
 } from "@/types/api";
 
 // ── Products ─────────────────────────────────────────────────────────────────
@@ -338,4 +340,32 @@ export const adminInventoryApi = {
     const query = variantId ? `?variantId=${variantId}` : "";
     return apiClient.post<InventoryResponse>(`/api/v1/admin/inventory/${productId}/adjust${query}`, data);
   },
+};
+
+// ── Product Attributes (Admin) ───────────────────────────────────────────────
+
+export const adminAttributesApi = {
+  /**
+   * §2.4 NEW — GET /api/v1/products/{productId}/attributes
+   * AdminOnly. Trigger on admin variant-editor mount.
+   * Returns all attribute axes and their values for the product.
+   */
+  get: (productId: string) =>
+    apiClient.get<ProductAttributesResponse>(`/api/v1/products/${productId}/attributes`),
+
+  /**
+   * §2.5 NEW — PUT /api/v1/products/{productId}/attributes
+   * AdminOnly. Replaces ONE attribute (matched by name) and its full value list.
+   * ⚠️ Always send the complete value list; omitting a value deletes it.
+   * Include existing value id to edit/reorder; omit id to create new value.
+   */
+  upsert: (productId: string, data: UpsertProductAttributeRequest) =>
+    apiClient.put<ProductAttributesResponse>(`/api/v1/products/${productId}/attributes`, data),
+
+  /**
+   * §2.6 NEW — DELETE /api/v1/products/{productId}/attributes/{attributeId}
+   * AdminOnly. Deletes the attribute and all its values. Idempotent.
+   */
+  delete: (productId: string, attributeId: string) =>
+    apiClient.delete<void>(`/api/v1/products/${productId}/attributes/${attributeId}`),
 };

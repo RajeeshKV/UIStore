@@ -48,16 +48,36 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
     setCancelling(true);
     const result = await ordersApi.cancel(orderId);
     setCancelOpen(false);
-    if (result.ok) {
-      if (result.data) {
-        setOrder(result.data);
-      } else {
-        await load();
+
+    // §1.11: 409 REFUND_FAILED — the order is genuinely still live.
+    // Do NOT mark it cancelled; show the server's message as-is.
+    if (!result.ok) {
+      const err = result.error as { code?: string; message?: string; status?: number };
+      if (err?.code === "REFUND_FAILED") {
+        toastError(
+          "Refund failed",
+          err.message ?? "Your refund could not be processed. The order remains active. Please contact support.",
+        );
+        // Leave order state exactly as the server last reported it
+        setCancelling(false);
+        return;
       }
-      toastSuccess("Order cancelled", "Your order has been cancelled.");
-    } else {
       toastError("Cancellation failed", extractApiError(result.error));
+      setCancelling(false);
+      return;
     }
+
+    // §1.11: 200 means refund accepted by provider, NOT that funds have landed.
+    // Refunds typically settle in 5–7 business days.
+    if (result.data) {
+      setOrder(result.data);
+    } else {
+      await load();
+    }
+    toastSuccess(
+      "Refund initiated",
+      "Your order has been cancelled. Refunds typically settle within 5–7 business days.",
+    );
     setCancelling(false);
   }
 
@@ -78,9 +98,14 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
   }
 
   const effectiveCurrency = order.currency ?? currency;
-  // Cancel is only allowed when status is PendingPayment or Confirmed
-  // (backend returns 409 CANNOT_CANCEL for Processing or later)
+  // Cancel allowed for PendingPayment and Confirmed only
+  // (backend returns 409 CANNOT_CANCEL for Processing or later).
+  // §1.10: Cancelled orders can later become Refunded — both are "money-returned" states.
   const canCancel = order.status === "PendingPayment" || order.status === "Confirmed";
+  const isMoneyReturned = order.status === "Refunded";
+  // §1.10: Cancelled → Refunded is now reachable — a previously-cancelled order
+  // can show as Refunded once the provider confirms settlement.
+  const wasCancelledNowRefunded = isMoneyReturned;
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
@@ -107,6 +132,12 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <OrderStatusBadge status={order.status} />
+          {/* §1.10: show refund notice for any Refunded order (incl. Cancelled→Refunded path) */}
+          {wasCancelledNowRefunded && (
+            <span className="text-caption text-foreground-muted">
+              Refund issued — funds arrive within 5–7 business days
+            </span>
+          )}
           {canCancel && (
             <button
               onClick={() => setCancelOpen(true)}
@@ -218,7 +249,10 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
         size="max-w-sm"
       >
         <p className="text-body-sm text-foreground-muted mb-6">
-          Are you sure you want to cancel Order #{order.orderNumber}? This action may not be reversible.
+          Are you sure you want to cancel Order #{order.orderNumber}?
+          {order.paymentMethod === "Razorpay"
+            ? " A refund will be initiated to your original payment method (5–7 business days)."
+            : " This action may not be reversible."}
         </p>
         <div className="flex gap-3">
           <Button variant="outline" fullWidth onClick={() => setCancelOpen(false)}>Keep Order</Button>

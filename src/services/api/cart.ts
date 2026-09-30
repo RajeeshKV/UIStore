@@ -10,6 +10,8 @@ import type {
   CartResponse,
   AddCartItemRequest,
   UpdateCartItemRequest,
+  ApplyCouponRequest,
+  CheckoutSummaryResponse,
 } from "@/types/api";
 
 const CART_ID_KEY = "kromic_cart_id";
@@ -59,4 +61,20 @@ export const cartApi = {
     apiClient.delete<CartResponse>("/api/v1/cart", {
       headers: cartHeaders(),
     }),
+
+  /**
+   * §2.2 NEW — POST /api/v1/cart/coupon
+   * Auth required. Returns full CheckoutSummaryResponse (recalculated).
+   * On rejection (400) the cart is left unchanged.
+   */
+  applyCoupon: (data: ApplyCouponRequest) =>
+    apiClient.post<CheckoutSummaryResponse>("/api/v1/cart/coupon", data),
+
+  /**
+   * §2.3 NEW — DELETE /api/v1/cart/coupon
+   * Auth required. Idempotent — safe to call with no coupon applied.
+   * Returns full CheckoutSummaryResponse with no discount applied.
+   */
+  removeCoupon: () =>
+    apiClient.delete<CheckoutSummaryResponse>("/api/v1/cart/coupon"),
 };
