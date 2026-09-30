@@ -59,16 +59,10 @@ export function ProductGrid({
   }
 
   const px = cardWidth[cols] ?? 170;
+  void px; // kept for future per-layout customisation
 
   return (
-    <div
-      className={cn("grid gap-2 md:gap-3", className)}
-      style={{
-        // Fixed-width columns: cards never grow beyond `px` regardless of item count.
-        // auto-fill packs as many columns as fit; remaining space stays empty (left-aligned).
-        gridTemplateColumns: `repeat(auto-fill, ${px}px)`,
-      }}
-    >
+    <div className={cn("grid-product-cards", className)}>
       {products.map((p, i) => (
         <CartAwareProductCard key={p.id} product={p} currency={currency} locale={locale} eager={i < eagerCount} />
       ))}

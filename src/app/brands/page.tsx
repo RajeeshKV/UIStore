@@ -45,42 +45,44 @@ export default async function BrandsPage() {
         ) : (
           <ul
             role="list"
-            className="grid gap-3 md:gap-4"
-            style={{ gridTemplateColumns: "repeat(auto-fill, 150px)" }}
+            className="grid-catalog-cards"
           >
             {brands.map((brand) => (
               <li key={brand.id}>
                 <Link
                   href={`/brands/${brand.slug}`}
                   className={cn(
-                    "group flex flex-col items-center gap-2 p-3 rounded-lg",
-                    "border border-border hover:border-border-strong hover:bg-surface",
+                    "group flex flex-col items-center gap-3 p-4 rounded-lg",
+                    "border border-border hover:border-border-strong hover:shadow-sm hover:bg-surface",
                     "transition-all duration-150 focus-visible:outline-2 focus-visible:outline-focus",
                   )}
                 >
-                  {/* Logo */}
-                  <div className="relative h-10 w-full flex items-center justify-center">
+                  {/* Logo area — taller to match category image proportion */}
+                  <div className="relative h-24 w-full flex items-center justify-center bg-muted/40 rounded-md overflow-hidden">
                     {brand.logoUrl ? (
                       <Image
                         src={brand.logoUrl}
                         alt={brand.name ?? "Brand"}
                         fill
-                        sizes="150px"
-                        className="object-contain"
+                        sizes="300px"
+                        className="object-contain p-3"
                         loading="lazy"
                       />
                     ) : (
-                      <span className="text-h4 font-bold text-foreground-muted group-hover:text-foreground transition-colors select-none">
+                      <span className="text-4xl font-bold text-foreground-muted/50 group-hover:text-foreground-muted transition-colors select-none">
                         {(brand.name ?? "?").charAt(0).toUpperCase()}
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] font-medium text-foreground-muted group-hover:text-foreground transition-colors truncate w-full text-center">
-                    {brand.name}
-                  </p>
-                  {brand.productCount != null && (
-                    <p className="text-[10px] text-foreground-muted">{brand.productCount} products</p>
-                  )}
+                  {/* Info */}
+                  <div className="flex flex-col items-center gap-0.5 w-full">
+                    <p className="text-body-sm font-semibold text-foreground group-hover:text-foreground/70 transition-colors truncate w-full text-center">
+                      {brand.name}
+                    </p>
+                    {brand.productCount != null && (
+                      <p className="text-caption text-foreground-muted">{brand.productCount} products</p>
+                    )}
+                  </div>
                 </Link>
               </li>
             ))}

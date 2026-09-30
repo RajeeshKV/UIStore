@@ -93,6 +93,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const currency = settings?.currencyCode ?? product.currency ?? "INR";
   const locale = settings?.culture ?? "en-IN";
+  // Mirrors checkout/page.tsx — backend is the authority on COD availability
+  const codEnabled = settings?.payment?.codEnabled ?? settings?.delivery?.codEnabled ?? false;
 
   // Build gallery images — use images array if available, fall back to primaryImageUrl
   const galleryImages = product.images ?? [];
@@ -136,6 +138,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               product={product}
               currency={currency}
               locale={locale}
+              codEnabled={codEnabled}
             />
           </div>
         </div>

@@ -29,12 +29,15 @@ interface ProductInformationProps {
   product: StorefrontProductResponse;
   currency: string;
   locale: string;
+  /** Whether Cash on Delivery is enabled for this store. Controls the COD badge. */
+  codEnabled?: boolean;
 }
 
 export function ProductInformation({
   product,
   currency,
   locale,
+  codEnabled = false,
 }: ProductInformationProps) {
   const shouldReduce = useReducedMotion();
   const { addItem, isMutating } = useCart();
@@ -246,6 +249,21 @@ export function ProductInformation({
         <span className="flex items-center gap-1.5">
           <CheckCircle className="size-3.5 text-success" aria-hidden="true" />
           Easy returns
+        </span>
+        {/* COD availability — driven by admin payment settings */}
+        <span
+          className={cn(
+            "flex items-center gap-1.5",
+            codEnabled ? "text-success" : "text-foreground-muted",
+          )}
+          title={codEnabled ? "Cash on Delivery is available" : "Cash on Delivery is not available for this store"}
+        >
+          {codEnabled ? (
+            <CheckCircle className="size-3.5 text-success" aria-hidden="true" />
+          ) : (
+            <XCircle className="size-3.5" aria-hidden="true" />
+          )}
+          {codEnabled ? "COD Available" : "No COD"}
         </span>
       </div>
     </div>
