@@ -14,17 +14,26 @@ interface ProductGridProps {
   currency?: string;
   locale?: string;
   skeletonCount?: number;
+  /**
+   * Hint for the minimum card width in px.
+   * The grid uses auto-fill so cards are never wider than this,
+   * regardless of how few items are present.
+   * 3 → ~180px  (with-filter layout)
+   * 4 → ~170px  (default)
+   * 5 → ~155px
+   * 6 → ~140px
+   */
   cols?: 3 | 4 | 5 | 6;
   className?: string;
   eagerCount?: number;
 }
 
-// 5 per row on desktop — compact catalog grid
-const colClasses: Record<number, string> = {
-  3: "grid-cols-2 sm:grid-cols-3",
-  4: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4",
-  5: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
-  6: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6",
+// Maps cols hint → fixed card width in px used for auto-fill
+const cardWidth: Record<number, number> = {
+  3: 180,
+  4: 170,
+  5: 155,
+  6: 140,
 };
 
 export function ProductGrid({
@@ -49,8 +58,17 @@ export function ProductGrid({
     return <EmptyState icon={<ShoppingBag className="size-8" />} title="No products found" description="Check back soon — new arrivals are on the way." />;
   }
 
+  const px = cardWidth[cols] ?? 170;
+
   return (
-    <div className={cn("grid gap-2 md:gap-3", colClasses[cols] ?? colClasses[5], className)}>
+    <div
+      className={cn("grid gap-2 md:gap-3", className)}
+      style={{
+        // Fixed-width columns: cards never grow beyond `px` regardless of item count.
+        // auto-fill packs as many columns as fit; remaining space stays empty (left-aligned).
+        gridTemplateColumns: `repeat(auto-fill, ${px}px)`,
+      }}
+    >
       {products.map((p, i) => (
         <CartAwareProductCard key={p.id} product={p} currency={currency} locale={locale} eager={i < eagerCount} />
       ))}

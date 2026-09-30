@@ -43,7 +43,11 @@ export default async function BrandsPage() {
         {brands.length === 0 ? (
           <EmptyState icon={<Tag className="size-8" />} title="No brands yet" description="Brands will appear here once added." />
         ) : (
-          <ul role="list" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4">
+          <ul
+            role="list"
+            className="grid gap-3 md:gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fill, 150px)" }}
+          >
             {brands.map((brand) => (
               <li key={brand.id}>
                 <Link

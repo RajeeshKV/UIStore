@@ -47,12 +47,19 @@ export function ProductCard({
       : null;
 
   return (
-    <article className={cn("group flex flex-col", isOutOfStock && "opacity-60", className)}>
-      {/* Image — square, never taller than it is wide */}
+    <article
+      className={cn(
+        "group flex flex-col rounded-lg overflow-hidden border border-border",
+        "hover:border-border-strong hover:shadow-sm transition-all duration-150",
+        isOutOfStock && "opacity-60",
+        className,
+      )}
+    >
+      {/* Image area */}
       <Link
         href={`/products/${product.slug}`}
         aria-label={`View ${product.name}`}
-        className="relative block w-full aspect-square overflow-hidden rounded-md bg-muted"
+        className="relative block w-full aspect-square overflow-hidden bg-surface"
       >
         {product.primaryImageUrl && !imgError ? (
           <Image
@@ -60,7 +67,7 @@ export function ProductCard({
             alt={product.name ?? "Product"}
             fill
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 20vw, 15vw"
-            className="object-contain object-center transition-transform duration-300 group-hover:scale-105"
+            className="object-contain object-center transition-transform duration-300 group-hover:scale-105 p-2"
             loading={eager ? "eager" : "lazy"}
             onError={() => setImgError(true)}
           />
@@ -72,7 +79,7 @@ export function ProductCard({
 
         {/* Discount badge */}
         {discount > 0 && (
-          <span className="absolute top-1 left-1 rounded bg-danger px-1 py-0.5 text-[9px] font-bold text-white leading-none pointer-events-none">
+          <span className="absolute top-1.5 left-1.5 rounded bg-danger px-1.5 py-0.5 text-[9px] font-bold text-white leading-none pointer-events-none">
             -{discount}%
           </span>
         )}
@@ -82,7 +89,7 @@ export function ProductCard({
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           aria-pressed={isWishlisted}
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsWishlisted(w => !w); }}
-          className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-background/80 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+          className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-background/80 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
         >
           <Heart className={cn("size-3", isWishlisted ? "fill-danger text-danger" : "text-foreground-muted")} />
         </button>
@@ -93,7 +100,7 @@ export function ProductCard({
             <button
               onClick={(e) => { e.preventDefault(); onAddToCart(product); }}
               aria-label={`Add ${product.name} to cart`}
-              className="w-full py-1 bg-primary/90 text-primary-foreground text-[10px] font-semibold uppercase tracking-wide"
+              className="w-full py-1.5 bg-primary/90 text-primary-foreground text-[10px] font-semibold uppercase tracking-wide"
             >
               Add to cart
             </button>
@@ -101,8 +108,8 @@ export function ProductCard({
         )}
       </Link>
 
-      {/* Info — super tight */}
-      <div className="mt-1.5 flex flex-col gap-0.5 px-0.5">
+      {/* Info */}
+      <div className="flex flex-col gap-0.5 px-2.5 py-2 border-t border-border bg-background">
         {product.categoryName && (
           <p className="text-[9px] text-foreground-muted uppercase tracking-wide truncate">{product.categoryName}</p>
         )}
@@ -112,7 +119,7 @@ export function ProductCard({
         >
           {product.name}
         </Link>
-        <div className="flex items-center gap-1 mt-0.5">
+        <div className="flex items-center gap-1.5 mt-0.5">
           <span className="text-[12px] font-bold text-foreground">{priceStr}</span>
           {comparePriceStr && (
             <span className="text-[10px] text-foreground-muted line-through">{comparePriceStr}</span>
