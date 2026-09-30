@@ -45,6 +45,7 @@ export function AdminPromotionsClient() {
 
   const [deleteTarget, setDeleteTarget] = useState<PromotionSummaryResponse | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [toggling, setToggling] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -52,9 +53,19 @@ export function AdminPromotionsClient() {
     setError(null);
     const res = await adminPromotionsApi.list({ page, pageSize: PAGE_SIZE });
     if (res.ok) {
-      setPromotions(res.data.items);
-      setTotalPages(res.data.totalPages);
-      setTotalCount(res.data.totalCount);
+      const items = res.data.items;
+      setPromotions(items);
+      // Guard against inflated server metadata: if fewer items came back than
+      // a full page, this must be the last page — cap totalPages accordingly.
+      const serverPages = res.data.totalPages ?? 1;
+      const cappedPages = items.length < PAGE_SIZE ? page : serverPages;
+      setTotalPages(Math.max(1, cappedPages));
+      // Use max of server totalCount and (page-1)*PAGE_SIZE + items.length
+      // so the header count is never larger than what actually exists.
+      const derivedCount = (page - 1) * PAGE_SIZE + items.length;
+      const serverCount = res.data.totalCount ?? derivedCount;
+      // If items < PAGE_SIZE this is the final page — derived count is exact.
+      setTotalCount(items.length < PAGE_SIZE ? derivedCount : serverCount);
     } else {
       setError(extractApiError(res.error, "Failed to load promotions."));
     }
@@ -147,10 +158,16 @@ export function AdminPromotionsClient() {
   async function handleDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
-    await adminPromotionsApi.delete(deleteTarget.id);
+    setDeleteError("");
+    const res = await adminPromotionsApi.delete(deleteTarget.id);
     setDeleting(false);
-    setDeleteTarget(null);
-    void load();
+    if (res.ok) {
+      setDeleteTarget(null);
+      void load();
+    } else {
+      // Keep dialog open and show the error (e.g. PROMOTION_ACTIVE)
+      setDeleteError(extractApiError(res.error, "Failed to delete promotion."));
+    }
   }
 
   const columns: Column<PromotionSummaryResponse>[] = [
@@ -336,14 +353,20 @@ export function AdminPromotionsClient() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
+        onClose={() => { setDeleteTarget(null); setDeleteError(""); }}
         onConfirm={handleDelete}
         title="Delete promotion"
         description={`Delete "${deleteTarget?.name}"? This cannot be undone.`}
         confirmLabel="Delete"
         confirmVariant="danger"
         loading={deleting}
-      />
+      >
+        {deleteError && (
+          <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-lg px-3 py-2.5">
+            {deleteError}
+          </p>
+        )}
+      </ConfirmDialog>
     </>
   );
 }
