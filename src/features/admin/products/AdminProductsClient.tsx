@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Plus, Search, Pencil, Archive, Eye, EyeOff } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { adminProductsApi } from "@/services/api/admin";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { AdminTable, type Column } from "@/features/admin/AdminTable";
@@ -191,7 +191,7 @@ export function AdminProductsClient() {
             onClick={() => setArchiveTarget(row)}
             className="flex h-7 w-7 items-center justify-center rounded text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors"
           >
-            <Archive className="size-3.5" />
+            <Trash2 className="size-3.5" />
           </button>
         </div>
       ),
