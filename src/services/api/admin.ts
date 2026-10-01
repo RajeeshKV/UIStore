@@ -48,6 +48,11 @@ import type {
   ReorderImagesRequest,
   ProductAttributesResponse,
   UpsertProductAttributeRequest,
+  UpdateSmsConfigRequest,
+  SmsProviderOptionResponse,
+  SmsTemplateResponse,
+  CreateSmsTemplateRequest,
+  UpdateSmsTemplateRequest,
 } from "@/types/api";
 
 // ── Products ─────────────────────────────────────────────────────────────────
@@ -316,6 +321,13 @@ export const adminIntegrationsApi = {
 
   getSms: () =>
     apiClient.get<IntegrationStatusResponse>("/api/v1/admin/integrations/sms"),
+
+  /**
+   * PUT /api/v1/admin/integrations/sms — returns 204 No Content.
+   * Re-fetch getSms() after calling this.
+   */
+  updateSms: (data: UpdateSmsConfigRequest) =>
+    apiClient.put<void>("/api/v1/admin/integrations/sms", data),
 };
 
 // ── Inventory ─────────────────────────────────────────────────────────────────
@@ -368,4 +380,28 @@ export const adminAttributesApi = {
    */
   delete: (productId: string, attributeId: string) =>
     apiClient.delete<void>(`/api/v1/products/${productId}/attributes/${attributeId}`),
+};
+
+// ── SMS Admin (providers + templates) ────────────────────────────────────────
+
+export const adminSmsApi = {
+  /** GET /api/v1/admin/integrations/sms/providers — list of supported SMS providers */
+  getProviders: () =>
+    apiClient.get<SmsProviderOptionResponse[]>("/api/v1/admin/integrations/sms/providers"),
+
+  /** GET /api/v1/admin/integrations/sms/templates */
+  listTemplates: () =>
+    apiClient.get<SmsTemplateResponse[]>("/api/v1/admin/integrations/sms/templates"),
+
+  /** POST /api/v1/admin/integrations/sms/templates → 201 SmsTemplateResponse */
+  createTemplate: (data: CreateSmsTemplateRequest) =>
+    apiClient.post<SmsTemplateResponse>("/api/v1/admin/integrations/sms/templates", data),
+
+  /** PUT /api/v1/admin/integrations/sms/templates/{id} → SmsTemplateResponse */
+  updateTemplate: (id: string, data: UpdateSmsTemplateRequest) =>
+    apiClient.put<SmsTemplateResponse>(`/api/v1/admin/integrations/sms/templates/${id}`, data),
+
+  /** DELETE /api/v1/admin/integrations/sms/templates/{id} */
+  deleteTemplate: (id: string) =>
+    apiClient.delete<void>(`/api/v1/admin/integrations/sms/templates/${id}`),
 };

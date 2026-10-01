@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ShoppingBag, Tag, X, Truck, CreditCard, Banknote, CheckCircle,
-  Plus, Star, AlertTriangle, RefreshCw, XCircle, Info,
+  Plus, Star, AlertTriangle, RefreshCw, XCircle, Info, Phone,
 } from "lucide-react";
 import { cn, formatPrice, extractApiError } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -14,11 +14,13 @@ import { checkoutApi } from "@/services/api/checkout";
 import { cartApi } from "@/services/api/cart";
 import { ordersApi } from "@/services/api/orders";
 import { addressesApi } from "@/services/api/addresses";
+import { otpApi } from "@/services/api/otp";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
 import { AddressForm } from "@/features/account/AddressForm";
+import { VerificationDialog } from "@/features/otp/VerificationDialog";
 import { loadRazorpayScript, openRazorpay } from "@/lib/razorpay";
 import { pendingPaymentStore } from "@/lib/pendingPayment";
 import type {
@@ -26,6 +28,7 @@ import type {
   CreateAddressRequest,
   CheckoutResponse,
   CheckoutSummaryResponse,
+  PhoneVerificationStatusResponse,
 } from "@/types/api";
 
 // ── UUID v4 ───────────────────────────────────────────────────────────────────
@@ -145,6 +148,12 @@ export function CheckoutClient({
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
 
+  // ── Phone verification gate ───────────────────────────────────────────────
+  // verifStatus: null = not yet fetched or OTP not required for this store.
+  // We fetch lazily only when the user is authenticated.
+  const [verifStatus, setVerifStatus] = useState<PhoneVerificationStatusResponse | null>(null);
+  const [verifyOpen, setVerifyOpen] = useState(false);
+
   // ── Checkout flow ─────────────────────────────────────────────────────────
   const [step, setStep] = useState<CheckoutStep>("idle");
   const [stepError, setStepError] = useState("");
@@ -201,6 +210,10 @@ export function CheckoutClient({
     if (isAuthenticated) {
       void loadAddresses();
       void fetchSummary(paymentMethod);
+      // Fetch phone verification status (required for checkout gate)
+      void otpApi.getVerificationStatus().then((res) => {
+        if (res.ok) setVerifStatus(res.data);
+      });
     }
     // fetchSummary intentionally not in deps — only runs on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -402,6 +415,20 @@ export function CheckoutClient({
       return;
     }
 
+    // ── Phone verification gate (frontend UX layer) ──────────────────────────
+    // Re-fetch verification-status fresh rather than relying on cached state.
+    // The server independently enforces this, so the frontend check is UX only.
+    const freshVerif = await otpApi.getVerificationStatus();
+    if (freshVerif.ok) {
+      setVerifStatus(freshVerif.data);
+      if (!freshVerif.data.verificationSatisfied) {
+        // Show verification dialog — do not submit; server would reject with PHONE_VERIFICATION_REQUIRED
+        setVerifyOpen(true);
+        return;
+      }
+    }
+    // If getVerificationStatus fails (e.g. network): allow checkout attempt — server enforces.
+
     // ── Resolve address ID ────────────────────────────────────────────────────
     let resolvedAddressId = selectedAddressId;
     let resolvedAddr: CustomerAddressResponse | null =
@@ -475,6 +502,29 @@ export function CheckoutClient({
         return;
       }
 
+      // ── Phone verification required (backend enforcement) ──────────────────
+      if (code === "PHONE_VERIFICATION_REQUIRED") {
+        setStep("idle");
+        setStepError("");
+        // Re-fetch verification status, then open dialog
+        const freshVerif = await otpApi.getVerificationStatus();
+        if (freshVerif.ok) setVerifStatus(freshVerif.data);
+        setVerifyOpen(true);
+        return;
+      }
+
+      // ── Address phone mismatch — address phone ≠ verified account phone ────
+      // Resolution: the user must update the address phone to match their verified number.
+      // Do NOT let the user type an arbitrary override — that defeats the verification gate.
+      if (code === "ADDRESS_PHONE_MISMATCH") {
+        setStep("idle");
+        setStepError(
+          "Your delivery address phone number must match your verified mobile number. " +
+          "Please update the address or verify a different number.",
+        );
+        return;
+      }
+
       if (code?.startsWith("PRODUCT_UNAVAILABLE") || code?.startsWith("VARIANT_UNAVAILABLE") || code?.startsWith("INSUFFICIENT_STOCK")) {
         setStepError(msg); setStep("failed"); await refreshCart(); return;
       }
@@ -531,7 +581,7 @@ export function CheckoutClient({
   }, [
     step, selectedAddressId, inlineForm, paymentMethod, couponActive, summary,
     router, refreshCart, effectiveCurrency, addresses, openRazorpayWidget,
-    handlePaymentMethodChange,
+    handlePaymentMethodChange, setVerifyOpen,
   ]);
 
   // ── Loading ──────────────────────────────────────────────────────────────────
@@ -976,13 +1026,34 @@ export function CheckoutClient({
               </div>
             )}
 
+            {/* ── Phone verification gate banner ── */}
+            {verifStatus && !verifStatus.verificationSatisfied && step !== "dismissed" && (
+              <div
+                role="alert"
+                className="flex items-start gap-3 rounded-md bg-warning/5 border border-warning/20 px-3 py-3"
+              >
+                <Phone className="size-4 text-warning shrink-0 mt-0.5" aria-hidden="true" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-body-sm font-medium text-foreground">
+                    Phone verification required
+                  </p>
+                  <p className="text-caption text-foreground-muted mt-0.5">
+                    Verify your mobile number before placing this order.
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setVerifyOpen(true)}>
+                  Verify
+                </Button>
+              </div>
+            )}
+
             {/* ── Step: normal CTA ── */}
             {step !== "dismissed" && (
               <Button
                 variant="primary"
                 size="lg"
                 fullWidth
-                disabled={!canSubmit}
+                disabled={!canSubmit || (verifStatus !== null && !verifStatus.verificationSatisfied)}
                 loading={isProcessing}
                 onClick={handlePlaceOrder}
                 aria-live="polite"
@@ -1007,6 +1078,22 @@ export function CheckoutClient({
           onCancel={() => setAddAddressOpen(false)}
         />
       </Modal>
+
+      {/* ── Phone verification dialog (blocking gate) ── */}
+      <VerificationDialog
+        open={verifyOpen}
+        onClose={() => setVerifyOpen(false)}
+        onVerified={async (status) => {
+          setVerifStatus(status);
+          setVerifyOpen(false);
+          // Re-enable the CTA immediately — verification satisfied
+        }}
+        initialPhone={user?.phoneNumber ?? ""}
+        purpose="PhoneVerification"
+        title="Verify your mobile number"
+        subtitle="Phone verification is required before placing this order."
+        blocking
+      />
     </div>
   );
 }

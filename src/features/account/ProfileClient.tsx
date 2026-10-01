@@ -1,13 +1,38 @@
 "use client";
-import { extractApiError } from "@/lib/utils";
 
-import { useState, useEffect } from "react";
+/**
+ * ProfileClient
+ * =============
+ * Phone verification behaviour:
+ *
+ * Case A (SMS disabled / mobileOtpEnabled === false):
+ *   - Plain phone field. Save directly via updateProfile. No OTP required.
+ *
+ * Case B (SMS enabled):
+ *   - Phone field shows verified / unverified / pending state.
+ *   - If profile has a verified number, it is shown as read-only with a "Change" link.
+ *   - Changing the number stages it in pendingPhoneNumber until OTP verified.
+ *   - If profile.pendingPhoneNumber is set, show "Pending verification" with a Verify button.
+ *   - Saving a NEW phone number in the form does NOT persist it as verified directly —
+ *     it goes through the OTP flow first.
+ *
+ * Address auto-population:
+ *   - When the profile has a verified phone + name, pre-fill new address forms with them.
+ *   - That is handled at the address-form level (see AddressClient.tsx).
+ */
+
+import { useState, useEffect, useCallback } from "react";
+import { CheckCircle, XCircle, Phone, AlertCircle } from "lucide-react";
 import { customerApi } from "@/services/api/customer";
+import { storeApi } from "@/services/api/store";
+import { otpApi, normalisePhone } from "@/services/api/otp";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
-import type { CustomerProfileResponse } from "@/types/api";
+import { VerificationDialog } from "@/features/otp/VerificationDialog";
+import { extractApiError, cn } from "@/lib/utils";
+import type { CustomerProfileResponse, PhoneVerificationStatusResponse } from "@/types/api";
 
 export function ProfileClient() {
   const { success: toastSuccess, error: toastError } = useToast();
@@ -16,7 +41,16 @@ export function ProfileClient() {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Editable fields — UpdateCustomerProfileRequest shape
+  // Whether mobile OTP is enabled for this store
+  const [mobileOtpEnabled, setMobileOtpEnabled] = useState(false);
+
+  // Live verification status (only fetched when OTP is enabled)
+  const [verifStatus, setVerifStatus] = useState<PhoneVerificationStatusResponse | null>(null);
+
+  // OTP dialog
+  const [verifyOpen, setVerifyOpen] = useState(false);
+
+  // Editable form fields
   const [form, setForm] = useState({
     displayName: "",
     phoneNumber: "",
@@ -24,11 +58,16 @@ export function ProfileClient() {
     newsletterConsent: false,
   });
 
+  // Load profile + store settings
   useEffect(() => {
-    const fetch = async () => {
-      const result = await customerApi.getProfile();
-      if (result.ok) {
-        const p = result.data;
+    const init = async () => {
+      const [profileRes, settingsRes] = await Promise.all([
+        customerApi.getProfile(),
+        storeApi.getSettings(),
+      ]);
+
+      if (profileRes.ok) {
+        const p = profileRes.data;
         setProfile(p);
         setForm({
           displayName: p.displayName ?? "",
@@ -37,9 +76,36 @@ export function ProfileClient() {
           newsletterConsent: p.newsletterConsent,
         });
       }
+
+      const otpEnabled = settingsRes.ok
+        ? (settingsRes.data.auth?.mobileOtpEnabled ?? false)
+        : false;
+      setMobileOtpEnabled(otpEnabled);
+
+      // Fetch verification status only when OTP is enabled
+      if (otpEnabled) {
+        const statusRes = await otpApi.getVerificationStatus();
+        if (statusRes.ok) setVerifStatus(statusRes.data);
+      }
+
       setLoading(false);
     };
-    void fetch();
+    void init();
+  }, []);
+
+  // Refresh verification status after successful OTP
+  const refreshVerifStatus = useCallback(async () => {
+    const res = await otpApi.getVerificationStatus();
+    if (res.ok) setVerifStatus(res.data);
+    // Also re-fetch profile so phoneNumber / pendingPhoneNumber is updated
+    const pRes = await customerApi.getProfile();
+    if (pRes.ok) {
+      setProfile(pRes.data);
+      setForm((f) => ({
+        ...f,
+        phoneNumber: pRes.data.phoneNumber ?? "",
+      }));
+    }
   }, []);
 
   async function handleSave(e: React.FormEvent) {
@@ -58,10 +124,15 @@ export function ProfileClient() {
     if (result.ok) {
       setProfile(result.data);
       toastSuccess("Profile updated", "Your changes have been saved.");
+
+      // If OTP is enabled and phone changed but not verified, offer to verify
+      if (mobileOtpEnabled && form.phoneNumber && !result.data.phoneNumberVerified) {
+        setVerifyOpen(true);
+      }
     } else {
       const msg = extractApiError(result.error, "Could not save changes.");
       toastError("Update failed", msg);
-      if ("error" in result && "errors" in result.error && result.error.errors) {
+      if ("errors" in result.error && result.error.errors) {
         const apiErrors: Record<string, string> = {};
         for (const [k, v] of Object.entries(result.error.errors)) {
           apiErrors[k.toLowerCase()] = Array.isArray(v) ? v[0] : String(v);
@@ -75,6 +146,19 @@ export function ProfileClient() {
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
+
+  // ── Derived phone state ────────────────────────────────────────────────────
+  const isVerified = profile?.phoneNumberVerified ?? false;
+  // pendingPhoneNumber: if backend staged a new number awaiting OTP
+  const pendingPhone = (profile as CustomerProfileResponse & { pendingPhoneNumber?: string })
+    ?.pendingPhoneNumber;
+  const showVerifyButton =
+    mobileOtpEnabled &&
+    form.phoneNumber &&
+    !isVerified &&
+    !pendingPhone;
+
+  const verifiedPhone = isVerified ? profile?.phoneNumber : null;
 
   return (
     <div className="max-w-lg">
@@ -96,10 +180,110 @@ export function ProfileClient() {
             </span>
           </div>
         )}
+        {/* Verification status badge */}
+        {mobileOtpEnabled && (
+          <div className="flex justify-between text-body-sm items-center pt-1 border-t border-border mt-1">
+            <span className="text-foreground-muted">Phone verification</span>
+            {isVerified ? (
+              <span className="inline-flex items-center gap-1 text-success font-medium">
+                <CheckCircle className="size-3.5" aria-hidden="true" />
+                Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-warning font-medium">
+                <XCircle className="size-3.5" aria-hidden="true" />
+                Not verified
+              </span>
+            )}
+          </div>
+        )}
         <p className="text-caption text-foreground-muted mt-1">
           Name and email are set at registration. Contact support to change them.
         </p>
       </div>
+
+      {/* Pending number banner */}
+      {pendingPhone && (
+        <div className="rounded-xl border border-warning/30 bg-warning/5 p-4 mb-4 flex items-start gap-3">
+          <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1">
+            <p className="text-body-sm font-medium text-foreground">
+              +91 {pendingPhone} — pending verification
+            </p>
+            <p className="text-caption text-foreground-muted">
+              This number will replace your current one after you verify it.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setVerifyOpen(true)}
+          >
+            <Phone className="size-3.5 mr-1.5" aria-hidden="true" />
+            Verify
+          </Button>
+        </div>
+      )}
+
+      {/* Verified number — read-only display with change link */}
+      {mobileOtpEnabled && verifiedPhone && (
+        <div className="rounded-xl border border-success/20 bg-success/5 px-4 py-3 mb-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="size-4 text-success shrink-0" aria-hidden="true" />
+            <div>
+              <p className="text-body-sm font-medium text-foreground">{verifiedPhone}</p>
+              <p className="text-caption text-success">Verified mobile number</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setForm((f) => ({ ...f, phoneNumber: normalisePhone(verifiedPhone) }));
+              setVerifyOpen(true);
+            }}
+            className="text-caption text-foreground-muted"
+          >
+            Change
+          </Button>
+        </div>
+      )}
+
+      {/* Verification prompt (OTP enabled, number exists but unverified) */}
+      {mobileOtpEnabled && form.phoneNumber && !isVerified && !pendingPhone && (
+        <div
+          role="alert"
+          className={cn(
+            "rounded-xl border px-4 py-3 mb-4 flex items-center justify-between gap-3",
+            verifStatus?.verificationRequired
+              ? "border-danger/30 bg-danger/5"
+              : "border-warning/30 bg-warning/5",
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <AlertCircle
+              className={cn(
+                "size-4 shrink-0",
+                verifStatus?.verificationRequired ? "text-danger" : "text-warning",
+              )}
+              aria-hidden="true"
+            />
+            <p className="text-body-sm text-foreground">
+              {verifStatus?.verificationRequired
+                ? "Phone verification required to place orders."
+                : "Verify your phone number for a faster checkout experience."}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setVerifyOpen(true)}
+          >
+            <Phone className="size-3.5 mr-1.5" aria-hidden="true" />
+            Verify
+          </Button>
+        </div>
+      )}
 
       {/* Editable form */}
       <form onSubmit={handleSave} className="flex flex-col gap-4">
@@ -111,14 +295,36 @@ export function ProfileClient() {
           placeholder="How you'd like to be addressed"
         />
 
-        <Input
-          label="Phone Number"
-          type="tel"
-          value={form.phoneNumber}
-          onChange={set("phoneNumber")}
-          error={errors.phonenumber}
-          autoComplete="tel"
-        />
+        {/* Phone field — only shown when OTP is not enabled or number is not yet verified */}
+        {(!mobileOtpEnabled || !isVerified) && (
+          <div className="flex flex-col gap-1.5">
+            <Input
+              label="Phone Number"
+              type="tel"
+              value={form.phoneNumber}
+              onChange={set("phoneNumber")}
+              error={errors.phonenumber}
+              autoComplete="tel"
+              hint={
+                mobileOtpEnabled
+                  ? "Indian mobile number. You'll be prompted to verify after saving."
+                  : undefined
+              }
+            />
+            {showVerifyButton && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="self-start mt-1"
+                onClick={() => setVerifyOpen(true)}
+              >
+                <Phone className="size-3.5 mr-1.5" aria-hidden="true" />
+                Verify now
+              </Button>
+            )}
+          </div>
+        )}
 
         <Input
           label="Date of Birth"
@@ -149,6 +355,26 @@ export function ProfileClient() {
           Save Changes
         </Button>
       </form>
+
+      {/* OTP verification dialog */}
+      <VerificationDialog
+        open={verifyOpen}
+        onClose={() => setVerifyOpen(false)}
+        onVerified={(status) => {
+          setVerifyOpen(false);
+          void refreshVerifStatus();
+          toastSuccess(
+            "Phone verified",
+            `+91 ${status.phoneNumber ?? ""} has been confirmed.`,
+          );
+        }}
+        initialPhone={
+          pendingPhone ?? normalisePhone(form.phoneNumber ?? "")
+        }
+        purpose="PhoneVerification"
+        title="Verify your mobile number"
+        subtitle="We'll send a 4-digit code to confirm your number."
+      />
     </div>
   );
 }

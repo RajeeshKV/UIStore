@@ -10,13 +10,18 @@ interface AddressFormProps {
   onSave: (data: CreateAddressRequest) => void;
   saving: boolean;
   onCancel: () => void;
+  /** Pre-fill phone from verified profile number (auto-population requirement) */
+  defaultPhone?: string;
+  /** Pre-fill name from profile */
+  defaultFirstName?: string;
+  defaultLastName?: string;
 }
 
-export function AddressForm({ initial, onSave, saving, onCancel }: AddressFormProps) {
+export function AddressForm({ initial, onSave, saving, onCancel, defaultPhone, defaultFirstName, defaultLastName }: AddressFormProps) {
   const [form, setForm] = useState({
     label: initial?.label ?? "",
-    firstName: initial?.firstName ?? "",
-    lastName: initial?.lastName ?? "",
+    firstName: initial?.firstName ?? defaultFirstName ?? "",
+    lastName: initial?.lastName ?? defaultLastName ?? "",
     company: initial?.company ?? "",
     addressLine1: initial?.addressLine1 ?? "",
     addressLine2: initial?.addressLine2 ?? "",
@@ -24,7 +29,8 @@ export function AddressForm({ initial, onSave, saving, onCancel }: AddressFormPr
     state: initial?.state ?? "",
     postalCode: initial?.postalCode ?? "",
     countryCode: initial?.countryCode ?? "IN",
-    phone: initial?.phone ?? "",
+    // Auto-populate from verified profile phone when creating a new address
+    phone: initial?.phone ?? defaultPhone ?? "",
     isDefault: initial?.isDefault ?? false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -87,7 +93,7 @@ export function AddressForm({ initial, onSave, saving, onCancel }: AddressFormPr
         <Input label="Country Code" required value={form.countryCode} onChange={set("countryCode")} error={errors.countryCode} placeholder="IN" autoComplete="country" />
       </div>
 
-      <Input label="Phone" type="tel" value={form.phone} onChange={set("phone")} autoComplete="tel" />
+      <Input label="Phone" type="tel" value={form.phone} onChange={set("phone")} autoComplete="tel" hint={defaultPhone && !initial ? "Pre-filled from your verified profile number." : undefined} />
 
       <label className="flex items-center gap-2 cursor-pointer text-body-sm text-foreground">
         <input

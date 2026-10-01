@@ -71,6 +71,7 @@ const NAV: NavItem[] = [
       { label: "Payment", href: "/admin/settings/integrations/payment" },
       { label: "Google OAuth", href: "/admin/settings/integrations/google" },
       { label: "Email", href: "/admin/settings/integrations/email" },
+      { label: "SMS", href: "/admin/settings/integrations/sms" },
     ],
   },
 ];

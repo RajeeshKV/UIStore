@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Plus, Star, Trash2, Pencil, MapPin } from "lucide-react";
 import { cn , extractApiError } from "@/lib/utils";
 import { addressesApi } from "@/services/api/addresses";
+import { customerApi } from "@/services/api/customer";
+import { storeApi } from "@/services/api/store";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
@@ -20,6 +22,11 @@ export function AddressesClient() {
   const [editing, setEditing] = useState<CustomerAddressResponse | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CustomerAddressResponse | null>(null);
 
+  // Profile data for auto-population of new address forms
+  const [profileFirstName, setProfileFirstName] = useState("");
+  const [profileLastName, setProfileLastName] = useState("");
+  const [verifiedPhone, setVerifiedPhone] = useState("");
+
   const load = useCallback(async () => {
     const result = await addressesApi.list();
     if (result.ok) setAddresses(result.data);
@@ -27,8 +34,33 @@ export function AddressesClient() {
   }, []);
 
   useEffect(() => {
-    const fetch = async () => { await load(); };
-    void fetch();
+    const init = async () => {
+      await load();
+
+      // Fetch profile + store settings for phone auto-population
+      const [profileRes, settingsRes] = await Promise.all([
+        customerApi.getProfile(),
+        storeApi.getSettings(),
+      ]);
+
+      if (profileRes.ok) {
+        setProfileFirstName(profileRes.data.firstName ?? "");
+        setProfileLastName(profileRes.data.lastName ?? "");
+
+        const mobileOtpEnabled = settingsRes.ok
+          ? (settingsRes.data.auth?.mobileOtpEnabled ?? false)
+          : false;
+
+        if (mobileOtpEnabled && profileRes.data.phoneNumberVerified && profileRes.data.phoneNumber) {
+          // Use the verified phone number for auto-population
+          setVerifiedPhone(profileRes.data.phoneNumber);
+        } else if (!mobileOtpEnabled && profileRes.data.phoneNumber) {
+          // When SMS is disabled, pre-fill with whatever is stored
+          setVerifiedPhone(profileRes.data.phoneNumber);
+        }
+      }
+    };
+    void init();
   }, [load]);
 
   async function handleSave(data: CreateAddressRequest | UpdateAddressRequest) {
@@ -181,6 +213,10 @@ export function AddressesClient() {
           onSave={handleSave}
           saving={mutating}
           onCancel={() => { setFormOpen(false); setEditing(null); }}
+          // Auto-populate verified profile data only when creating a new address
+          defaultPhone={!editing ? verifiedPhone : undefined}
+          defaultFirstName={!editing ? profileFirstName : undefined}
+          defaultLastName={!editing ? profileLastName : undefined}
         />
       </Modal>
 

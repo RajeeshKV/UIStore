@@ -11,3 +11,5 @@ export { checkoutApi } from "./checkout";
 export { addressesApi } from "./addresses";
 export { customerApi } from "./customer";
 export { ordersApi } from "./orders";
+export { otpApi, normalisePhone, isValidIndianMobile, formatIndianMobile, maskPhone, describeOtpError } from "./otp";
+export type { OtpErrorDescriptor, OtpErrorTone } from "./otp";

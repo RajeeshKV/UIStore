@@ -28,6 +28,7 @@ const BREADCRUMBS: Record<string, string> = {
   "/admin/settings/integrations/payment": "Payment",
   "/admin/settings/integrations/google": "Google OAuth",
   "/admin/settings/integrations/email": "Email",
+  "/admin/settings/integrations/sms": "SMS",
 };
 
 export function AdminTopBar({ onMenuClick }: AdminTopBarProps) {

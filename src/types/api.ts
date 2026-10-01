@@ -1123,11 +1123,92 @@ export interface UpdateEmailSettingsRequest {
   senderEmail?: string;
 }
 
+/**
+ * PUT /api/v1/admin/integrations/sms
+ * Actual API schema: enabled + provider + providerSettings (generic Record<string,string>).
+ * Returns 204 No Content — re-fetch GET after save.
+ */
 export interface UpdateSmsConfigRequest {
+  enabled: boolean;
   provider?: string;
-  apiKey?: string;
-  senderId?: string;
-  enabled?: boolean;
+  /** Provider-specific key/value pairs, e.g. { apiKey: "...", senderId: "..." } */
+  providerSettings?: Record<string, string>;
+}
+
+// ── OTP / Phone Verification ──────────────────────────────────────────────────
+
+export type OtpPurpose = "PhoneVerification" | "Login" | "PasswordReset";
+
+/** POST /api/v1/otp/send */
+export interface OtpSendRequest {
+  phoneNumber?: string;
+  purpose: OtpPurpose;
+}
+
+/** Response from POST /api/v1/otp/send (200 OK) */
+export interface OtpSendResponse {
+  expiresAtUtc: string;
+  resendAvailableAtUtc: string;
+}
+
+/** POST /api/v1/otp/verify — returns 204 No Content on success */
+export interface OtpVerifyRequest {
+  phoneNumber?: string;
+  otp?: string;
+  purpose: OtpPurpose;
+}
+
+/**
+ * GET /api/v1/otp/verification-status (requires auth)
+ * verificationSatisfied is the single gate flag for checkout.
+ * Already true when verificationRequired is false.
+ */
+export interface PhoneVerificationStatusResponse {
+  verificationRequired: boolean;
+  /** Canonical E.164 number on the account, or null */
+  phoneNumber?: string;
+  verified: boolean;
+  /** Gate on this — already true when verification is not required */
+  verificationSatisfied: boolean;
+  /** Render OTP input at this width (default 4) */
+  otpLength: number;
+  otpExpiryMinutes: number;
+  resendCooldownSeconds: number;
+  activeProvider?: string;
+}
+
+// ── SMS Admin ─────────────────────────────────────────────────────────────────
+
+/** GET /api/v1/admin/integrations/sms/providers */
+export interface SmsProviderOptionResponse {
+  name?: string;
+  description?: string;
+}
+
+/** GET/POST/PUT /api/v1/admin/integrations/sms/templates */
+export interface SmsTemplateResponse {
+  id: string;
+  provider?: string;
+  name?: string;
+  body?: string;
+  externalTemplateId?: string;
+  isActive: boolean;
+  updatedAtUtc: string;
+}
+
+export interface CreateSmsTemplateRequest {
+  provider?: string;
+  name?: string;
+  body?: string;
+  externalTemplateId?: string;
+  isActive: boolean;
+}
+
+export interface UpdateSmsTemplateRequest {
+  name?: string;
+  body?: string;
+  externalTemplateId?: string;
+  isActive: boolean;
 }
 
 /**
