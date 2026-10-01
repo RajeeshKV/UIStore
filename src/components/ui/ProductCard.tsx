@@ -113,14 +113,13 @@ export function ProductCard({
       </div>
 
       {/* Image */}
-      <Link
-        href={`/products/${product.slug}`}
-        aria-label={`View ${product.name}`}
-        className="block w-full bg-surface"
-        style={{ aspectRatio: "1 / 1" }}
-      >
-        {product.primaryImageUrl && !imgError ? (
-          <div className="relative w-full h-full">
+      <div className="aspect-square w-full bg-surface">
+        <Link
+          href={`/products/${product.slug}`}
+          aria-label={`View ${product.name}`}
+          className="relative block w-full h-full overflow-hidden"
+        >
+          {product.primaryImageUrl && !imgError ? (
             <Image
               src={product.primaryImageUrl}
               alt={product.name ?? "Product"}
@@ -130,13 +129,13 @@ export function ProductCard({
               loading={eager ? "eager" : "lazy"}
               onError={() => setImgError(true)}
             />
-          </div>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-surface">
-            <ShoppingBag className="size-8 text-foreground-muted/30" aria-hidden="true" />
-          </div>
-        )}
-      </Link>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-surface">
+              <ShoppingBag className="size-8 text-foreground-muted/30" aria-hidden="true" />
+            </div>
+          )}
+        </Link>
+      </div>
 
       {/* Info */}
       <div className="flex flex-col flex-1 px-3 pt-2.5 pb-3 gap-1.5">
