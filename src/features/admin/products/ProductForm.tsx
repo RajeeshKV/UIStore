@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Plus, GripVertical, X, ChevronDown, ChevronUp } from "lucide-react";
-import { adminProductsApi, adminVariantsApi, adminAttributesApi } from "@/services/api/admin";
+import { Trash2, Plus, GripVertical, X, ChevronDown, ChevronUp, Package } from "lucide-react";
+import { adminProductsApi, adminVariantsApi, adminAttributesApi, adminInventoryApi } from "@/services/api/admin";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
@@ -20,6 +20,7 @@ import type {
   UpdateVariantRequest,
   ProductAttributeItem,
   ProductAttributeValueItem,
+  InventoryResponse,
 } from "@/types/api";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -202,12 +203,13 @@ function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) 
 // ── Variant row ───────────────────────────────────────────────────────────────
 
 interface VariantRowProps {
+  productId: string;
   variant: VariantResponse;
   onEdit: (v: VariantResponse) => void;
   onDelete: (v: VariantResponse) => void;
 }
 
-function VariantRow({ variant, onEdit, onDelete }: VariantRowProps) {
+function VariantRow({ productId, variant, onEdit, onDelete }: VariantRowProps) {
   // §1.6: use resolved attributes for display; fall back to raw IDs only when absent
   const attrLabel = variant.attributes && variant.attributes.length > 0
     ? variant.attributes.map((a) => `${a.attributeName}: ${a.value}`).join(" / ")
@@ -215,42 +217,70 @@ function VariantRow({ variant, onEdit, onDelete }: VariantRowProps) {
       ? `IDs: ${variant.attributeValueIds}`
       : null;
 
+  const [showStock, setShowStock] = useState(false);
+
   return (
-    <div className="flex items-center gap-3 rounded-md border border-border bg-surface px-3 py-2">
-      <GripVertical className="size-4 text-foreground-muted shrink-0 cursor-grab" aria-hidden="true" />
-      <div className="flex-1 min-w-0">
-        <p className="text-body-sm text-foreground font-medium truncate">
-          {variant.sku ?? `Variant ${variant.id.slice(0, 6)}`}
-        </p>
-        <p className="text-caption text-foreground-muted">
-          {variant.priceOverride != null
-            ? `Price override: ${formatPrice(variant.priceOverride, "INR")}`
-            : "Inherits product price"}
-          {" · "}
-          {variant.isActive ? "Active" : "Inactive"}
-          {variant.availableStock != null && ` · Stock: ${variant.availableStock}`}
-        </p>
-        {/* §1.6: show resolved attribute labels */}
-        {attrLabel && (
-          <p className="text-caption text-foreground-muted">{attrLabel}</p>
-        )}
+    <div className="flex flex-col gap-2 rounded-md border border-border bg-surface px-3 py-2">
+      <div className="flex items-center gap-3">
+        <GripVertical className="size-4 text-foreground-muted shrink-0 cursor-grab" aria-hidden="true" />
+        <div className="flex-1 min-w-0">
+          <p className="text-body-sm text-foreground font-medium truncate">
+            {variant.sku ?? `Variant ${variant.id.slice(0, 6)}`}
+          </p>
+          <p className="text-caption text-foreground-muted">
+            {variant.priceOverride != null
+              ? `Price override: ${formatPrice(variant.priceOverride, "INR")}`
+              : "Inherits product price"}
+            {" · "}
+            {variant.isActive ? "Active" : "Inactive"}
+            {variant.availableStock != null && ` · Stock: ${variant.availableStock}`}
+          </p>
+          {/* §1.6: show resolved attribute labels */}
+          {attrLabel && (
+            <p className="text-caption text-foreground-muted">{attrLabel}</p>
+          )}
+        </div>
+        <div className="flex gap-1 shrink-0">
+          {/* Stock toggle */}
+          <button
+            aria-label={showStock ? "Hide stock" : "Manage stock"}
+            onClick={() => setShowStock((v) => !v)}
+            className={cn(
+              "flex h-7 w-7 items-center justify-center rounded transition-colors",
+              showStock
+                ? "bg-primary/10 text-primary"
+                : "text-foreground-muted hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <Package className="size-3.5" />
+          </button>
+          <button
+            aria-label="Edit variant"
+            onClick={() => onEdit(variant)}
+            className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button
+            aria-label="Delete variant"
+            onClick={() => onDelete(variant)}
+            className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        </div>
       </div>
-      <div className="flex gap-1 shrink-0">
-        <button
-          aria-label="Edit variant"
-          onClick={() => onEdit(variant)}
-          className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
-        >
-          <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-        <button
-          aria-label="Delete variant"
-          onClick={() => onDelete(variant)}
-          className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors"
-        >
-          <Trash2 className="size-3.5" />
-        </button>
-      </div>
+
+      {/* Per-variant inline stock manager */}
+      {showStock && (
+        <div className="pl-7 border-t border-border pt-2">
+          <StockManager
+            productId={productId}
+            variantId={variant.id}
+            label={`Stock for ${variant.sku ?? variant.id.slice(0, 8)}`}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -399,6 +429,7 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
         {variants.map((v) => (
           <VariantRow
             key={v.id}
+            productId={productId}
             variant={v}
             onEdit={openEdit}
             onDelete={() => setDeleteTarget(v)}
@@ -742,8 +773,212 @@ function AttributeEditor({ productId, onRefresh }: AttributeEditorProps) {
   );
 }
 
-// ── useEffect import needed for AttributeEditor ────────────────────────────────
-// (useEffect is re-imported below to be added at top of the file)
+// ── Stock manager ─────────────────────────────────────────────────────────────
+
+interface StockManagerProps {
+  productId: string;
+  /** When provided, manages stock for that specific variant */
+  variantId?: string;
+  label?: string;
+}
+
+function StockManager({ productId, variantId, label }: StockManagerProps) {
+  // Latest inventory snapshot returned from the last mutating call
+  const [inventory, setInventory] = useState<InventoryResponse | null>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  // Set stock form
+  const [onHand, setOnHand] = useState("");
+  const [lowStockThreshold, setLowStockThreshold] = useState("");
+  const [setSaving, setSetSaving] = useState(false);
+  const [setError, setSetError] = useState("");
+  const [setSuccess, setSetSuccess] = useState("");
+
+  // Adjust stock form
+  const [delta, setDelta] = useState("");
+  const [reason, setReason] = useState("");
+  const [adjSaving, setAdjSaving] = useState(false);
+  const [adjError, setAdjError] = useState("");
+  const [adjSuccess, setAdjSuccess] = useState("");
+
+  function applyInventory(inv: InventoryResponse) {
+    setInventory(inv);
+    setOnHand(String(inv.onHand));
+    setLowStockThreshold(String(inv.lowStockThreshold));
+  }
+
+  async function handleSet(e: React.FormEvent) {
+    e.preventDefault();
+    const parsed = parseInt(onHand);
+    if (isNaN(parsed) || parsed < 0) {
+      setSetError("On-hand quantity must be a non-negative integer.");
+      return;
+    }
+    setSetError("");
+    setSetSuccess("");
+    setSetSaving(true);
+    const threshold = lowStockThreshold.trim() !== "" ? parseInt(lowStockThreshold) : undefined;
+    const res = await adminInventoryApi.set(
+      productId,
+      { onHand: parsed, lowStockThreshold: threshold },
+      variantId,
+    );
+    setSetSaving(false);
+    if (res.ok) {
+      applyInventory(res.data);
+      setSetSuccess("Stock updated.");
+      setTimeout(() => setSetSuccess(""), 3000);
+    } else {
+      setSetError(extractApiError(res.error, "Failed to set stock."));
+    }
+  }
+
+  async function handleAdjust(e: React.FormEvent) {
+    e.preventDefault();
+    const parsedDelta = parseInt(delta);
+    if (isNaN(parsedDelta) || parsedDelta === 0) {
+      setAdjError("Delta must be a non-zero integer.");
+      return;
+    }
+    setAdjError("");
+    setAdjSuccess("");
+    setAdjSaving(true);
+    const res = await adminInventoryApi.adjust(
+      productId,
+      { delta: parsedDelta, reason: reason.trim() || undefined },
+      variantId,
+    );
+    setAdjSaving(false);
+    if (res.ok) {
+      applyInventory(res.data);
+      setAdjSuccess(`Stock adjusted by ${parsedDelta > 0 ? "+" : ""}${parsedDelta}.`);
+      setDelta("");
+      setReason("");
+      setTimeout(() => setAdjSuccess(""), 3000);
+    } else {
+      setAdjError(extractApiError(res.error, "Failed to adjust stock."));
+    }
+  }
+
+  // Stock status pill
+  function StockPill() {
+    if (!inventory) return null;
+    if (inventory.isOutOfStock) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-danger/10 text-danger">
+          Out of stock
+        </span>
+      );
+    }
+    if (inventory.isLowStock) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-warning/15 text-warning">
+          Low stock · {inventory.available} left
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-success/10 text-success">
+        In stock · {inventory.available} available
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex items-center gap-2 text-body-sm font-medium text-foreground-muted hover:text-foreground transition-colors self-start"
+        aria-expanded={expanded}
+      >
+        <Package className="size-3.5" aria-hidden="true" />
+        {label ?? "Stock"}
+        {expanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+        {inventory && !expanded && (
+          <span className="ml-1">
+            <StockPill />
+          </span>
+        )}
+      </button>
+
+      {expanded && (
+        <div className="rounded-lg border border-border bg-surface p-4 flex flex-col gap-5">
+          {/* Current inventory snapshot */}
+          {inventory && (
+            <div className="flex flex-wrap items-center gap-3 text-caption text-foreground-muted border-b border-border pb-3">
+              <StockPill />
+              <span>On hand: <strong className="text-foreground">{inventory.onHand}</strong></span>
+              <span>Reserved: <strong className="text-foreground">{inventory.reserved}</strong></span>
+              <span>Available: <strong className="text-foreground">{inventory.available}</strong></span>
+              <span>Low-stock threshold: <strong className="text-foreground">{inventory.lowStockThreshold}</strong></span>
+            </div>
+          )}
+          {!inventory && (
+            <p className="text-caption text-foreground-muted -mt-1">
+              Use <strong>Set stock</strong> below to initialise inventory for this {variantId ? "variant" : "product"}.
+              Changes are reflected immediately on the storefront.
+            </p>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* Set stock */}
+            <form onSubmit={handleSet} className="flex flex-col gap-3" noValidate>
+              <p className="text-body-sm font-semibold text-foreground">Set stock</p>
+              {setError && <p className="text-caption text-danger">{setError}</p>}
+              {setSuccess && <p className="text-caption text-success">{setSuccess}</p>}
+              <Input
+                label="On hand (absolute)"
+                type="number"
+                min={0}
+                value={onHand}
+                onChange={(e) => setOnHand(e.target.value)}
+                placeholder="e.g. 100"
+                hint="Total units physically available."
+              />
+              <Input
+                label="Low-stock threshold"
+                type="number"
+                min={0}
+                value={lowStockThreshold}
+                onChange={(e) => setLowStockThreshold(e.target.value)}
+                placeholder="e.g. 10"
+                hint="Alert when available stock falls below this."
+              />
+              <Button variant="outline" size="sm" type="submit" loading={setSaving} className="self-start">
+                Set stock
+              </Button>
+            </form>
+
+            {/* Adjust stock */}
+            <form onSubmit={handleAdjust} className="flex flex-col gap-3" noValidate>
+              <p className="text-body-sm font-semibold text-foreground">Adjust stock</p>
+              {adjError && <p className="text-caption text-danger">{adjError}</p>}
+              {adjSuccess && <p className="text-caption text-success">{adjSuccess}</p>}
+              <Input
+                label="Delta"
+                type="number"
+                value={delta}
+                onChange={(e) => setDelta(e.target.value)}
+                placeholder="e.g. +10 or -5"
+                hint="Positive to add units, negative to remove."
+              />
+              <Input
+                label="Reason (optional)"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="e.g. Restocked from supplier"
+              />
+              <Button variant="outline" size="sm" type="submit" loading={adjSaving} className="self-start">
+                Adjust stock
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Main product form ─────────────────────────────────────────────────────────
 
@@ -1001,6 +1236,25 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 variants={variants}
                 onRefresh={refreshVariants}
               />
+            </Section>
+          )}
+
+          {/* Stock — only for existing products without variants */}
+          {isEdit && productId && variants.length === 0 && (
+            <Section title="Stock">
+              <p className="text-caption text-foreground-muted -mt-1">
+                Manage product-level inventory. For products with variants, set stock per variant below.
+              </p>
+              <StockManager productId={productId} label="Product stock" />
+            </Section>
+          )}
+
+          {/* Stock — variant-level hint when variants exist */}
+          {isEdit && productId && variants.length > 0 && (
+            <Section title="Stock">
+              <p className="text-caption text-foreground-muted -mt-1">
+                This product has variants. Use the <strong className="text-foreground">📦 stock icon</strong> on each variant above to manage per-variant inventory.
+              </p>
             </Section>
           )}
 

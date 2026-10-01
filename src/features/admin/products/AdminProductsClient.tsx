@@ -142,6 +142,24 @@ export function AdminProductsClient() {
       render: (row) => <AdminStatusBadge status={row.status ?? "Draft"} />,
     },
     {
+      key: "stock",
+      header: "Stock",
+      render: (row) => {
+        if (!row.isAvailable) {
+          return (
+            <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold bg-danger/10 text-danger">
+              Out of stock
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold bg-success/10 text-success">
+            In stock
+          </span>
+        );
+      },
+    },
+    {
       key: "featured",
       header: "Featured",
       render: (row) => (

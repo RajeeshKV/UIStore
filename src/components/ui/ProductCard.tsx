@@ -84,6 +84,18 @@ export function ProductCard({
           </span>
         )}
 
+        {/* Out of stock / low stock overlay badge */}
+        {isOutOfStock && (
+          <span className="absolute top-1.5 left-1.5 rounded bg-foreground/80 px-1.5 py-0.5 text-[9px] font-bold text-background leading-none pointer-events-none">
+            Out of stock
+          </span>
+        )}
+        {!isOutOfStock && !discount && stockState === "LowStock" && (
+          <span className="absolute top-1.5 left-1.5 rounded bg-warning px-1.5 py-0.5 text-[9px] font-bold text-white leading-none pointer-events-none">
+            Low stock
+          </span>
+        )}
+
         {/* Wishlist */}
         <button
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -127,6 +139,9 @@ export function ProductCard({
         </div>
         {isOutOfStock && (
           <p className="text-[9px] text-foreground-muted">Out of stock</p>
+        )}
+        {!isOutOfStock && stockState === "LowStock" && (
+          <p className="text-[9px] font-medium text-warning">Only a few left</p>
         )}
       </div>
     </article>
