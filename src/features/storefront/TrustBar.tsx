@@ -50,33 +50,29 @@ export function TrustBar({ settings }: TrustBarProps) {
   const benefits = buildBenefits(settings);
 
   return (
-    <section aria-label="Service benefits" className="border-y border-border bg-surface">
-      <div className="container-x mx-auto py-6 md:py-8">
+    <section aria-label="Service benefits" className="bg-surface">
+      <div className="container-x mx-auto py-2.5">
         <motion.ul
           role="list"
-          variants={shouldReduce ? undefined : staggerContainer(0.08, 0.1)}
+          variants={shouldReduce ? undefined : staggerContainer(0.06, 0.05)}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-40px" }}
-          className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6"
+          viewport={{ once: true, margin: "-20px" }}
+          className="flex items-center justify-between gap-2 flex-wrap"
         >
           {benefits.map((b) => (
             <motion.li
               key={b.title}
               variants={shouldReduce ? undefined : fadeUp}
-              className="flex items-start gap-3 md:items-center md:flex-col md:text-center md:gap-2"
+              className="flex items-center gap-2 text-foreground-muted"
             >
-              <span className="shrink-0 text-foreground-muted md:text-foreground">
+              <span className="shrink-0 [&>svg]:size-3.5" aria-hidden="true">
                 {b.icon}
               </span>
-              <div>
-                <p className="text-body-sm font-semibold text-foreground leading-snug">
-                  {b.title}
-                </p>
-                <p className="text-caption text-foreground-muted mt-0.5">
-                  {b.description}
-                </p>
-              </div>
+              <p className="text-[11px] font-medium text-foreground-muted whitespace-nowrap">
+                {b.title}
+                <span className="hidden sm:inline text-foreground-muted/60"> — {b.description}</span>
+              </p>
             </motion.li>
           ))}
         </motion.ul>
