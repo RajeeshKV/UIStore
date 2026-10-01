@@ -106,8 +106,12 @@ export function describeOtpError(
       return { tone: "field-phone", text: "Enter a valid 10-digit Indian mobile number." };
     case "OTP_COOLDOWN":
       return { tone: "banner-neutral", text: "You can request another code shortly." };
+    case "PHONE_VERIFICATION_NOT_PENDING":
+      // 409 — the number being verified is no longer the pending number on the account.
+      // Not an error the user caused; prompt a fresh code request.
+      return { tone: "banner-neutral", text: "This code is for a number you are no longer verifying. Request a new code." };
     case "OTP_SEND_FAILED":
-      return { tone: "banner-error", text: "We couldn't send the code. Please try again." };
+      return { tone: "banner-error", text: "We couldn't send a code right now. Try again shortly." };
     case "SMS_NOT_CONFIGURED":
       return {
         tone: "disable-flow",

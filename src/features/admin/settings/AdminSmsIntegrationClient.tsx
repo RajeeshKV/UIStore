@@ -3,22 +3,38 @@
 /**
  * Admin SMS Integration
  * =====================
- * Follows the exact same pattern as AdminEmailIntegrationClient:
- *  - AdminIntegrationCard for the integration status header
- *  - Provider dropdown loaded from GET /admin/integrations/sms/providers
- *  - providerSettings rendered as generic key/value fields (provider gives them)
- *  - OTP policy settings via PUT /admin/settings/auth (mobileOtpEnabled, timing)
- *  - SMS templates sub-section (CRUD table)
+ * Two-panel layout matching the spec:
  *
- * Key constraint: PUT /admin/integrations/sms returns 204, not the status object.
- * Re-fetch getSms() after every save.
+ *  Panel 1 — Gateway (PUT /api/v1/admin/integrations/sms)
+ *    Provider list and active provider come from GET publicFields.selectableProviders /
+ *    publicFields.selectedProvider — NOT from a separate /providers endpoint.
+ *    PUT returns 200 with the updated IntegrationStatusResponse; no re-fetch needed.
+ *    Staged setup: save with enabled:false first, then enable once credentials are complete.
  *
- * Secrets: providerSettings values are write-only. Displayed as "Configured" when
- * the backend has them — never shown in plaintext (masked via hasSecret / publicFields).
+ *  Panel 2 — OTP Policy (PUT /api/v1/admin/settings/auth)
+ *    Fields: otpExpiryMinutes, otpResendCooldownSeconds, otpMaxAttempts.
+ *    smsProvider is intentionally NOT sent (ignored by backend, must be omitted).
+ *
+ *  Panel 3 — SMS Templates (separate CRUD table, optional)
+ *
+ * Secrets are write-only: values are never returned by any endpoint.
+ * Leave a secret field blank to keep the stored value; submit a value to replace it.
  */
 
 import { useEffect, useState, useCallback } from "react";
-import { MessageSquare, Plus, Pencil, Trash2, X, Info, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  MessageSquare,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  CheckCircle2,
+  WifiOff,
+} from "lucide-react";
 import {
   adminIntegrationsApi,
   adminSmsApi,
@@ -33,55 +49,148 @@ import { Button } from "@/components/ui/Button";
 import { extractApiError, cn } from "@/lib/utils";
 import type {
   IntegrationStatusResponse,
-  SmsProviderOptionResponse,
   SmsTemplateResponse,
   CreateSmsTemplateRequest,
   UpdateSmsTemplateRequest,
 } from "@/types/api";
 
-// ── Provider instructions ─────────────────────────────────────────────────────
-// Contextual help text per provider name. Keys must match backend provider names exactly.
+// ── Provider field definitions (from spec) ────────────────────────────────────
+//
+// Required settings per provider (spec-defined, matched case-insensitively by backend):
+//   2Factor    required: apiKey          optional: senderId, baseUrl, sendPath, otpVariableName, expiryVariableName
+//   Free2SMS   required: apiKey, senderId  optional: baseUrl, route
+//   Twilio     required: accountSid, authToken, serviceSid  optional: messagingServiceSid, baseUrl
+//
+// We only render required fields in the form; optional fields are advanced and rarely needed.
 
-const PROVIDER_INSTRUCTIONS: Record<string, React.ReactNode> = {
-  Free2SMS: (
-    <div className="rounded-md bg-blue-50 border border-blue-200 px-4 py-3 text-body-sm text-blue-800 flex flex-col gap-1.5">
-      <p className="font-semibold flex items-center gap-1.5"><Info className="size-3.5" /> Free2SMS setup</p>
-      <ul className="list-disc list-inside text-caption space-y-1">
-        <li>Sign in at <strong>free2sms.com</strong> and go to Developer → API.</li>
-        <li>Copy your <strong>API User ID</strong> and <strong>API Password</strong>.</li>
-        <li>Register a <strong>Sender ID</strong> (6-character alphabetic, e.g. KROMIC).</li>
-        <li>Create and register a <strong>DLT template</strong> for your OTP message on the TRAI DLT portal.</li>
-        <li>Enter the DLT-approved template under SMS Templates below.</li>
-        <li>The template body must include <code className="text-[11px] bg-muted px-1 rounded">{"{#var#}"}</code> where the code is inserted.</li>
-      </ul>
-    </div>
-  ),
-  Twilio: (
-    <div className="rounded-md bg-purple-50 border border-purple-200 px-4 py-3 text-body-sm text-purple-800 flex flex-col gap-1.5">
-      <p className="font-semibold flex items-center gap-1.5"><Info className="size-3.5" /> Twilio setup</p>
-      <ul className="list-disc list-inside text-caption space-y-1">
-        <li>Log in to <strong>console.twilio.com</strong>.</li>
-        <li>Copy your <strong>Account SID</strong> and <strong>Auth Token</strong> from the dashboard.</li>
-        <li>Obtain a Twilio phone number from <strong>Phone Numbers → Manage → Buy a number</strong>.</li>
-        <li>Use the Twilio number (e.g. +15005550006) as the <strong>Sender ID</strong>.</li>
-        <li>Note: Twilio delivery to India requires a supported trunk — verify your account has India coverage.</li>
-      </ul>
-    </div>
-  ),
+interface FieldMeta {
+  label: string;
+  secret?: boolean;
+  hint?: string;
+}
+
+const FIELD_META: Record<string, FieldMeta> = {
+  apiKey:        { label: "API Key",       secret: true,  hint: "Write-only — leave blank to keep the current value." },
+  senderId:      { label: "Sender ID",     secret: false, hint: "Registered 6-character alphabetic ID (e.g. KROMIC)." },
+  accountSid:    { label: "Account SID",   secret: false, hint: "From your Twilio console dashboard." },
+  authToken:     { label: "Auth Token",    secret: true,  hint: "Write-only — leave blank to keep the current value." },
+  serviceSid:    { label: "Service SID",   secret: false, hint: "Twilio Messaging Service SID (starts with MG…)." },
 };
 
-// Known field labels for common provider settings keys
-const FIELD_LABELS: Record<string, { label: string; secret?: boolean; hint?: string }> = {
-  apiKey:      { label: "API Key",      secret: true,  hint: "Write-only. Leave blank to keep the current key." },
-  apiUserId:   { label: "API User ID",  secret: false },
-  apiPassword: { label: "API Password", secret: true,  hint: "Write-only. Leave blank to keep the current password." },
-  senderId:    { label: "Sender ID",    secret: false, hint: "Registered sender name (6 chars, e.g. KROMIC)." },
-  accountSid:  { label: "Account SID",  secret: false },
-  authToken:   { label: "Auth Token",   secret: true,  hint: "Write-only. Leave blank to keep the current token." },
-  fromNumber:  { label: "From Number",  secret: false, hint: "E.164 format, e.g. +15005550006." },
-  username:    { label: "Username",     secret: false },
-  password:    { label: "Password",     secret: true,  hint: "Write-only." },
+// Required fields per provider name (case-sensitive match to backend provider names)
+const PROVIDER_REQUIRED_FIELDS: Record<string, string[]> = {
+  "2Factor":  ["apiKey"],
+  "Free2SMS": ["apiKey", "senderId"],
+  "Twilio":   ["accountSid", "authToken", "serviceSid"],
 };
+
+// ── Provider-specific help text ───────────────────────────────────────────────
+
+function ProviderInstructions({ provider }: { provider: string }) {
+  if (provider === "Free2SMS") {
+    return (
+      <div className="rounded-md bg-blue-50 border border-blue-200 px-4 py-3 text-body-sm text-blue-800 flex flex-col gap-1.5">
+        <p className="font-semibold flex items-center gap-1.5">
+          <Info className="size-3.5 shrink-0" /> Free2SMS setup
+        </p>
+        <ul className="list-disc list-inside text-caption space-y-1">
+          <li>Sign in at <strong>free2sms.com</strong> → Developer → API and copy your API key.</li>
+          <li>Register a <strong>Sender ID</strong> (6-character alphabetic, e.g. KROMIC).</li>
+          <li>Create and register a DLT template on the TRAI portal — the body must include{" "}
+            <code className="text-[11px] bg-blue-100 px-1 rounded">{"{#var#}"}</code> where the code goes.
+          </li>
+          <li>Enter the DLT-approved template in the SMS Templates section below.</li>
+        </ul>
+      </div>
+    );
+  }
+  if (provider === "Twilio") {
+    return (
+      <div className="rounded-md bg-purple-50 border border-purple-200 px-4 py-3 text-body-sm text-purple-800 flex flex-col gap-1.5">
+        <p className="font-semibold flex items-center gap-1.5">
+          <Info className="size-3.5 shrink-0" /> Twilio setup
+        </p>
+        <ul className="list-disc list-inside text-caption space-y-1">
+          <li>Copy your <strong>Account SID</strong> and <strong>Auth Token</strong> from console.twilio.com.</li>
+          <li>Create a Messaging Service in the console and copy its <strong>Service SID</strong> (starts with MG…).</li>
+          <li>Delivery to India requires a supported international trunk — verify your account coverage.</li>
+        </ul>
+      </div>
+    );
+  }
+  if (provider === "2Factor") {
+    return (
+      <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-3 text-body-sm text-amber-800 flex flex-col gap-1.5">
+        <p className="font-semibold flex items-center gap-1.5">
+          <Info className="size-3.5 shrink-0" /> 2Factor setup
+        </p>
+        <ul className="list-disc list-inside text-caption space-y-1">
+          <li>Log in at <strong>2factor.in</strong> and copy your <strong>API Key</strong> from the dashboard.</li>
+          <li>No sender ID is required for the default OTP template.</li>
+        </ul>
+      </div>
+    );
+  }
+  return null;
+}
+
+// ── Status strip ──────────────────────────────────────────────────────────────
+
+function SmsStatusStrip({ status }: { status: IntegrationStatusResponse }) {
+  const { enabled, isConfigured, publicFields } = status;
+  const provider = publicFields?.selectedProvider ?? publicFields?.provider ?? "";
+  const missing = publicFields?.missingSettings ?? "";
+  const requireVerified = publicFields?.requireVerifiedPhoneAtCheckout === "True";
+
+  if (!enabled) {
+    return (
+      <div className="flex items-start gap-3 rounded-md bg-muted/60 border border-border px-4 py-3">
+        <WifiOff className="size-4 text-foreground-muted mt-0.5 shrink-0" />
+        <p className="text-body-sm text-foreground-muted">
+          SMS is off. Customers cannot receive codes.
+        </p>
+      </div>
+    );
+  }
+
+  if (enabled && !isConfigured) {
+    return (
+      <div className="flex flex-col gap-2 rounded-md bg-warning/5 border border-warning/30 px-4 py-3">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="size-4 text-warning mt-0.5 shrink-0" />
+          <p className="text-body-sm text-warning font-medium">
+            SMS is on but not ready to send.
+          </p>
+        </div>
+        {missing && (
+          <p className="text-caption text-foreground-muted pl-7">
+            Missing: {missing}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // enabled && isConfigured
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-start gap-3 rounded-md bg-success/5 border border-success/30 px-4 py-3">
+        <CheckCircle2 className="size-4 text-success mt-0.5 shrink-0" />
+        <p className="text-body-sm text-success font-medium">
+          SMS is active{provider ? ` on ${provider}` : ""}.
+        </p>
+      </div>
+      {requireVerified && (
+        <div className="flex items-start gap-3 rounded-md bg-muted/60 border border-border px-4 py-3">
+          <Info className="size-4 text-foreground-muted mt-0.5 shrink-0" />
+          <p className="text-caption text-foreground-muted">
+            Customers must verify a phone number before checkout.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Section wrapper ───────────────────────────────────────────────────────────
 
@@ -94,7 +203,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-// ── Template form ─────────────────────────────────────────────────────────────
+// ── Template form state ───────────────────────────────────────────────────────
 
 interface TemplateFormState {
   provider: string;
@@ -122,15 +231,22 @@ function templateFromResponse(t: SmsTemplateResponse): TemplateFormState {
   };
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Parse the comma-separated selectableProviders string into a trimmed list. */
+function parseSelectableProviders(csv: string | undefined): string[] {
+  if (!csv) return [];
+  return csv.split(",").map((p) => p.trim()).filter(Boolean);
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function AdminSmsIntegrationClient() {
-  // ── Integration status + config ───────────────────────────────────────────
+  // ── Integration state ─────────────────────────────────────────────────────
   const [status, setStatus] = useState<IntegrationStatusResponse | null>(null);
-  const [providers, setProviders] = useState<SmsProviderOptionResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Integration form state
+  // Form state
   const [selectedProvider, setSelectedProvider] = useState("");
   const [providerSettings, setProviderSettings] = useState<Record<string, string>>({});
   const [integEnabled, setIntegEnabled] = useState(false);
@@ -138,8 +254,7 @@ export function AdminSmsIntegrationClient() {
   const [integError, setIntegError] = useState("");
   const [integSuccess, setIntegSuccess] = useState(false);
 
-  // ── OTP policy settings ───────────────────────────────────────────────────
-  const [mobileOtpEnabled, setMobileOtpEnabled] = useState(false);
+  // ── OTP policy state ──────────────────────────────────────────────────────
   const [otpExpiryMinutes, setOtpExpiryMinutes] = useState("10");
   const [otpResendCooldown, setOtpResendCooldown] = useState("60");
   const [otpMaxAttempts, setOtpMaxAttempts] = useState("5");
@@ -148,7 +263,7 @@ export function AdminSmsIntegrationClient() {
   const [policySuccess, setPolicySuccess] = useState(false);
   const [showPolicy, setShowPolicy] = useState(false);
 
-  // ── Templates ─────────────────────────────────────────────────────────────
+  // ── Templates state ───────────────────────────────────────────────────────
   const [templates, setTemplates] = useState<SmsTemplateResponse[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [templatesError, setTemplatesError] = useState<string | null>(null);
@@ -160,31 +275,27 @@ export function AdminSmsIntegrationClient() {
   const [deleteTarget, setDeleteTarget] = useState<SmsTemplateResponse | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // ── Load everything on mount ──────────────────────────────────────────────
+  // ── Hydrate form from IntegrationStatusResponse ───────────────────────────
+  function applyStatus(s: IntegrationStatusResponse) {
+    setStatus(s);
+    setIntegEnabled(s.enabled);
+    // Active provider comes from publicFields.selectedProvider (per spec)
+    const active = s.publicFields?.selectedProvider ?? s.publicFields?.provider ?? "";
+    if (active) setSelectedProvider(active);
+  }
+
+  // ── Load ──────────────────────────────────────────────────────────────────
   const load = useCallback(async () => {
     setLoading(true);
-    const [smsRes, providersRes, settingsRes] = await Promise.all([
+    const [smsRes, settingsRes] = await Promise.all([
       adminIntegrationsApi.getSms(),
-      adminSmsApi.getProviders(),
       adminSettingsApi.get(),
     ]);
 
-    if (smsRes.ok) {
-      setStatus(smsRes.data);
-      setIntegEnabled(smsRes.data.enabled);
-      // publicFields may carry the configured provider name
-      if (smsRes.data.publicFields?.provider) {
-        setSelectedProvider(smsRes.data.publicFields.provider);
-      }
-    }
-
-    if (providersRes.ok) {
-      setProviders(providersRes.data);
-    }
+    if (smsRes.ok) applyStatus(smsRes.data);
 
     if (settingsRes.ok && settingsRes.data.auth) {
       const a = settingsRes.data.auth;
-      setMobileOtpEnabled(a.mobileOtpEnabled);
       setOtpExpiryMinutes(String(a.otpExpiryMinutes ?? 10));
       setOtpResendCooldown(String(a.otpResendCooldownSeconds ?? 60));
       setOtpMaxAttempts(String(a.otpMaxAttempts ?? 5));
@@ -198,11 +309,8 @@ export function AdminSmsIntegrationClient() {
     setTemplatesError(null);
     const res = await adminSmsApi.listTemplates();
     setTemplatesLoading(false);
-    if (res.ok) {
-      setTemplates(res.data);
-    } else {
-      setTemplatesError(extractApiError(res.error, "Failed to load templates."));
-    }
+    if (res.ok) setTemplates(res.data);
+    else setTemplatesError(extractApiError(res.error, "Failed to load templates."));
   }, []);
 
   useEffect(() => {
@@ -210,38 +318,34 @@ export function AdminSmsIntegrationClient() {
     void loadTemplates();
   }, [load, loadTemplates]);
 
-  // ── Determine which provider-specific fields to show ──────────────────────
-  // Since providerSettings is a generic Record<string,string>, we ask the
-  // backend publicFields or fall back to common known keys per provider name.
-  const knownFieldsByProvider: Record<string, string[]> = {
-    Free2SMS: ["apiUserId", "apiPassword", "senderId"],
-    Twilio:   ["accountSid", "authToken", "fromNumber"],
-  };
+  // ── Derived ───────────────────────────────────────────────────────────────
+  // Provider dropdown comes from publicFields.selectableProviders (CSV) per spec.
+  const selectableProviders = parseSelectableProviders(
+    status?.publicFields?.selectableProviders,
+  );
 
+  // Required fields for the currently selected provider (spec-defined)
   const fieldKeys: string[] = selectedProvider
-    ? knownFieldsByProvider[selectedProvider] ?? ["apiKey", "senderId"]
+    ? (PROVIDER_REQUIRED_FIELDS[selectedProvider] ?? ["apiKey"])
     : [];
 
   // ── Save integration ──────────────────────────────────────────────────────
   async function handleIntegSave(e: React.FormEvent) {
     e.preventDefault();
+    if (integEnabled && !selectedProvider) {
+      setIntegError("Select a provider before enabling SMS.");
+      return;
+    }
+
     setIntegSaving(true);
     setIntegError("");
     setIntegSuccess(false);
 
-    // Validate: cannot enable without a provider
-    if (integEnabled && !selectedProvider) {
-      setIntegError("Select a provider before enabling SMS integration.");
-      setIntegSaving(false);
-      return;
-    }
-
-    // Build providerSettings — only send non-empty values
-    // (blank secret fields mean "keep existing" — do not overwrite)
+    // Build providerSettings — omit blank values (blank secret = keep existing)
     const settings: Record<string, string> = {};
     for (const key of fieldKeys) {
       const val = providerSettings[key];
-      if (val && val.trim()) settings[key] = val.trim();
+      if (val?.trim()) settings[key] = val.trim();
     }
 
     const res = await adminIntegrationsApi.updateSms({
@@ -253,23 +357,18 @@ export function AdminSmsIntegrationClient() {
     setIntegSaving(false);
 
     if (res.ok) {
-      // PUT returns 204 — re-fetch to get updated status
-      const refetch = await adminIntegrationsApi.getSms();
-      if (refetch.ok) {
-        setStatus(refetch.data);
-        setIntegEnabled(refetch.data.enabled);
-        if (refetch.data.publicFields?.provider) {
-          setSelectedProvider(refetch.data.publicFields.provider);
+      // PUT returns 200 with the updated status — use it directly, no re-fetch.
+      applyStatus(res.data);
+
+      // Clear secret fields after save (values are write-only)
+      setProviderSettings((prev) => {
+        const cleared = { ...prev };
+        for (const key of fieldKeys) {
+          if (FIELD_META[key]?.secret) cleared[key] = "";
         }
-      }
-      // Clear secret fields after save (write-only)
-      const cleared: Record<string, string> = {};
-      for (const key of fieldKeys) {
-        const meta = FIELD_LABELS[key];
-        if (meta?.secret) cleared[key] = "";
-        else cleared[key] = providerSettings[key] ?? "";
-      }
-      setProviderSettings(cleared);
+        return cleared;
+      });
+
       setIntegSuccess(true);
       setTimeout(() => setIntegSuccess(false), 3000);
     } else {
@@ -278,6 +377,8 @@ export function AdminSmsIntegrationClient() {
   }
 
   // ── Save OTP policy ───────────────────────────────────────────────────────
+  // Note: smsProvider is intentionally NOT sent — the backend ignores it and
+  // the spec explicitly says to omit it.
   async function handlePolicySave(e: React.FormEvent) {
     e.preventDefault();
     setPolicySaving(true);
@@ -285,7 +386,6 @@ export function AdminSmsIntegrationClient() {
     setPolicySuccess(false);
 
     const res = await adminSettingsApi.updateAuth({
-      mobileOtpEnabled,
       otpExpiryMinutes: parseInt(otpExpiryMinutes) || 10,
       otpResendCooldownSeconds: parseInt(otpResendCooldown) || 60,
       otpMaxAttempts: parseInt(otpMaxAttempts) || 5,
@@ -438,7 +538,7 @@ export function AdminSmsIntegrationClient() {
         description="SMS provider configuration and phone verification settings."
       />
 
-      {/* ── Integration card ── */}
+      {/* ── Integration card ────────────────────────────────────────────── */}
       <AdminIntegrationCard
         title="SMS Provider"
         description="Gateway for sending OTP and transactional SMS messages."
@@ -446,6 +546,9 @@ export function AdminSmsIntegrationClient() {
         loading={loading}
         icon={<MessageSquare className="size-5" />}
       >
+        {/* Status strip — driven by enabled + isConfigured per spec */}
+        {status && <SmsStatusStrip status={status} />}
+
         <form onSubmit={handleIntegSave} noValidate className="flex flex-col gap-4">
           {integError && (
             <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-4 py-3">
@@ -458,48 +561,44 @@ export function AdminSmsIntegrationClient() {
             </p>
           )}
 
-          {/* Provider select */}
+          {/* Provider dropdown — list from publicFields.selectableProviders */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-body-sm font-medium text-foreground">
+            <label htmlFor="sms-provider" className="text-body-sm font-medium text-foreground">
               Provider <span className="text-danger" aria-hidden="true">*</span>
             </label>
             <select
+              id="sms-provider"
               value={selectedProvider}
               onChange={(e) => {
                 setSelectedProvider(e.target.value);
                 setProviderSettings({});
               }}
-              aria-label="SMS provider"
               className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
             >
               <option value="">— Select provider —</option>
-              {providers.map((p) => (
-                <option key={p.name} value={p.name ?? ""}>
-                  {p.name}{p.description ? ` — ${p.description}` : ""}
-                </option>
+              {selectableProviders.map((p) => (
+                <option key={p} value={p}>{p}</option>
               ))}
             </select>
           </div>
 
-          {/* Provider instructions */}
-          {selectedProvider && PROVIDER_INSTRUCTIONS[selectedProvider] && (
-            <div>{PROVIDER_INSTRUCTIONS[selectedProvider]}</div>
-          )}
+          {/* Provider-specific instructions */}
+          {selectedProvider && <ProviderInstructions provider={selectedProvider} />}
 
           {/* Write-only secret notice */}
           {selectedProvider && status?.hasSecret && (
             <div className="rounded-md bg-warning/5 border border-warning/20 px-4 py-3">
               <p className="text-caption text-warning">
-                Secret credentials are write-only. Leave fields blank to keep the current values.
+                Credentials are write-only. Leave fields blank to keep current values.
               </p>
             </div>
           )}
 
-          {/* Provider-specific fields */}
-          {fieldKeys.length > 0 && selectedProvider && (
+          {/* Provider-specific required fields */}
+          {fieldKeys.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {fieldKeys.map((key) => {
-                const meta = FIELD_LABELS[key] ?? { label: key };
+                const meta = FIELD_META[key] ?? { label: key };
                 return (
                   <Input
                     key={key}
@@ -522,6 +621,23 @@ export function AdminSmsIntegrationClient() {
             </div>
           )}
 
+          {/* Staged-setup guidance */}
+          {selectedProvider && !integEnabled && (
+            <p className="text-caption text-foreground-muted">
+              Save with SMS disabled to store credentials first. Enable once configuration is complete.
+            </p>
+          )}
+
+          {/* Changing provider while enabled requires full credentials */}
+          {integEnabled &&
+            selectedProvider &&
+            status?.enabled &&
+            selectedProvider !== (status.publicFields?.selectedProvider ?? status.publicFields?.provider) && (
+              <p className="text-caption text-warning">
+                Changing the provider while SMS is enabled requires all credentials for the new provider in the same save.
+              </p>
+            )}
+
           {/* Enable toggle */}
           <label className="flex items-start gap-2.5 cursor-pointer">
             <input
@@ -533,24 +649,24 @@ export function AdminSmsIntegrationClient() {
             <span className="flex flex-col">
               <span className="text-body-sm font-medium text-foreground">Enable SMS integration</span>
               <span className="text-caption text-foreground-muted">
-                A provider must be selected and configured before enabling.
+                All required credentials must be present before enabling.
               </span>
             </span>
           </label>
 
-          {integEnabled && !selectedProvider && (
-            <p className="text-caption text-danger">
-              Select a provider before enabling SMS.
-            </p>
-          )}
-
-          <Button type="submit" variant="primary" size="sm" loading={integSaving} className="self-start">
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            loading={integSaving}
+            className="self-start"
+          >
             Save Integration
           </Button>
         </form>
       </AdminIntegrationCard>
 
-      {/* ── OTP Policy settings (collapsible) ── */}
+      {/* ── OTP Policy (collapsible) ─────────────────────────────────────── */}
       <div className="rounded-lg border border-border bg-background overflow-hidden max-w-2xl">
         <button
           type="button"
@@ -561,7 +677,7 @@ export function AdminSmsIntegrationClient() {
           <div>
             <p className="text-body font-semibold text-foreground">OTP Policy</p>
             <p className="text-caption text-foreground-muted">
-              Phone verification behaviour — expiry, cooldown and attempt limits.
+              Code expiry, resend cooldown and attempt limits.
             </p>
           </div>
           {showPolicy
@@ -584,27 +700,15 @@ export function AdminSmsIntegrationClient() {
                 </p>
               )}
 
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={mobileOtpEnabled}
-                  onChange={(e) => setMobileOtpEnabled(e.target.checked)}
-                  className="h-4 w-4 rounded border-border accent-primary"
-                />
-                <span className="text-body-sm font-medium text-foreground">
-                  Require phone verification before checkout
-                </span>
-              </label>
-
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Input
-                  label="OTP expiry (minutes)"
+                  label="Expiry (minutes)"
                   type="number"
                   min={1}
                   max={60}
                   value={otpExpiryMinutes}
                   onChange={(e) => setOtpExpiryMinutes(e.target.value)}
-                  hint="How long the code is valid."
+                  hint="How long a code is valid."
                 />
                 <Input
                   label="Resend cooldown (seconds)"
@@ -634,11 +738,13 @@ export function AdminSmsIntegrationClient() {
         )}
       </div>
 
-      {/* ── SMS Templates ── */}
+      {/* ── SMS Templates ────────────────────────────────────────────────── */}
       <Section title="SMS Templates">
         <p className="text-caption text-foreground-muted -mt-2">
-          DLT-registered message templates sent for OTP and notifications.
-          Each template body must include <code className="text-[11px] bg-muted px-1 rounded">{"{#var#}"}</code> where the code will be inserted (required for Indian DLT compliance).
+          DLT-registered message templates. The backend has a sensible default body so this
+          section is optional for new deployments. Each template body must include{" "}
+          <code className="text-[11px] bg-muted px-1 rounded">{"{#var#}"}</code> where the OTP
+          code will be inserted.
         </p>
 
         {/* Inline template form */}
@@ -672,31 +778,33 @@ export function AdminSmsIntegrationClient() {
                   placeholder="e.g. OTP Verification"
                 />
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-body-sm font-medium text-foreground">Provider</label>
+                  <label htmlFor="tpl-provider" className="text-body-sm font-medium text-foreground">
+                    Provider
+                  </label>
                   <select
+                    id="tpl-provider"
                     value={templateForm.provider}
                     onChange={(e) => setTemplateForm((f) => ({ ...f, provider: e.target.value }))}
-                    aria-label="Template provider"
                     className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
                   >
                     <option value="">— Any / All —</option>
-                    {providers.map((p) => (
-                      <option key={p.name} value={p.name ?? ""}>{p.name}</option>
+                    {selectableProviders.map((p) => (
+                      <option key={p} value={p}>{p}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-body-sm font-medium text-foreground">
+                <label htmlFor="tpl-body" className="text-body-sm font-medium text-foreground">
                   Template body <span className="text-danger" aria-hidden="true">*</span>
                 </label>
                 <textarea
+                  id="tpl-body"
                   value={templateForm.body}
                   onChange={(e) => setTemplateForm((f) => ({ ...f, body: e.target.value }))}
                   rows={3}
-                  aria-label="Template body"
-                  placeholder={`Your {#var#} is the OTP for Kromic Store. Valid for 10 minutes. Do not share.`}
+                  placeholder={`Your OTP is {#var#}. Valid for 10 minutes. Do not share.`}
                   className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus resize-none"
                 />
                 <p className="text-caption text-foreground-muted">
@@ -749,7 +857,7 @@ export function AdminSmsIntegrationClient() {
           loading={templatesLoading}
           error={templatesError}
           emptyTitle="No templates yet"
-          emptyDescription="Add a DLT-registered template to send SMS codes."
+          emptyDescription="Add a DLT-registered template to customise the OTP message body."
           onRetry={loadTemplates}
         />
       </Section>

@@ -326,11 +326,12 @@ export const adminIntegrationsApi = {
     apiClient.get<IntegrationStatusResponse>("/api/v1/admin/integrations/sms"),
 
   /**
-   * PUT /api/v1/admin/integrations/sms — returns 204 No Content.
-   * Re-fetch getSms() after calling this.
+   * PUT /api/v1/admin/integrations/sms — returns 200 with updated IntegrationStatusResponse.
+   * Use the returned object directly to update UI state; no follow-up GET needed.
+   * Enabling an incomplete config returns 400 VALIDATION_PROVIDERSETTINGS.
    */
   updateSms: (data: UpdateSmsConfigRequest) =>
-    apiClient.put<void>("/api/v1/admin/integrations/sms", data),
+    apiClient.put<IntegrationStatusResponse>("/api/v1/admin/integrations/sms", data),
 };
 
 // ── Inventory ─────────────────────────────────────────────────────────────────

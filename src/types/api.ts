@@ -1051,7 +1051,11 @@ export interface UpdateAuthSettingsRequest {
   otpExpiryMinutes?: number;
   otpResendCooldownSeconds?: number;
   otpMaxAttempts?: number;
-  smsProvider?: string;
+  /**
+   * @deprecated Ignored by the backend — provider is set exclusively through
+   * PUT /api/v1/admin/integrations/sms. Omit this field; do not send it.
+   */
+  smsProvider?: never;
 }
 
 /** Policies (admin) */
@@ -1125,13 +1129,17 @@ export interface UpdateEmailSettingsRequest {
 
 /**
  * PUT /api/v1/admin/integrations/sms
- * Actual API schema: enabled + provider + providerSettings (generic Record<string,string>).
- * Returns 204 No Content — re-fetch GET after save.
+ * Returns 200 with the updated IntegrationStatusResponse — NOT 204.
+ * Use the returned object directly to update UI state; no follow-up GET needed.
+ *
+ * Staged setup: save with enabled:false to store partial credentials,
+ * then enable once all required fields are present.
+ * Enabling an incomplete config returns 400 VALIDATION_PROVIDERSETTINGS.
  */
 export interface UpdateSmsConfigRequest {
   enabled: boolean;
   provider?: string;
-  /** Provider-specific key/value pairs, e.g. { apiKey: "...", senderId: "..." } */
+  /** Provider-specific key/value pairs. Omit a key to keep the stored value; send a value to update it. */
   providerSettings?: Record<string, string>;
 }
 
@@ -1168,6 +1176,12 @@ export interface PhoneVerificationStatusResponse {
   /** Canonical E.164 number on the account, or null */
   phoneNumber?: string;
   verified: boolean;
+  /**
+   * A number submitted via PUT /me/profile that has not yet been verified.
+   * Render this as "pending verification" — never treat phoneNumber alone as
+   * proof the requested change took effect.
+   */
+  pendingPhoneNumber?: string | null;
   /** Gate on this — already true when verification is not required */
   verificationSatisfied: boolean;
   /** Render OTP input at this width (default 4) */

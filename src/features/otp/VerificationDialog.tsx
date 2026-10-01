@@ -267,6 +267,13 @@ export function VerificationDialog({
       if (isExpired && code === "OTP_INVALID") {
         setBannerNeutral("Your code has expired. Request a new one.");
         setOtp("");
+      } else if (code === "PHONE_VERIFICATION_NOT_PENDING") {
+        // The pending number was changed while this dialog was open.
+        // Drop back to the phone step so the user can start a fresh flow.
+        setBannerNeutral(desc.text);
+        setPhoneLocked(false);
+        setOtp("");
+        setStep("phone");
       } else if (desc.tone === "field-otp") {
         setOtpError(desc.text);
         if (code !== "OTP_MAX_ATTEMPTS") setOtp("");
