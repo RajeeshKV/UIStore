@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingBag, Star } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { formatPrice, discountPercent } from "@/lib/utils";
@@ -146,20 +146,6 @@ export function ProductCard({
         >
           {product.name}
         </Link>
-
-        {/* Stars */}
-        <div className="flex items-center gap-1" aria-hidden="true">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              className={cn(
-                "size-2.5",
-                star <= 4 ? "fill-warning text-warning" : "fill-warning/25 text-warning/25",
-              )}
-            />
-          ))}
-          <span className="text-[10px] text-foreground-muted ml-0.5">4.5</span>
-        </div>
 
         {/* Price */}
         <div className="flex items-baseline gap-1.5">

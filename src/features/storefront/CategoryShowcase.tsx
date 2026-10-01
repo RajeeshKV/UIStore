@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { cn } from "@/lib/utils";
 import type { StorefrontCategoryResponse } from "@/types/api";
 
 interface CategoryShowcaseProps {
@@ -23,7 +24,7 @@ export function CategoryShowcase({
   if (!loading && !error && categories.length === 0) return null;
 
   return (
-    <section aria-labelledby="categories-heading" className="py-6 md:py-8 bg-background">
+    <section aria-labelledby="categories-heading" className="py-6 md:py-8 bg-background border-y border-border">
       <div className="container-x mx-auto">
         {/* Section header */}
         <div className="flex items-center justify-between mb-4 md:mb-5">
@@ -49,9 +50,9 @@ export function CategoryShowcase({
         {!loading && !error && categories.length > 0 && (
           <ul
             role="list"
-            className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+            className="grid gap-2 md:gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8"
           >
-            {categories.slice(0, 8).map((cat) => (
+            {categories.slice(0, 16).map((cat) => (
               <li key={cat.id}>
                 <CategoryCard category={cat} />
               </li>
@@ -63,59 +64,51 @@ export function CategoryShowcase({
   );
 }
 
-// ── Category card — matches reference: landscape, image left, text right ──────
+// ── Category card — same style as BrandCard ───────────────────────────────────
 
 function CategoryCard({ category }: { category: StorefrontCategoryResponse }) {
   return (
     <Link
       href={`/categories/${category.slug}`}
-      className="group flex items-center gap-3 p-3 rounded-xl border border-border bg-surface overflow-hidden hover:border-border-strong hover:shadow-sm transition-all duration-150 focus-visible:outline-2 focus-visible:outline-focus"
+      className={cn(
+        "group flex flex-col items-center gap-1.5 p-2.5 rounded-md",
+        "border border-border hover:border-border-strong hover:bg-surface",
+        "transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-focus",
+      )}
       aria-label={category.name ?? "Category"}
     >
-      {/* Image — circular, matches reference screenshot */}
-      <div className="relative shrink-0 w-[88px] h-[88px] rounded-full overflow-hidden bg-muted border border-border">
+      {/* Image — no outline, fills the container cleanly */}
+      <div className="relative h-10 w-full flex items-center justify-center overflow-hidden">
         {category.imageUrl ? (
           <Image
             src={category.imageUrl}
             alt={category.name ?? "Category"}
             fill
-            sizes="88px"
-            className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+            sizes="(max-width: 640px) 80px, 100px"
+            className="object-contain transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted">
-            <span
-              className="text-[24px] font-bold text-foreground-muted select-none"
-              aria-hidden="true"
-            >
-              {(category.name ?? "?").charAt(0).toUpperCase()}
-            </span>
-          </div>
+          <span
+            className="text-[18px] font-bold text-foreground-muted select-none"
+            aria-hidden="true"
+          >
+            {(category.name ?? "?").charAt(0).toUpperCase()}
+          </span>
         )}
       </div>
 
-      {/* Text content */}
-      <div className="flex flex-1 items-center justify-between px-4 min-w-0">
-        <div className="min-w-0">
-          <p className="text-[14px] font-semibold text-foreground leading-snug truncate group-hover:text-foreground/70 transition-colors">
-            {category.name}
-          </p>
-          {category.productCount != null ? (
-            <p className="text-[12px] text-primary mt-0.5 truncate">
-              {category.productCount} {category.productCount === 1 ? "product" : "products"}
-            </p>
-          ) : (
-            <p className="text-[12px] text-foreground-muted mt-0.5">
-              Explore
-            </p>
-          )}
-        </div>
-        <ArrowRight
-          className="size-4 text-foreground-muted shrink-0 ml-3 group-hover:text-foreground group-hover:translate-x-0.5 transition-all duration-150"
-          aria-hidden="true"
-        />
-      </div>
+      {/* Name */}
+      <p className="text-[11px] font-medium text-foreground-muted group-hover:text-foreground transition-colors truncate w-full text-center leading-tight">
+        {category.name}
+      </p>
+
+      {/* Count */}
+      {category.productCount != null && (
+        <p className="text-[10px] text-foreground-muted/70 text-center leading-none">
+          {category.productCount}
+        </p>
+      )}
     </Link>
   );
 }
@@ -124,18 +117,15 @@ function CategoryCard({ category }: { category: StorefrontCategoryResponse }) {
 
 function CategoryGridSkeleton() {
   return (
-    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
+    <div className="grid gap-2 md:gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+      {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
           aria-hidden="true"
-          className="flex items-center gap-3 p-3 rounded-xl border border-border"
+          className="flex flex-col items-center gap-1.5 p-2.5 rounded-md border border-border"
         >
-          <Skeleton className="shrink-0 w-[88px] h-[88px] rounded-full" />
-          <div className="flex-1 flex flex-col gap-2">
-            <Skeleton className="h-3.5 w-28" />
-            <Skeleton className="h-3 w-20" />
-          </div>
+          <Skeleton className="h-10 w-full rounded" />
+          <Skeleton className="h-3 w-14" />
         </div>
       ))}
     </div>
