@@ -130,27 +130,70 @@ export function Header({
           </form>
 
           {/* Right actions */}
-          <div className="ml-auto md:ml-4 flex items-center gap-0.5">
-            {/* Account */}
+          <div className="ml-auto md:ml-4 flex items-center gap-1">
+            {/* Account — with text label on desktop */}
             <AccountButton />
 
-            {/* Wishlist */}
-            <HeaderIconButton label="Wishlist" href="/account">
-              <Heart className="size-[18px]" />
-            </HeaderIconButton>
-
-            {/* Cart */}
-            <HeaderIconButton
-              label={`Cart${cartCount > 0 ? ` (${cartCount} items)` : ""}`}
-              href={onCartClick ? undefined : "/cart"}
-              onClick={onCartClick}
-              badge={cartCount}
+            {/* Wishlist — with text label on desktop */}
+            <Link
+              href="/account"
+              aria-label="Wishlist"
+              className={cn(
+                "hidden md:flex items-center gap-1.5 h-8 px-2 rounded-md",
+                "text-[13px] font-medium text-foreground hover:bg-muted transition-colors",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+              )}
             >
-              <ShoppingBag className="size-[18px]" />
-            </HeaderIconButton>
+              <Heart className="size-[16px]" aria-hidden="true" />
+              Wishlist
+            </Link>
+            {/* Wishlist icon-only on mobile */}
+            <Link
+              href="/account"
+              aria-label="Wishlist"
+              className={cn(
+                "md:hidden flex h-8 w-8 items-center justify-center rounded-md",
+                "text-foreground hover:bg-muted transition-colors",
+              )}
+            >
+              <Heart className="size-[18px]" />
+            </Link>
+
+            {/* Cart — icon + badge + text on desktop */}
+            <CartButton cartCount={cartCount} onCartClick={onCartClick} />
 
             {/* Mobile search */}
             <MobileSearchButton />
+
+            {/* Mobile cart icon */}
+            {onCartClick ? (
+              <button
+                type="button"
+                aria-label={`Cart${cartCount > 0 ? ` (${cartCount} items)` : ""}`}
+                onClick={onCartClick}
+                className="md:hidden relative flex h-8 w-8 items-center justify-center rounded-md text-foreground hover:bg-muted transition-colors"
+              >
+                <ShoppingBag className="size-[18px]" />
+                {cartCount > 0 && (
+                  <span aria-hidden="true" className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground leading-none">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <Link
+                href="/cart"
+                aria-label={`Cart${cartCount > 0 ? ` (${cartCount} items)` : ""}`}
+                className="md:hidden relative flex h-8 w-8 items-center justify-center rounded-md text-foreground hover:bg-muted transition-colors"
+              >
+                <ShoppingBag className="size-[18px]" />
+                {cartCount > 0 && (
+                  <span aria-hidden="true" className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground leading-none">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* Mobile menu toggle */}
             <button
@@ -228,6 +271,53 @@ export function Header({
         )}
       </AnimatePresence>
     </header>
+  );
+}
+
+// ── Cart button with text label ───────────────────────────────────────────────
+
+interface CartButtonProps {
+  cartCount: number;
+  onCartClick?: () => void;
+}
+
+function CartButton({ cartCount, onCartClick }: CartButtonProps) {
+  const label = `Cart${cartCount > 0 ? ` (${cartCount})` : ""}`;
+  const cls = cn(
+    "hidden md:flex items-center gap-1.5 h-8 px-2 rounded-md relative",
+    "text-[13px] font-medium text-foreground hover:bg-muted transition-colors",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+  );
+
+  const inner = (
+    <>
+      <div className="relative">
+        <ShoppingBag className="size-[16px]" aria-hidden="true" />
+        {cartCount > 0 && (
+          <span
+            aria-hidden="true"
+            className="absolute -top-1 -right-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-bold text-primary-foreground leading-none"
+          >
+            {cartCount > 99 ? "99+" : cartCount}
+          </span>
+        )}
+      </div>
+      Cart
+    </>
+  );
+
+  if (onCartClick) {
+    return (
+      <button type="button" aria-label={label} onClick={onCartClick} className={cls}>
+        {inner}
+      </button>
+    );
+  }
+
+  return (
+    <Link href="/cart" aria-label={label} className={cls}>
+      {inner}
+    </Link>
   );
 }
 
@@ -447,18 +537,32 @@ function AccountButton() {
 
   if (!isAuthenticated) {
     return (
-      <Link
-        href="/auth/login"
-        aria-label="Sign in"
-        className={cn(
-          "hidden md:flex items-center gap-1.5 h-8 px-3 rounded-md",
-          "text-[13px] font-medium text-foreground hover:bg-muted transition-colors",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-        )}
-      >
-        <User className="size-[15px]" aria-hidden="true" />
-        Account
-      </Link>
+      <>
+        {/* Desktop: icon + text */}
+        <Link
+          href="/auth/login"
+          aria-label="Account"
+          className={cn(
+            "hidden md:flex items-center gap-1.5 h-8 px-2 rounded-md",
+            "text-[13px] font-medium text-foreground hover:bg-muted transition-colors",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+          )}
+        >
+          <User className="size-[16px]" aria-hidden="true" />
+          Account
+        </Link>
+        {/* Mobile: icon only */}
+        <Link
+          href="/auth/login"
+          aria-label="Sign in"
+          className={cn(
+            "md:hidden flex h-8 w-8 items-center justify-center rounded-md",
+            "text-foreground hover:bg-muted transition-colors",
+          )}
+        >
+          <User className="size-[18px]" />
+        </Link>
+      </>
     );
   }
 
@@ -480,14 +584,15 @@ function AccountButton() {
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((o) => !o)}
         className={cn(
-          "relative flex h-8 w-8 items-center justify-center rounded-md",
-          "text-foreground hover:bg-muted transition-colors duration-150",
+          "relative flex items-center gap-1.5 h-8 px-2 rounded-md",
+          "text-[13px] font-medium text-foreground hover:bg-muted transition-colors duration-150",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         )}
       >
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
           {initials}
         </span>
+        <span className="hidden md:inline">Account</span>
       </button>
 
       <AnimatePresence>

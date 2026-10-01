@@ -9,31 +9,17 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { StorefrontCarouselSlideResponse } from "@/types/api";
 
-// ── Component ────────────────────────────────────────────────────────────────
-
 interface HeroCarouselProps {
-  /**
-   * Slides fetched from GET /api/v1/store/carousel.
-   * null  = still loading (show skeleton)
-   * []    = no slides configured (hide carousel entirely)
-   * [...] = render the carousel
-   */
   slides: StorefrontCarouselSlideResponse[] | null;
 }
 
 export function HeroCarousel({ slides }: HeroCarouselProps) {
   const shouldReduce = useReducedMotion();
-
-  // Loading state
   if (slides === null) return <HeroCarouselSkeleton />;
-
-  // No slides configured — render nothing
   if (slides.length === 0) return null;
-
   return <HeroCarouselInner slides={slides} shouldReduce={!!shouldReduce} />;
 }
 
-// Inner component — only mounts when we have real slides
 function HeroCarouselInner({
   slides,
   shouldReduce,
@@ -74,22 +60,22 @@ function HeroCarouselInner({
   }, [next, shouldReduce, sorted.length]);
 
   const slide = sorted[current];
-  // CTA destination is always /shop — server enforces this constant
   const ctaLabel = slide.ctaText ?? "Shop Now";
 
   return (
     <section
       aria-label="Hero carousel"
       aria-roledescription="carousel"
-      className="relative w-full px-3 md:px-6 lg:px-8 pt-3 md:pt-4"
+      // Outer wrapper provides the horizontal padding; arrows sit in this gutter
+      className="relative w-full px-8 md:px-10 pt-3 md:pt-4"
     >
-      {/* Left arrow — sits outside the rounded card */}
+      {/* ── Left arrow ────────────────────────────────────────── */}
       {sorted.length > 1 && (
         <button
           onClick={() => { prev(); resetTimer(); }}
           aria-label="Previous slide"
           className={cn(
-            "absolute left-0 md:left-1 top-1/2 -translate-y-1/2 z-20",
+            "absolute left-1 top-1/2 -translate-y-1/2 z-20",
             "flex h-8 w-8 items-center justify-center rounded-full",
             "bg-background border border-border shadow-sm",
             "hover:bg-muted transition-colors duration-150",
@@ -100,11 +86,14 @@ function HeroCarouselInner({
         </button>
       )}
 
-      {/* Slide card */}
-      <div
-        className="relative w-full overflow-hidden rounded-2xl border border-border bg-[#f5f0ea]"
-        style={{ aspectRatio: "16 / 4.2" }}
-      >
+      {/* ── Slide card — image fills the entire card ──────────── */}
+      {/*
+        No fixed aspect ratio — let the image's natural proportions drive height.
+        The card is a positioned container; the image is absolute-fill behind
+        a left-side gradient overlay that keeps text legible.
+        Use min-h to guarantee a reasonable height on all screen sizes.
+      */}
+      <div className="relative w-full overflow-hidden rounded-2xl border border-border min-h-[160px] sm:min-h-[220px] md:min-h-[280px] lg:min-h-[320px]">
         <AnimatePresence mode="wait" initial={false} custom={dir}>
           <motion.div
             key={slide.id}
@@ -114,32 +103,52 @@ function HeroCarouselInner({
             animate="center"
             exit="exit"
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 flex"
+            className="absolute inset-0"
             aria-roledescription="slide"
             aria-label={`Slide ${current + 1} of ${sorted.length}: ${slide.title}`}
           >
-            {/* Left: text content ~42% width */}
-            <div className="relative z-10 flex items-center w-[42%] shrink-0 pl-6 md:pl-10 pr-4">
-              <div className="flex flex-col gap-1.5 md:gap-2">
-                <p className="text-[9px] md:text-[10px] font-semibold tracking-[0.18em] uppercase text-foreground-muted">
+            {/* Full-bleed image */}
+            {slide.imageUrl ? (
+              <Image
+                src={slide.imageUrl}
+                alt={slide.title ?? ""}
+                fill
+                priority={current === 0}
+                sizes="100vw"
+                className="object-cover object-center"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-[#f5f0ea]" />
+            )}
+
+            {/* Gradient overlay — fades from left so text is readable */}
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent"
+              aria-hidden="true"
+            />
+
+            {/* Text content — left side, vertically centred */}
+            <div className="relative z-10 h-full flex items-center">
+              <div className="px-6 md:px-10 py-8 md:py-12 max-w-[52%]">
+                <p className="text-[9px] md:text-[10px] font-semibold tracking-[0.18em] uppercase text-white/70 mb-1.5">
                   NEW ARRIVALS
                 </p>
-                <h1 className="text-[1.1rem] sm:text-[1.35rem] md:text-[1.7rem] lg:text-[2rem] font-bold text-foreground leading-[1.1] tracking-tight">
+                <h1 className="text-[1.25rem] sm:text-[1.6rem] md:text-[2rem] lg:text-[2.4rem] font-bold text-white leading-[1.1] tracking-tight">
                   {slide.title}
                 </h1>
                 {slide.subtitle && (
-                  <p className="text-[10px] md:text-[12px] text-foreground-muted leading-snug max-w-[180px] md:max-w-[220px]">
+                  <p className="mt-2 text-[11px] md:text-[13px] text-white/75 leading-relaxed max-w-[240px]">
                     {slide.subtitle}
                   </p>
                 )}
                 <Link
                   href="/shop"
                   className={cn(
-                    "mt-1 self-start inline-flex items-center gap-1.5",
-                    "h-7 md:h-9 px-3 md:px-5 rounded-md",
-                    "bg-foreground text-background text-[10px] md:text-[12px] font-semibold",
-                    "hover:bg-foreground/85 transition-colors duration-150",
-                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground",
+                    "mt-4 self-start inline-flex items-center gap-1.5",
+                    "h-8 md:h-10 px-4 md:px-6 rounded-md",
+                    "bg-white text-foreground text-[11px] md:text-[13px] font-semibold",
+                    "hover:bg-white/90 transition-colors duration-150",
+                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                   )}
                 >
                   {ctaLabel}
@@ -147,29 +156,15 @@ function HeroCarouselInner({
                 </Link>
               </div>
             </div>
-
-            {/* Right: image fills remaining 58% */}
-            <div className="relative flex-1 overflow-hidden">
-              {slide.imageUrl && (
-                <Image
-                  src={slide.imageUrl}
-                  alt={slide.title ?? ""}
-                  fill
-                  priority={current === 0}
-                  sizes="(max-width: 768px) 58vw, 58vw"
-                  className="object-cover object-center"
-                />
-              )}
-            </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Dot indicators */}
+        {/* ── Dot indicators ──────────────────────────────────── */}
         {sorted.length > 1 && (
           <div
             role="tablist"
             aria-label="Carousel slides"
-            className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5"
           >
             {sorted.map((s, i) => (
               <button
@@ -181,8 +176,8 @@ function HeroCarouselInner({
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-300",
                   i === current
-                    ? "w-5 bg-foreground"
-                    : "w-1.5 bg-foreground/30 hover:bg-foreground/60",
+                    ? "w-5 bg-white"
+                    : "w-1.5 bg-white/40 hover:bg-white/70",
                 )}
               />
             ))}
@@ -190,13 +185,13 @@ function HeroCarouselInner({
         )}
       </div>
 
-      {/* Right arrow — sits outside the rounded card */}
+      {/* ── Right arrow ───────────────────────────────────────── */}
       {sorted.length > 1 && (
         <button
           onClick={() => { next(); resetTimer(); }}
           aria-label="Next slide"
           className={cn(
-            "absolute right-0 md:right-1 top-1/2 -translate-y-1/2 z-20",
+            "absolute right-1 top-1/2 -translate-y-1/2 z-20",
             "flex h-8 w-8 items-center justify-center rounded-full",
             "bg-background border border-border shadow-sm",
             "hover:bg-muted transition-colors duration-150",
@@ -210,17 +205,13 @@ function HeroCarouselInner({
   );
 }
 
-// ── Skeleton ─────────────────────────────────────────────────────────────────
-
 export function HeroCarouselSkeleton() {
   return (
-    <div className="w-full px-3 md:px-6 lg:px-8 pt-3 md:pt-4">
-      <Skeleton className="w-full rounded-2xl" style={{ aspectRatio: "16 / 4.2" }} />
+    <div className="w-full px-8 md:px-10 pt-3 md:pt-4">
+      <Skeleton className="w-full rounded-2xl min-h-[220px] md:min-h-[280px] lg:min-h-[320px]" />
     </div>
   );
 }
-
-// ── Slide transition variants ─────────────────────────────────────────────────
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? "3%" : "-3%", opacity: 0 }),

@@ -69,24 +69,24 @@ function CategoryCard({ category }: { category: StorefrontCategoryResponse }) {
   return (
     <Link
       href={`/categories/${category.slug}`}
-      className="group flex items-center gap-0 rounded-xl border border-border bg-surface overflow-hidden hover:border-border-strong hover:shadow-sm transition-all duration-150 focus-visible:outline-2 focus-visible:outline-focus"
+      className="group flex items-center gap-3 p-3 rounded-xl border border-border bg-surface overflow-hidden hover:border-border-strong hover:shadow-sm transition-all duration-150 focus-visible:outline-2 focus-visible:outline-focus"
       aria-label={category.name ?? "Category"}
     >
-      {/* Image — fixed square, fills left portion */}
-      <div className="relative shrink-0 w-[100px] h-[88px] bg-muted overflow-hidden">
+      {/* Image — circular, matches reference screenshot */}
+      <div className="relative shrink-0 w-[88px] h-[88px] rounded-full overflow-hidden bg-muted border border-border">
         {category.imageUrl ? (
           <Image
             src={category.imageUrl}
             alt={category.name ?? "Category"}
             fill
-            sizes="100px"
+            sizes="88px"
             className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
             <span
-              className="text-[28px] font-bold text-foreground-muted select-none"
+              className="text-[24px] font-bold text-foreground-muted select-none"
               aria-hidden="true"
             >
               {(category.name ?? "?").charAt(0).toUpperCase()}
@@ -102,8 +102,8 @@ function CategoryCard({ category }: { category: StorefrontCategoryResponse }) {
             {category.name}
           </p>
           {category.productCount != null ? (
-            <p className="text-[12px] text-foreground-muted mt-0.5 truncate">
-              {category.productCount} products
+            <p className="text-[12px] text-primary mt-0.5 truncate">
+              {category.productCount} {category.productCount === 1 ? "product" : "products"}
             </p>
           ) : (
             <p className="text-[12px] text-foreground-muted mt-0.5">
@@ -129,10 +129,10 @@ function CategoryGridSkeleton() {
         <div
           key={i}
           aria-hidden="true"
-          className="flex items-center rounded-xl border border-border overflow-hidden"
+          className="flex items-center gap-3 p-3 rounded-xl border border-border"
         >
-          <Skeleton className="shrink-0 w-[100px] h-[88px] rounded-none" />
-          <div className="flex-1 px-4 flex flex-col gap-2">
+          <Skeleton className="shrink-0 w-[88px] h-[88px] rounded-full" />
+          <div className="flex-1 flex flex-col gap-2">
             <Skeleton className="h-3.5 w-28" />
             <Skeleton className="h-3 w-20" />
           </div>
