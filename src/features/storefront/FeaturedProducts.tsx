@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { CartAwareProductCard } from "@/components/ui/CartAwareProductCard";
-import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { FeaturedProductCard } from "./FeaturedProductCard";
+import { useCart } from "@/features/cart/CartContext";
 import type { StorefrontProductSummaryResponse } from "@/types/api";
 
 interface FeaturedProductsProps {
@@ -27,9 +28,11 @@ export function FeaturedProducts({
   if (!loading && !error && products.length === 0) return null;
 
   return (
-    <section aria-labelledby="featured-heading" className="py-8 md:py-10 bg-background border-t border-border">
+    <section
+      aria-labelledby="featured-heading"
+      className="py-8 md:py-10 bg-background border-t border-border"
+    >
       <div className="container-x mx-auto">
-        {/* Header */}
         <div className="flex items-baseline justify-between mb-5">
           <h2
             id="featured-heading"
@@ -47,28 +50,46 @@ export function FeaturedProducts({
 
         {loading && <FeaturedProductsSkeleton />}
         {error && !loading && (
-          <ErrorState
-            title="Couldn't load featured products"
-            onRetry={onRetry}
-            inline
-          />
+          <ErrorState title="Couldn't load featured products" onRetry={onRetry} inline />
         )}
 
         {!loading && !error && products.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {products.slice(0, 8).map((product, i) => (
-              <CartAwareProductCard
-                key={product.id}
-                product={product}
-                currency={currency}
-                locale={locale}
-                eager={i < 4}
-              />
-            ))}
-          </div>
+          <FeaturedGrid products={products} currency={currency} locale={locale} />
         )}
       </div>
     </section>
+  );
+}
+
+// Cart-aware inner grid — needs the cart context
+function FeaturedGrid({
+  products,
+  currency,
+  locale,
+}: {
+  products: StorefrontProductSummaryResponse[];
+  currency?: string;
+  locale?: string;
+}) {
+  const { addItem } = useCart();
+
+  function handleAddToCart(p: StorefrontProductSummaryResponse) {
+    if (p.canPurchase) addItem(p.id, undefined, 1);
+  }
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      {products.slice(0, 4).map((product, i) => (
+        <FeaturedProductCard
+          key={product.id}
+          product={product}
+          currency={currency}
+          locale={locale}
+          onAddToCart={handleAddToCart}
+          eager={i < 4}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -76,13 +97,17 @@ function FeaturedProductsSkeleton() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} aria-hidden="true" className="flex flex-col gap-2 rounded-xl border border-border p-3">
-          <Skeleton className="aspect-square w-full rounded-lg" />
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className="h-3.5 w-full" />
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-5 w-20" />
-          <Skeleton className="h-8 w-full rounded-md mt-1" />
+        <div
+          key={i}
+          aria-hidden="true"
+          className="flex flex-col rounded-xl overflow-hidden border border-border"
+        >
+          <Skeleton className="w-full rounded-none" style={{ aspectRatio: "4/3" }} />
+          <div className="px-3 pt-2.5 pb-3 space-y-2">
+            <Skeleton className="h-3.5 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-8 w-full rounded-md mt-1" />
+          </div>
         </div>
       ))}
     </div>
