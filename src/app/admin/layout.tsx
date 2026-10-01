@@ -3,7 +3,7 @@ import { AdminAuthProvider } from "@/features/admin/AdminAuthContext";
 
 export const metadata: Metadata = {
   title: {
-    default: "Admin | Kromic Store",
+    default: "Admin | Shopey",
     template: "%s | Admin",
   },
   robots: { index: false, follow: false },
@@ -21,3 +21,4 @@ export default function AdminRootLayout({
 }) {
   return <AdminAuthProvider>{children}</AdminAuthProvider>;
 }
+

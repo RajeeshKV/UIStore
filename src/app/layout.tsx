@@ -22,16 +22,19 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Kromic Store",
-    template: "%s | Kromic Store",
+    default: "Shopey",
+    template: "%s | Shopey",
   },
-  description: "Premium products for a more beautiful everyday life.",
+  description: "Premium products for a smarter, better tomorrow.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   ),
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
 };
 

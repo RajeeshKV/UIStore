@@ -31,7 +31,7 @@ if (!apiUrl && process.env.NODE_ENV === "production") {
 
 export const env = {
   /** Base URL of the Kromic Commerce API backend (no trailing slash) */
-  apiUrl: apiUrl || "http://localhost:5000",
+  apiUrl: apiUrl || "https://api.shopey.tech",
 
   /** Public URL of this frontend application */
   appUrl: appUrl || "http://localhost:3000",

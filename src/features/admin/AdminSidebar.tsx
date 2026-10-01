@@ -14,6 +14,7 @@ import {
   ChevronRight,
   X,
   Menu,
+  Images,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,11 @@ const NAV: NavItem[] = [
     label: "Orders",
     href: "/admin/orders",
     icon: <ShoppingCart className="size-4" />,
+  },
+  {
+    label: "Carousel",
+    href: "/admin/carousel",
+    icon: <Images className="size-4" />,
   },
   {
     label: "Commerce",
@@ -116,7 +122,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
             onClick={onClose}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Kromic Store" className="h-9 w-9 object-contain shrink-0" />
+            <img src="/logo.png" alt="Shopey" className="h-9 w-9 object-contain shrink-0" />
             <span className="text-label font-bold tracking-tight uppercase">
               Admin
             </span>
@@ -253,3 +259,4 @@ function NavEntry({
     </li>
   );
 }
+

@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center bg-background">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo.png" alt="Kromic Store" className="h-28 w-28 object-contain mb-8" />
+      <img src="/logo.png" alt="Shopey" className="h-28 w-28 object-contain mb-8" />
       <h1 className="text-h2 font-bold text-foreground">Page not found</h1>
       <p className="mt-3 text-body-sm text-foreground-muted max-w-sm">
         The page you&apos;re looking for doesn&apos;t exist or has been moved.
@@ -26,3 +26,4 @@ export default function NotFound() {
     </div>
   );
 }
+

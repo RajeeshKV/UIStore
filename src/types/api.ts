@@ -1230,3 +1230,55 @@ export interface ImageSortOrderItem {
 export interface ReorderImagesRequest {
   items: ImageSortOrderItem[];
 }
+
+// ── Storefront: Carousel ──────────────────────────────────────────────────────
+
+/**
+ * A single carousel slide as returned by GET /api/v1/store/carousel.
+ * Maps directly from StorefrontCarouselSlideResponse in the backend.
+ * CtaTarget is always "/shop" — fixed by the server, not configurable per-slide.
+ */
+export interface StorefrontCarouselSlideResponse {
+  id: string;
+  title: string;
+  subtitle?: string | null;
+  imageUrl: string;
+  ctaText?: string | null;
+  sortOrder: number;
+  ctaTarget: string; // always "/shop" — server-enforced constant
+}
+
+// ── Admin: Carousel ───────────────────────────────────────────────────────────
+
+/**
+ * Full carousel slide as returned by admin endpoints.
+ * Includes imagePublicId, isActive, and audit timestamps — not exposed on the storefront shape.
+ */
+export interface CarouselSlideResponse {
+  id: string;
+  title?: string | null;
+  subtitle?: string | null;
+  imagePublicId?: string | null;
+  imageUrl?: string | null;
+  ctaText?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+}
+
+export interface CreateCarouselSlideRequest {
+  title?: string | null;
+  subtitle?: string | null;
+  ctaText?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+export interface UpdateCarouselSlideRequest {
+  title?: string | null;
+  subtitle?: string | null;
+  ctaText?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+}

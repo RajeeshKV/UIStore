@@ -30,7 +30,7 @@ export default function AdminForgotPasswordPage() {
         {/* Brand */}
         <div className="mb-8 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Kromic Store" className="h-20 w-20 mx-auto mb-4 object-contain" />
+          <img src="/logo.png" alt="Shopey" className="h-20 w-20 mx-auto mb-4 object-contain" />
           <h1 className="text-h3 font-bold text-foreground">Reset Password</h1>
           <p className="mt-1.5 text-body-sm text-foreground-muted">
             Enter your admin email address.
@@ -88,7 +88,7 @@ export default function AdminForgotPasswordPage() {
         </div>
 
         <p className="mt-4 text-center text-caption text-foreground-muted">
-          Kromic Store — Administration
+          Shopey Administration
         </p>
       </div>
     </div>

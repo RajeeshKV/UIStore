@@ -19,7 +19,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center bg-background">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo.png" alt="Kromic Store" className="h-28 w-28 object-contain mb-8" />
+      <img src="/logo.png" alt="Shopey" className="h-28 w-28 object-contain mb-8" />
       <h1 className="text-h3 font-bold text-foreground">Something went wrong</h1>
       <p className="mt-3 text-body-sm text-foreground-muted max-w-sm">
         An unexpected error occurred. Our team has been notified.
@@ -30,3 +30,4 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
     </div>
   );
 }
+

@@ -53,6 +53,9 @@ import type {
   SmsTemplateResponse,
   CreateSmsTemplateRequest,
   UpdateSmsTemplateRequest,
+  CarouselSlideResponse,
+  CreateCarouselSlideRequest,
+  UpdateCarouselSlideRequest,
 } from "@/types/api";
 
 // ── Products ─────────────────────────────────────────────────────────────────
@@ -404,4 +407,37 @@ export const adminSmsApi = {
   /** DELETE /api/v1/admin/integrations/sms/templates/{id} */
   deleteTemplate: (id: string) =>
     apiClient.delete<void>(`/api/v1/admin/integrations/sms/templates/${id}`),
+};
+
+// ── Carousel ──────────────────────────────────────────────────────────────────
+
+export const adminCarouselApi = {
+  /** GET /api/v1/admin/carousel?activeOnly=false */
+  list: (activeOnly = false) =>
+    apiClient.get<CarouselSlideResponse[]>(
+      `/api/v1/admin/carousel?activeOnly=${activeOnly}`,
+    ),
+
+  /** GET /api/v1/admin/carousel/{id} */
+  get: (id: string) =>
+    apiClient.get<CarouselSlideResponse>(`/api/v1/admin/carousel/${id}`),
+
+  /** POST /api/v1/admin/carousel */
+  create: (data: CreateCarouselSlideRequest) =>
+    apiClient.post<CarouselSlideResponse>("/api/v1/admin/carousel", data),
+
+  /** PUT /api/v1/admin/carousel/{id} */
+  update: (id: string, data: UpdateCarouselSlideRequest) =>
+    apiClient.put<CarouselSlideResponse>(`/api/v1/admin/carousel/${id}`, data),
+
+  /** DELETE /api/v1/admin/carousel/{id} */
+  delete: (id: string) =>
+    apiClient.delete<void>(`/api/v1/admin/carousel/${id}`),
+
+  /** PUT /api/v1/admin/carousel/{id}/image — multipart/form-data with "file" field */
+  uploadImage: (id: string, formData: FormData) =>
+    apiClient.putForm<CarouselSlideResponse>(
+      `/api/v1/admin/carousel/${id}/image`,
+      formData,
+    ),
 };

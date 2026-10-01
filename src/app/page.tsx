@@ -2,20 +2,17 @@ import type { Metadata } from "next";
 import { StorefrontLayout } from "@/components/layout";
 import { storeApi } from "@/services/api/store";
 import { StoreClosedBanner } from "@/features/store/StoreClosedBanner";
-import { HeroSection } from "@/features/storefront/HeroSection";
+import { HeroCarousel } from "@/features/storefront/HeroCarousel";
 import { TrustBar } from "@/features/storefront/TrustBar";
 import { CategoryShowcase } from "@/features/storefront/CategoryShowcase";
 import { FeaturedProducts } from "@/features/storefront/FeaturedProducts";
-import { BrandShowcase } from "@/features/storefront/BrandShowcase";
-import { EditorialBanner } from "@/features/storefront/EditorialBanner";
-import { NewArrivals } from "@/features/storefront/NewArrivals";
 import { safeData } from "@/lib/utils";
 import type {
   PublicBusinessSettingsResponse,
   StorePolicyResponse,
   StorefrontCategoryResponse,
   StorefrontProductSummaryResponse,
-  StorefrontBrandResponse,
+  StorefrontCarouselSlideResponse,
 } from "@/types/api";
 
 export const dynamic = "force-dynamic";
@@ -23,12 +20,20 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const result = await storeApi.getSettings();
   const settings = result.ok ? result.data : null;
-  const title = settings?.seo?.metaTitle ?? settings?.businessName ?? "Kromic Store";
-  const description = settings?.seo?.metaDescription ?? "Premium products for a more beautiful everyday life.";
+  const storeName = settings?.businessName ?? "Shopey Store";
+  const title = settings?.seo?.metaTitle ?? storeName;
+  const description =
+    settings?.seo?.metaDescription ??
+    "Premium products for a smarter, better tomorrow.";
   return {
     title,
     description,
-    openGraph: { title, description, type: "website", url: process.env.NEXT_PUBLIC_APP_URL },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: process.env.NEXT_PUBLIC_APP_URL,
+    },
   };
 }
 
@@ -36,35 +41,27 @@ interface HomePageData {
   settings: PublicBusinessSettingsResponse | null;
   policies: StorePolicyResponse[];
   categories: StorefrontCategoryResponse[];
-  brands: StorefrontBrandResponse[];
   featuredProducts: StorefrontProductSummaryResponse[];
-  newArrivals: StorefrontProductSummaryResponse[];
+  carouselSlides: StorefrontCarouselSlideResponse[];
 }
 
 async function getHomePageData(): Promise<HomePageData> {
-  const [settingsRes, policiesRes, categoriesRes, featuredRes, brandsRes] =
+  const [settingsRes, policiesRes, categoriesRes, featuredRes, carouselRes] =
     await Promise.allSettled([
       storeApi.getSettings(),
       storeApi.getPolicies(),
       storeApi.getCategories(),
       storeApi.getFeatured(),
-      storeApi.getBrands(),
+      storeApi.getCarousel(),
     ]);
 
-  const settings = safeData(settingsRes, null);
-  const policies = safeData(policiesRes, []);
-  const categories = safeData(categoriesRes, []);
-  const featuredProducts = safeData(featuredRes, []);
-  // Brands: silently empty on failure — optional section
-  const brands = safeData(brandsRes, []);
-
   return {
-    settings,
-    policies,
-    categories,
-    brands,
-    featuredProducts,
-    newArrivals: featuredProducts.slice(0, 6),
+    settings: safeData(settingsRes, null),
+    policies: safeData(policiesRes, []),
+    categories: safeData(categoriesRes, []),
+    featuredProducts: safeData(featuredRes, []),
+    // Empty array = carousel uses placeholder slides
+    carouselSlides: safeData(carouselRes, []),
   };
 }
 
@@ -79,26 +76,21 @@ export default async function HomePage() {
         <StoreClosedBanner message={data.settings.temporaryClosureMessage} />
       )}
 
-      {/* 1. Hero */}
-      <HeroSection storeName={data.settings?.businessName} />
+      {/* 1. Hero carousel */}
+      <HeroCarousel slides={data.carouselSlides} />
 
       {/* 2. Trust bar */}
       <TrustBar settings={data.settings} />
 
-      {/* 3. Categories — compact grid */}
+      {/* 3. Shop by Category */}
       <CategoryShowcase categories={data.categories} />
 
-      {/* 4. Featured products — 5-6 col compact grid */}
-      <FeaturedProducts products={data.featuredProducts} currency={currency} locale={locale} />
-
-      {/* 5. Brands — only when brands are configured and active */}
-      <BrandShowcase brands={data.brands} />
-
-      {/* 6. Editorial break */}
-      <EditorialBanner />
-
-      {/* 7. New arrivals */}
-      <NewArrivals products={data.newArrivals} currency={currency} locale={locale} />
+      {/* 4. Featured Products */}
+      <FeaturedProducts
+        products={data.featuredProducts}
+        currency={currency}
+        locale={locale}
+      />
     </StorefrontLayout>
   );
 }

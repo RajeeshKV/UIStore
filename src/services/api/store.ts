@@ -10,6 +10,7 @@ import type {
   StorefrontProductResponse,
   StorePolicyResponse,
   PagedResponse,
+  StorefrontCarouselSlideResponse,
 } from "@/types/api";
 
 export const storeApi = {
@@ -72,4 +73,9 @@ export const storeApi = {
       `/api/v1/store/products/${slug}/related`,
       { skipAuth: true },
     ),
+
+  getCarousel: () =>
+    apiClient.get<StorefrontCarouselSlideResponse[]>("/api/v1/store/carousel", {
+      skipAuth: true,
+    }),
 };

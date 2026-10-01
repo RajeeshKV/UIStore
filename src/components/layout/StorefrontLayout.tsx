@@ -35,7 +35,7 @@ export function StorefrontLayout({
       <CartProvider>
         <div className="flex flex-col min-h-screen">
           <CartAwareHeader
-            storeName={settings?.businessName ?? "Kromic"}
+            storeName={settings?.businessName ?? "Shopey"}
             logoUrl={settings?.logoUrl}
           />
           <main id="main-content" className="flex-1">

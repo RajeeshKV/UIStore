@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { AdminLoginForm } from "@/features/admin/AdminLoginForm";
 
 export const metadata: Metadata = {
-  title: "Admin Sign In | Kromic Store",
+  title: "Admin Sign In | Shopey",
   robots: { index: false, follow: false },
 };
 
@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
-            alt="Kromic Store"
+            alt="Shopey"
             className="h-20 w-20 mx-auto mb-4 object-contain"
           />
           <h1 className="text-h3 font-bold text-foreground">Admin Portal</h1>
@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="mt-6 text-center text-caption text-foreground-muted">
-          Kromic Store — Administration
+          Shopey Administration
         </p>
       </div>
     </div>

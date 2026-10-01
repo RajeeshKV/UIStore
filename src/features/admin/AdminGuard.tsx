@@ -41,7 +41,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center bg-surface">
         <div className="flex flex-col items-center gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Kromic Store" className="h-14 w-14 object-contain" />
+          <img src="/logo.png" alt="Shopey" className="h-14 w-14 object-contain" />
           <div className="flex flex-col items-center gap-2">
             <Skeleton className="h-3 w-32" />
             <Skeleton className="h-2 w-24" />
@@ -56,3 +56,4 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+

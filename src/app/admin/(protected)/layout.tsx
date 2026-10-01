@@ -3,7 +3,7 @@ import { AdminShell } from "@/features/admin/AdminShell";
 
 export const metadata: Metadata = {
   title: {
-    default: "Admin | Kromic Store",
+    default: "Admin | Shopey",
     template: "%s | Admin",
   },
   robots: { index: false, follow: false },
@@ -20,3 +20,4 @@ export default function AdminLayout({
 }) {
   return <AdminShell>{children}</AdminShell>;
 }
+

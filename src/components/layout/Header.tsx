@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, User, ShoppingBag, Menu, X, ChevronDown, LogOut } from "lucide-react";
+import { Search, User, ShoppingBag, Heart, Menu, X, ChevronDown, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { fadeDown } from "@/lib/motion";
@@ -18,110 +18,126 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/shop" },
-  {
-    label: "Categories",
-    href: "/categories",
-  },
+  { label: "Categories", href: "/categories" },
   { label: "Brands", href: "/brands" },
   { label: "New Arrivals", href: "/shop?sort=newest" },
   { label: "Sale", href: "/shop?sale=true" },
 ];
 
 interface HeaderProps {
-  /** Cart item count — passed from cart store */
   cartCount?: number;
-  /** Store name for fallback if no logo */
   storeName?: string;
-  /** Logo URL from store settings */
   logoUrl?: string | null;
-  /** Opens cart drawer instead of navigating to /cart */
   onCartClick?: () => void;
-  /** Hide the Brands nav item when the store has no brands */
   hasBrands?: boolean;
 }
 
 export function Header({
   cartCount = 0,
-  storeName = "Kromic",
+  storeName = "Shopey Store",
   logoUrl,
   onCartClick,
   hasBrands = true,
 }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
-  // Filter nav items based on store configuration
   const navItems = NAV_ITEMS.filter(
     (item) => !(item.label === "Brands" && !hasBrands),
   );
 
-  // Scroll shadow
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close mobile menu on route change (when a link is clicked)
   const closeMobile = () => setMobileOpen(false);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
+  };
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full bg-background/95 backdrop-blur-sm",
+        "sticky top-0 z-40 w-full bg-background/98 backdrop-blur-sm",
         "border-b border-border transition-shadow duration-200",
         scrolled && "shadow-sm",
       )}
     >
       <div className="container-x mx-auto">
-        {/* Main row */}
-        <div className="flex h-16 items-center gap-4 md:h-20">
-          {/* Logo / brand name */}
+        {/* ── Main row ─────────────────────────────────────────── */}
+        <div className="flex h-14 md:h-16 items-center gap-3 md:gap-4">
+
+          {/* Logo */}
           <Link
             href="/"
-            className="shrink-0 flex items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded"
+            className="shrink-0 flex items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded"
             aria-label={`${storeName} — home`}
           >
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoUrl}
-                alt={storeName}
-                className="h-12 md:h-14 w-auto object-contain"
-              />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src="/logo-large.png"
-                alt={storeName}
-                className="h-12 md:h-14 w-auto object-contain"
-              />
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={logoUrl ?? "/logo-large.png"}
+              alt={storeName}
+              className="h-8 md:h-9 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop nav */}
           <nav
             aria-label="Main navigation"
-            className="hidden md:flex items-center gap-0.5 ml-6"
+            className="hidden md:flex items-center gap-0 ml-2"
           >
             {navItems.map((item) => (
               <DesktopNavItem key={item.label} item={item} />
             ))}
           </nav>
 
-          {/* Right actions */}
-          <div className="ml-auto flex items-center gap-1">
-            {/* Search */}
-            <HeaderIconButton
-              label="Search"
-              onClick={() => setSearchOpen((s) => !s)}
-            >
-              <Search className="size-4.5" />
-            </HeaderIconButton>
+          {/* Search bar — expands in the center/right */}
+          <form
+            role="search"
+            onSubmit={handleSearch}
+            className="hidden md:flex flex-1 max-w-md ml-auto items-center"
+          >
+            <div className="relative w-full">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted pointer-events-none"
+                aria-hidden="true"
+              />
+              <input
+                ref={searchRef}
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for products, brands and more..."
+                aria-label="Search"
+                className={cn(
+                  "w-full h-9 rounded-md border border-border bg-surface",
+                  "pl-8 pr-3 text-body-sm text-foreground",
+                  "placeholder:text-foreground-muted text-[13px]",
+                  "focus:outline-none focus:border-foreground/40 transition-colors",
+                )}
+              />
+            </div>
+          </form>
 
-            {/* Account — shows auth state */}
+          {/* Right actions */}
+          <div className="ml-auto md:ml-4 flex items-center gap-0.5">
+            {/* Account */}
             <AccountButton />
+
+            {/* Wishlist */}
+            <HeaderIconButton label="Wishlist" href="/account">
+              <Heart className="size-[18px]" />
+            </HeaderIconButton>
 
             {/* Cart */}
             <HeaderIconButton
@@ -130,8 +146,11 @@ export function Header({
               onClick={onCartClick}
               badge={cartCount}
             >
-              <ShoppingBag className="size-4.5" />
+              <ShoppingBag className="size-[18px]" />
             </HeaderIconButton>
+
+            {/* Mobile search */}
+            <MobileSearchButton />
 
             {/* Mobile menu toggle */}
             <button
@@ -140,33 +159,14 @@ export function Header({
               aria-controls="mobile-nav"
               onClick={() => setMobileOpen((o) => !o)}
               className={cn(
-                "md:hidden flex h-9 w-9 items-center justify-center rounded-md",
+                "md:hidden flex h-8 w-8 items-center justify-center rounded-md",
                 "text-foreground hover:bg-muted transition-colors duration-150",
               )}
             >
-              {mobileOpen ? (
-                <X className="size-5" />
-              ) : (
-                <Menu className="size-5" />
-              )}
+              {mobileOpen ? <X className="size-4.5" /> : <Menu className="size-4.5" />}
             </button>
           </div>
         </div>
-
-        {/* Search bar */}
-        <AnimatePresence>
-          {searchOpen && (
-            <motion.div
-              variants={fadeDown}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="pb-3 md:pb-4"
-            >
-              <SearchBar onClose={() => setSearchOpen(false)} />
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* Mobile nav */}
@@ -181,14 +181,40 @@ export function Header({
             exit="hidden"
             className="md:hidden border-t border-border bg-background"
           >
-            <ul className="container-x mx-auto py-3 flex flex-col">
+            {/* Mobile search */}
+            <div className="container-x mx-auto pt-3 pb-1">
+              <form
+                role="search"
+                onSubmit={handleSearch}
+                className="relative"
+              >
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted pointer-events-none"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products, brands..."
+                  aria-label="Search"
+                  className={cn(
+                    "w-full h-9 rounded-md border border-border bg-surface",
+                    "pl-8 pr-3 text-body-sm text-foreground text-[13px]",
+                    "placeholder:text-foreground-muted",
+                    "focus:outline-none focus:border-foreground/40 transition-colors",
+                  )}
+                />
+              </form>
+            </div>
+            <ul className="container-x mx-auto py-2 flex flex-col">
               {navItems.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
                     onClick={closeMobile}
                     className={cn(
-                      "flex items-center py-3 text-body font-medium text-foreground",
+                      "flex items-center py-2.5 text-body-sm font-medium text-foreground",
                       "border-b border-border last:border-none",
                       "hover:text-foreground-muted transition-colors",
                     )}
@@ -215,8 +241,8 @@ function DesktopNavItem({ item }: { item: NavItem }) {
       <Link
         href={item.href}
         className={cn(
-          "px-3 py-2 text-body-sm font-medium text-foreground",
-          "hover:text-foreground/70 rounded-md transition-colors duration-150",
+          "px-2.5 py-1.5 text-[13px] font-medium text-foreground",
+          "hover:text-foreground/60 rounded transition-colors duration-150",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         )}
       >
@@ -235,14 +261,14 @@ function DesktopNavItem({ item }: { item: NavItem }) {
         aria-expanded={open}
         aria-haspopup="true"
         className={cn(
-          "flex items-center gap-1 px-3 py-2 text-body-sm font-medium text-foreground",
-          "hover:text-foreground/70 rounded-md transition-colors duration-150",
+          "flex items-center gap-1 px-2.5 py-1.5 text-[13px] font-medium text-foreground",
+          "hover:text-foreground/60 rounded transition-colors duration-150",
         )}
       >
         {item.label}
         <ChevronDown
           className={cn(
-            "size-3.5 transition-transform duration-150",
+            "size-3 transition-transform duration-150",
             open && "rotate-180",
           )}
         />
@@ -255,15 +281,15 @@ function DesktopNavItem({ item }: { item: NavItem }) {
             animate="visible"
             exit="hidden"
             className={cn(
-              "absolute top-full left-0 mt-1 w-48 rounded-lg",
-              "border border-border bg-surface-elevated shadow-lg py-1",
+              "absolute top-full left-0 mt-1 w-44 rounded-lg",
+              "border border-border bg-background shadow-md py-1",
             )}
           >
-            {item.children?.map((child) => (
+            {item.children.map((child) => (
               <Link
                 key={child.label}
                 href={child.href}
-                className="block px-4 py-2 text-body-sm text-foreground hover:bg-muted transition-colors"
+                className="block px-3 py-2 text-[13px] text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
               >
                 {child.label}
               </Link>
@@ -275,40 +301,30 @@ function DesktopNavItem({ item }: { item: NavItem }) {
   );
 }
 
-// ── Icon button ───────────────────────────────────────────────────────────────
+// ── Header icon button ────────────────────────────────────────────────────────
 
 interface HeaderIconButtonProps {
   label: string;
   href?: string;
-  badge?: number;
   onClick?: () => void;
+  badge?: number;
   children: React.ReactNode;
 }
 
-function HeaderIconButton({
-  label,
-  href,
-  badge,
-  onClick,
-  children,
-}: HeaderIconButtonProps) {
-  const classes = cn(
-    "relative flex h-9 w-9 items-center justify-center rounded-md",
+function HeaderIconButton({ label, href, onClick, badge, children }: HeaderIconButtonProps) {
+  const cls = cn(
+    "relative flex h-8 w-8 items-center justify-center rounded-md",
     "text-foreground hover:bg-muted transition-colors duration-150",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
   );
 
-  const content = (
+  const inner = (
     <>
       {children}
       {badge != null && badge > 0 && (
         <span
           aria-hidden="true"
-          className={cn(
-            "absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center",
-            "rounded-full bg-primary px-1",
-            "text-[10px] font-semibold text-primary-foreground leading-none",
-          )}
+          className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground leading-none"
         >
           {badge > 99 ? "99+" : badge}
         </span>
@@ -318,20 +334,93 @@ function HeaderIconButton({
 
   if (href) {
     return (
-      <Link href={href} aria-label={label} className={classes}>
-        {content}
+      <Link href={href} aria-label={label} className={cls}>
+        {inner}
       </Link>
     );
   }
 
   return (
-    <button aria-label={label} onClick={onClick} className={classes}>
-      {content}
+    <button type="button" aria-label={label} onClick={onClick} className={cls}>
+      {inner}
     </button>
   );
 }
 
-// ── Account button (auth-aware) ───────────────────────────────────────────────
+// ── Mobile search button (opens inline search) ───────────────────────────────
+
+function MobileSearchButton() {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(query.trim())}`);
+      setOpen(false);
+      setQuery("");
+    }
+  };
+
+  return (
+    <>
+      <button
+        aria-label="Search"
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          "md:hidden flex h-8 w-8 items-center justify-center rounded-md",
+          "text-foreground hover:bg-muted transition-colors duration-150",
+        )}
+      >
+        <Search className="size-[18px]" />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            variants={fadeDown}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            className="md:hidden fixed inset-x-0 top-14 z-50 bg-background border-b border-border px-4 py-3 shadow-md"
+          >
+            <form role="search" onSubmit={handleSubmit} className="flex gap-2">
+              <div className="relative flex-1">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted pointer-events-none"
+                  aria-hidden="true"
+                />
+                <input
+                  autoFocus
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search products, brands..."
+                  aria-label="Search"
+                  className={cn(
+                    "w-full h-9 rounded-md border border-border bg-surface",
+                    "pl-8 pr-3 text-body-sm text-foreground text-[13px]",
+                    "placeholder:text-foreground-muted",
+                    "focus:outline-none focus:border-foreground/40 transition-colors",
+                  )}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-[13px] text-foreground-muted hover:text-foreground px-2"
+              >
+                Cancel
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+// ── Account button ────────────────────────────────────────────────────────────
 
 function AccountButton() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -339,12 +428,8 @@ function AccountButton() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
-  // Only render auth-aware UI after hydration to avoid SSR mismatch.
-  // Server has no auth state, so we always render the unauthenticated
-  // state on first pass — matching what the server sends.
   useEffect(() => { setMounted(true); }, []);
 
-  // Close on outside click
   useEffect(() => {
     if (!menuOpen) return;
     const handler = () => setMenuOpen(false);
@@ -352,20 +437,28 @@ function AccountButton() {
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
 
-  // Before hydration or while loading: show plain user icon (matches SSR)
   if (!mounted || isLoading) {
     return (
       <HeaderIconButton label="Sign in" href="/auth/login">
-        <User className="size-4.5" />
+        <User className="size-[18px]" />
       </HeaderIconButton>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <HeaderIconButton label="Sign in" href="/auth/login">
-        <User className="size-4.5" />
-      </HeaderIconButton>
+      <Link
+        href="/auth/login"
+        aria-label="Sign in"
+        className={cn(
+          "hidden md:flex items-center gap-1.5 h-8 px-3 rounded-md",
+          "text-[13px] font-medium text-foreground hover:bg-muted transition-colors",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+        )}
+      >
+        <User className="size-[15px]" aria-hidden="true" />
+        Account
+      </Link>
     );
   }
 
@@ -387,12 +480,12 @@ function AccountButton() {
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((o) => !o)}
         className={cn(
-          "relative flex h-9 w-9 items-center justify-center rounded-md",
+          "relative flex h-8 w-8 items-center justify-center rounded-md",
           "text-foreground hover:bg-muted transition-colors duration-150",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         )}
       >
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-caption font-semibold">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
           {initials}
         </span>
       </button>
@@ -404,18 +497,18 @@ function AccountButton() {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-border bg-background shadow-lg py-1"
+            className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-border bg-background shadow-md py-1"
           >
             <div className="px-4 py-2.5 border-b border-border">
-              <p className="text-body-sm font-medium text-foreground truncate">{displayName}</p>
+              <p className="text-[13px] font-medium text-foreground truncate">{displayName}</p>
               {user?.email && (
-                <p className="text-caption text-foreground-muted truncate">{user.email}</p>
+                <p className="text-[11px] text-foreground-muted truncate">{user.email}</p>
               )}
             </div>
             <Link
               href="/account"
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-body-sm text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-[13px] text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
             >
               <User className="size-3.5" />
               My Account
@@ -423,7 +516,7 @@ function AccountButton() {
             <Link
               href="/account/orders"
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-body-sm text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-[13px] text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
             >
               <ShoppingBag className="size-3.5" />
               My Orders
@@ -435,7 +528,7 @@ function AccountButton() {
                 await logout();
                 router.push("/");
               }}
-              className="flex w-full items-center gap-2 px-4 py-2 text-body-sm text-foreground-muted hover:bg-danger/5 hover:text-danger transition-colors"
+              className="flex w-full items-center gap-2 px-4 py-2 text-[13px] text-foreground-muted hover:bg-danger/5 hover:text-danger transition-colors"
             >
               <LogOut className="size-3.5" />
               Sign Out
@@ -444,56 +537,5 @@ function AccountButton() {
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-// ── Search bar ────────────────────────────────────────────────────────────────
-
-function SearchBar({ onClose }: { onClose: () => void }) {
-  const [query, setQuery] = useState("");
-  const router = useRouter();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim()) {
-      router.push(`/shop?search=${encodeURIComponent(query.trim())}`);
-      onClose();
-    }
-  };
-
-  return (
-    <form
-      role="search"
-      onSubmit={handleSubmit}
-      className="flex items-center gap-2"
-    >
-      <div className="relative flex-1">
-        <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-foreground-muted pointer-events-none"
-          aria-hidden="true"
-        />
-        <input
-          type="search"
-          autoFocus
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search products, brands, categories…"
-          aria-label="Search"
-          className={cn(
-            "w-full rounded-md border border-border bg-surface-elevated",
-            "pl-9 pr-4 py-2 text-body text-foreground",
-            "placeholder:text-foreground-muted",
-            "focus:outline-none focus:border-foreground transition-colors",
-          )}
-        />
-      </div>
-      <button
-        type="button"
-        onClick={onClose}
-        className="text-body-sm text-foreground-muted hover:text-foreground transition-colors px-2 py-2"
-      >
-        Cancel
-      </button>
-    </form>
   );
 }

@@ -73,7 +73,7 @@ export function PendingPaymentResumeDialog() {
       key: pending.razorpayKeyId,
       amount: Math.round(pending.grandTotal * 100),
       currency: pending.currency,
-      name: "Kromic Store",
+      name: "Shopey",
       description: `Order #${pending.orderNumber ?? pending.orderId}`,
       order_id: pending.providerOrderId,
       prefill: {
