@@ -27,13 +27,13 @@ export function FeaturedProducts({
   if (!loading && !error && products.length === 0) return null;
 
   return (
-    <section aria-labelledby="featured-heading" className="py-6 md:py-8 bg-background">
+    <section aria-labelledby="featured-heading" className="py-8 md:py-10 bg-background border-t border-border">
       <div className="container-x mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-baseline justify-between mb-5">
           <h2
             id="featured-heading"
-            className="text-[18px] md:text-[20px] font-bold text-foreground tracking-tight"
+            className="text-[22px] md:text-[26px] font-bold text-foreground tracking-tight leading-none"
           >
             Featured Products
           </h2>
