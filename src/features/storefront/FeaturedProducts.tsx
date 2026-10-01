@@ -30,10 +30,10 @@ export function FeaturedProducts({
   return (
     <section
       aria-labelledby="featured-heading"
-      className="py-8 md:py-10 bg-background border-t border-border"
+      className="py-5 md:py-6 bg-background border-t border-border"
     >
       <div className="container-x mx-auto">
-        <div className="flex items-baseline justify-between mb-5">
+        <div className="flex items-baseline justify-between mb-4">
           <h2
             id="featured-heading"
             className="text-[22px] md:text-[26px] font-bold text-foreground tracking-tight leading-none"
@@ -100,11 +100,12 @@ function FeaturedProductsSkeleton() {
         <div
           key={i}
           aria-hidden="true"
-          className="flex flex-col rounded-xl overflow-hidden border border-border"
+          className="flex flex-row items-stretch rounded-xl overflow-hidden border border-border"
         >
-          <Skeleton className="w-full rounded-none" style={{ aspectRatio: "4/3" }} />
-          <div className="px-3 pt-2.5 pb-3 space-y-2">
-            <Skeleton className="h-3.5 w-3/4" />
+          <Skeleton className="shrink-0 w-[80px] h-[110px] rounded-none" />
+          <div className="flex-1 px-3 py-3 space-y-2">
+            <Skeleton className="h-3.5 w-full" />
+            <Skeleton className="h-3.5 w-2/3" />
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-8 w-full rounded-md mt-1" />
           </div>

@@ -68,7 +68,7 @@ function HeroCarouselInner({
       aria-roledescription="carousel"
       // No horizontal inset — card goes full container width.
       // Arrows sit partially over the card edges.
-      className="relative w-full pt-3 md:pt-4 container-x mx-auto"
+      className="relative w-full pt-2 md:pt-3 container-x mx-auto"
     >
       {/* ── Left arrow ────────────────────────────────────────── */}
       {sorted.length > 1 && (
@@ -95,7 +95,7 @@ function HeroCarouselInner({
       */}
       <div
         className="relative w-full overflow-hidden rounded-2xl border border-border"
-        style={{ aspectRatio: "16 / 7" }}
+        style={{ height: "clamp(160px, 22vh, 240px)" }}
       >
         <AnimatePresence mode="wait" initial={false} custom={dir}>
           <motion.div
@@ -211,7 +211,7 @@ function HeroCarouselInner({
 export function HeroCarouselSkeleton() {
   return (
     <div className="w-full pt-3 md:pt-4 container-x mx-auto">
-      <Skeleton className="w-full rounded-2xl" style={{ aspectRatio: "16 / 7" }} />
+      <Skeleton className="w-full rounded-2xl" style={{ height: "clamp(160px, 22vh, 240px)" }} />
     </div>
   );
 }

@@ -26,11 +26,11 @@ export function CategoryShowcase({
   return (
     <section
       aria-labelledby="categories-heading"
-      className="py-8 md:py-10 bg-background"
+      className="py-5 md:py-6 bg-background"
     >
       <div className="container-x mx-auto">
         {/* Section header */}
-        <div className="flex items-baseline justify-between mb-5">
+        <div className="flex items-baseline justify-between mb-4">
           <div>
             <h2
               id="categories-heading"
@@ -87,7 +87,7 @@ export function CategoryHorizontalCard({
       aria-label={`${category.name}${category.productCount != null ? ` — ${category.productCount} products` : ""}`}
     >
       {/* Square image — fixed width so text has room */}
-      <div className="relative shrink-0 w-[110px] h-[110px] bg-muted overflow-hidden">
+      <div className="relative shrink-0 w-[90px] h-[90px] bg-muted overflow-hidden">
         {category.imageUrl ? (
           <Image
             src={category.imageUrl}
@@ -148,7 +148,7 @@ function CategoryGridSkeleton() {
           aria-hidden="true"
           className="flex items-center gap-0 rounded-xl overflow-hidden border border-border bg-surface"
         >
-          <Skeleton className="shrink-0 w-[110px] h-[110px] rounded-none" />
+          <Skeleton className="shrink-0 w-[90px] h-[90px] rounded-none" />
           <div className="flex-1 px-4 py-3 space-y-2">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-3 w-1/2" />
