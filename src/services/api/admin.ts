@@ -50,6 +50,7 @@ import type {
   UpsertProductAttributeRequest,
   UpdateSmsConfigRequest,
   SmsProviderOptionResponse,
+  SmsIntegrationStatusResponse,
   SmsTemplateResponse,
   CreateSmsTemplateRequest,
   UpdateSmsTemplateRequest,
@@ -322,15 +323,15 @@ export const adminIntegrationsApi = {
     apiClient.put<IntegrationStatusResponse>("/api/v1/admin/integrations/email", data),
 
   getSms: () =>
-    apiClient.get<IntegrationStatusResponse>("/api/v1/admin/integrations/sms"),
+    apiClient.get<SmsIntegrationStatusResponse>("/api/v1/admin/integrations/sms"),
 
   /**
-   * PUT /api/v1/admin/integrations/sms — returns 200 with updated IntegrationStatusResponse.
-   * Use the returned object directly to update UI state; no follow-up GET needed.
-   * Enabling an incomplete config returns 400 VALIDATION_PROVIDERSETTINGS.
+   * PUT /api/v1/admin/integrations/sms
+   * Returns 200 with updated SmsIntegrationStatusResponse — no follow-up GET needed.
+   * Blank secret values preserve the stored credential.
    */
   updateSms: (data: UpdateSmsConfigRequest) =>
-    apiClient.put<IntegrationStatusResponse>("/api/v1/admin/integrations/sms", data),
+    apiClient.put<SmsIntegrationStatusResponse>("/api/v1/admin/integrations/sms", data),
 };
 
 // ── Inventory ─────────────────────────────────────────────────────────────────
