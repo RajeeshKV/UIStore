@@ -7,6 +7,7 @@ import { safeData } from "@/lib/utils";
 import { ProductGallery, ProductGalleryFallback } from "@/features/product/ProductGallery";
 import { ProductInformation } from "@/features/product/ProductInformation";
 import { RelatedProducts } from "@/features/product/RelatedProducts";
+import { ProductReviews } from "@/features/reviews/ProductReviews";
 import { env } from "@/config/env";
 
 export const dynamic = "force-dynamic";
@@ -149,6 +150,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           currency={currency}
           locale={locale}
         />
+
+        {/* Customer reviews */}
+        <div className="px-5 md:px-8 lg:px-10 pb-16">
+          <ProductReviews productId={product.id} productName={product.name ?? "this product"} />
+        </div>
       </div>
     </StorefrontLayout>
   );

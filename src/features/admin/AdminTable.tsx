@@ -21,6 +21,7 @@ interface AdminTableProps<T> {
   emptyTitle?: string;
   emptyDescription?: string;
   onRetry?: () => void;
+  onRowClick?: (row: T) => void;
   skeletonRows?: number;
   className?: string;
 }
@@ -34,6 +35,7 @@ export function AdminTable<T>({
   emptyTitle = "No results",
   emptyDescription,
   onRetry,
+  onRowClick,
   skeletonRows = 5,
   className,
 }: AdminTableProps<T>) {
@@ -81,7 +83,11 @@ export function AdminTable<T>({
               rows.map((row) => (
                 <tr
                   key={rowKey(row)}
-                  className="border-b border-[#e1e2e4] last:border-none hover:bg-[#f8f9fb] transition-colors"
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  className={cn(
+                    "border-b border-[#e1e2e4] last:border-none hover:bg-[#f8f9fb] transition-colors",
+                    onRowClick && "cursor-pointer",
+                  )}
                 >
                   {columns.map((col) => (
                     <td key={col.key} className={cn("px-4 py-3 text-[#191c1e]", col.className)}>

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, User, MapPin, ShoppingBag, LogOut } from "lucide-react";
+import { LayoutDashboard, User, MapPin, ShoppingBag, Heart, Star, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -13,9 +13,11 @@ interface AccountLayoutProps {
 }
 
 const NAV_ITEMS = [
-  { label: "Overview",  href: "/account",           icon: LayoutDashboard },
+  { label: "Overview",  href: "/account",            icon: LayoutDashboard },
   { label: "Profile",   href: "/account/profile",   icon: User },
   { label: "Orders",    href: "/account/orders",    icon: ShoppingBag },
+  { label: "Wishlist",  href: "/account/wishlist",  icon: Heart },
+  { label: "Reviews",   href: "/account/reviews",   icon: Star },
   { label: "Addresses", href: "/account/addresses", icon: MapPin },
 ] as const;
 

@@ -978,6 +978,8 @@ export interface AdminBusinessSettingsResponse {
   instagramUrl?: string;
   twitterUrl?: string;
   youtubeUrl?: string;
+  whatsAppNumber?: string;
+  linkedInUrl?: string;
   updatedAtUtc: string;
   delivery?: DeliverySettingsDto;
   auth?: StoreAuthSettingsDto;
@@ -1295,4 +1297,155 @@ export interface UpdateCarouselSlideRequest {
   ctaText?: string | null;
   sortOrder: number;
   isActive: boolean;
+}
+
+// ── Wishlist ──────────────────────────────────────────────────────────────────
+
+/** GET /api/v1/wishlist/status?productIds= */
+export interface WishlistStatusResponse {
+  /** Product IDs that are currently in the wishlist */
+  productIds: string[];
+}
+
+/** Item returned in GET /api/v1/wishlist and POST /api/v1/wishlist */
+export interface WishlistItemResponse {
+  id: string;
+  productId: string;
+  productVariantId?: string | null;
+  productName?: string;
+  productSlug?: string;
+  productImageUrl?: string | null;
+  basePrice: number;
+  variantPrice?: number | null;
+  effectivePrice: number;
+  currencyCode?: string;
+  stockAvailability: StockAvailability;
+  canPurchase: boolean;
+  isProductActive: boolean;
+  addedAtUtc: string;
+}
+
+/** POST /api/v1/wishlist response */
+export interface AddWishlistItemResponse {
+  item: WishlistItemResponse;
+  /** true when the item was newly created; false when it was already present */
+  created: boolean;
+}
+
+/** POST /api/v1/wishlist request */
+export interface AddWishlistItemRequest {
+  productId: string;
+  productVariantId?: string | null;
+}
+
+// ── Reviews ───────────────────────────────────────────────────────────────────
+
+export interface ReviewImageDto {
+  id: string;
+  publicId?: string;
+  url: string;
+  sortOrder: number;
+}
+
+/** Public review item (GET /api/v1/products/{productId}/reviews) */
+export interface ReviewResponse {
+  id: string;
+  productId: string;
+  productVariantId?: string | null;
+  authorName?: string;
+  rating: number;
+  title?: string;
+  body?: string;
+  isVerifiedPurchase: boolean;
+  helpfulCount: number;
+  images?: ReviewImageDto[];
+  publishedAtUtc?: string;
+  createdAtUtc: string;
+}
+
+/** Breakdown of ratings */
+export interface RatingBreakdown {
+  byRating: Record<string, number>;
+}
+
+/** GET /api/v1/products/{productId}/reviews full response */
+export interface ReviewListResponse {
+  page: PagedResponse<ReviewResponse>;
+  ratingAverage: number;
+  ratingCount: number;
+  breakdown: RatingBreakdown;
+}
+
+/** Customer's own review — returned from POST/PUT/GET mine */
+export interface MyReviewResponse {
+  id: string;
+  productId: string;
+  productVariantId?: string | null;
+  rating: number;
+  title?: string;
+  body?: string;
+  status?: string; // Pending | Published | Rejected
+  isVerifiedPurchase: boolean;
+  helpfulCount: number;
+  images?: ReviewImageDto[];
+  createdAtUtc: string;
+  updatedAtUtc: string;
+}
+
+/** POST /api/v1/products/{productId}/reviews request */
+export interface CreateReviewRequest {
+  productVariantId?: string | null;
+  rating: number;
+  title?: string;
+  body?: string;
+  images?: Array<{ publicId: string; url: string }>;
+}
+
+/** PUT /api/v1/reviews/{reviewId} request */
+export interface UpdateReviewRequest {
+  rating: number;
+  title?: string;
+  body?: string;
+  images?: Array<{ publicId: string; url: string }>;
+}
+
+/** POST /api/v1/reviews/{reviewId}/helpful response */
+export interface ReviewHelpfulResponse {
+  reviewId: string;
+  helpfulCount: number;
+  voted: boolean;
+}
+
+/** POST /api/v1/reviews/images response */
+export interface ReviewImageUploadResponse {
+  publicId: string;
+  url: string;
+}
+
+/** Admin review item — includes customer info */
+export interface AdminReviewResponse {
+  id: string;
+  productId: string;
+  productName?: string;
+  productVariantId?: string | null;
+  customerId: string;
+  customerEmail?: string;
+  authorName?: string;
+  rating: number;
+  title?: string;
+  body?: string;
+  status: string; // Pending | Published | Rejected
+  isVerifiedPurchase: boolean;
+  helpfulCount: number;
+  images?: ReviewImageDto[];
+  rejectionReason?: string | null;
+  publishedAtUtc?: string | null;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+}
+
+/** PUT /api/v1/admin/reviews/{reviewId}/status request */
+export interface UpdateReviewStatusRequest {
+  status: "Published" | "Rejected" | "Pending";
+  reason?: string;
 }

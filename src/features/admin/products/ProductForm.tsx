@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Plus, GripVertical, X, ChevronDown, ChevronUp, Package } from "lucide-react";
+import { Trash2, Plus, X, Package } from "lucide-react";
 import { adminProductsApi, adminVariantsApi, adminAttributesApi, adminInventoryApi } from "@/services/api/admin";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -19,7 +19,6 @@ import type {
   CreateVariantRequest,
   UpdateVariantRequest,
   ProductAttributeItem,
-  ProductAttributeValueItem,
   InventoryResponse,
 } from "@/types/api";
 
@@ -32,18 +31,18 @@ function slugify(s: string): string {
     .replace(/^-|-$/g, "");
 }
 
-// ── Section wrapper ───────────────────────────────────────────────────────────
+// ── Section card wrapper ──────────────────────────────────────────────────────
 
-function Section({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
+function Card({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-lg border border-border bg-background p-5 flex flex-col gap-4", className)}>
-      <h3 className="text-body font-semibold text-foreground border-b border-border pb-3">{title}</h3>
+    <div className={cn("rounded-lg border border-border bg-background p-4 flex flex-col gap-3", className)}>
+      <h3 className="text-body-sm font-semibold text-foreground border-b border-border pb-2">{title}</h3>
       {children}
     </div>
   );
 }
 
-// ── Image manager — multi-upload with drag & drop ─────────────────────────────
+// ── Image manager ─────────────────────────────────────────────────────────────
 
 interface ImageManagerProps {
   productId: string;
@@ -68,24 +67,14 @@ function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) 
     fileArr.forEach((f) => formData.append("files", f));
     const res = await adminProductsApi.addImages(productId, formData);
     setUploading(false);
-    if (res.ok) {
-      onRefresh();
-    } else {
-      setError(extractApiError(res.error, "Failed to upload images."));
-    }
+    if (res.ok) onRefresh();
+    else setError(extractApiError(res.error, "Upload failed."));
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files?.length) await uploadFiles(e.target.files);
     if (inputRef.current) inputRef.current.value = "";
   }
-
-  function handleDragOver(e: React.DragEvent) {
-    e.preventDefault();
-    setIsDragging(true);
-  }
-
-  function handleDragLeave() { setIsDragging(false); }
 
   async function handleDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -98,7 +87,7 @@ function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) 
     const res = await adminProductsApi.setPrimaryImage(productId, imageId);
     setSettingPrimary(null);
     if (res.ok) onRefresh();
-    else setError(extractApiError(res.error, "Failed to set primary image."));
+    else setError(extractApiError(res.error, "Failed."));
   }
 
   async function handleDelete(imageId: string) {
@@ -106,95 +95,70 @@ function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) 
     const res = await adminProductsApi.deleteImage(productId, imageId);
     setDeleting(null);
     if (res.ok) onRefresh();
-    else setError(extractApiError(res.error, "Failed to delete image."));
+    else setError(extractApiError(res.error, "Failed."));
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {error && <p className="text-caption text-danger">{error}</p>}
-
-      {/* Existing images */}
       {images.length > 0 && (
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {images.map((img) => (
             <div key={img.id} className="relative group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={img.asset?.secureUrl ?? ""}
                 alt={img.asset?.altText ?? "Product image"}
-                className="h-24 w-24 rounded-lg object-cover bg-surface border border-border"
+                className="h-16 w-16 rounded-lg object-cover bg-surface border border-border"
               />
-              {/* Primary badge */}
               {img.isPrimary ? (
-                <span className="absolute bottom-1 left-1 text-[9px] font-semibold bg-primary text-primary-foreground rounded px-1.5 py-0.5 pointer-events-none">
+                <span className="absolute bottom-0.5 left-0.5 text-[8px] font-bold bg-primary text-primary-foreground rounded px-1 pointer-events-none">
                   Primary
                 </span>
               ) : (
                 <button
-                  aria-label="Set as primary image"
+                  aria-label="Set primary"
                   onClick={() => handleSetPrimary(img.id)}
                   disabled={settingPrimary === img.id}
-                  className="absolute bottom-1 left-1 hidden group-hover:flex text-[9px] font-medium bg-background/90 text-foreground rounded px-1.5 py-0.5 border border-border hover:bg-primary hover:text-primary-foreground transition-colors"
+                  className="absolute bottom-0.5 left-0.5 hidden group-hover:flex text-[8px] font-medium bg-background/90 text-foreground rounded px-1 border border-border hover:bg-primary hover:text-primary-foreground"
                 >
-                  {settingPrimary === img.id ? "…" : "Set primary"}
+                  {settingPrimary === img.id ? "…" : "Primary"}
                 </button>
               )}
-              {/* Delete */}
               <button
                 aria-label="Delete image"
                 onClick={() => handleDelete(img.id)}
                 disabled={deleting === img.id}
-                className="absolute -top-1.5 -right-1.5 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-danger text-white disabled:opacity-60"
+                className="absolute -top-1 -right-1 hidden group-hover:flex h-4 w-4 items-center justify-center rounded-full bg-danger text-white"
               >
-                {deleting === img.id ? <span className="text-[9px]">…</span> : <X className="size-2.5" />}
+                {deleting === img.id ? <span className="text-[7px]">…</span> : <X className="size-2" />}
               </button>
             </div>
           ))}
         </div>
       )}
-
-      {/* Drag & drop upload zone */}
       <div
         role="button"
         tabIndex={0}
-        aria-label="Upload images by clicking or dragging"
+        aria-label="Upload images"
         onClick={() => inputRef.current?.click()}
         onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+        onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         className={cn(
-          "relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed cursor-pointer",
-          "py-6 px-4 transition-colors duration-150",
-          isDragging
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-border-strong hover:bg-muted/30",
-          uploading && "pointer-events-none opacity-60",
+          "flex items-center justify-center gap-2 rounded-lg border-2 border-dashed cursor-pointer py-4 transition-colors",
+          isDragging ? "border-primary bg-primary/5" : "border-border hover:border-border-strong hover:bg-muted/30",
+          uploading && "opacity-50 pointer-events-none",
         )}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          aria-label="Image files"
-          onChange={handleFileChange}
-          className="sr-only"
-        />
-        {uploading ? (
-          <>
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="text-body-sm text-foreground-muted">Uploading…</p>
-          </>
-        ) : (
-          <>
-            <Plus className="size-5 text-foreground-muted" aria-hidden="true" />
-            <p className="text-body-sm text-foreground-muted text-center">
-              <span className="font-medium text-foreground">Click to upload</span> or drag & drop
-            </p>
-            <p className="text-caption text-foreground-muted">Up to 10 images · PNG, JPG, WebP</p>
-          </>
-        )}
+        <input ref={inputRef} type="file" accept="image/*" multiple aria-label="Image files" onChange={handleFileChange} className="sr-only" />
+        {uploading
+          ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          : <Plus className="size-4 text-foreground-muted" aria-hidden="true" />}
+        <p className="text-body-sm text-foreground-muted">
+          {uploading ? "Uploading…" : <><span className="font-medium text-foreground">Click</span> or drag & drop · max 10</>}
+        </p>
       </div>
     </div>
   );
@@ -210,99 +174,61 @@ interface VariantRowProps {
 }
 
 function VariantRow({ productId, variant, onEdit, onDelete }: VariantRowProps) {
-  // §1.6: use resolved attributes for display; fall back to raw IDs only when absent
   const attrLabel = variant.attributes && variant.attributes.length > 0
     ? variant.attributes.map((a) => `${a.attributeName}: ${a.value}`).join(" / ")
-    : variant.attributeValueIds
-      ? `IDs: ${variant.attributeValueIds}`
-      : null;
-
-  const [showStock, setShowStock] = useState(false);
+    : variant.attributeValueIds ? `IDs: ${variant.attributeValueIds}` : null;
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-border bg-surface px-3 py-2">
-      <div className="flex items-center gap-3">
-        <GripVertical className="size-4 text-foreground-muted shrink-0 cursor-grab" aria-hidden="true" />
+    <div className="rounded-md border border-border bg-surface px-3 py-2 flex flex-col gap-1.5">
+      <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-body-sm text-foreground font-medium truncate">
+          <p className="text-body-sm font-medium text-foreground truncate">
             {variant.sku ?? `Variant ${variant.id.slice(0, 6)}`}
           </p>
           <p className="text-caption text-foreground-muted">
-            {variant.priceOverride != null
-              ? `Price override: ${formatPrice(variant.priceOverride, "INR")}`
-              : "Inherits product price"}
-            {" · "}
-            {variant.isActive ? "Active" : "Inactive"}
-            {variant.availableStock != null && ` · Stock: ${variant.availableStock}`}
+            {variant.priceOverride != null ? formatPrice(variant.priceOverride, "INR") : "Inherits price"}
+            {" · "}{variant.isActive ? "Active" : "Inactive"}
+            {variant.availableStock != null && ` · ${variant.availableStock} in stock`}
           </p>
-          {/* §1.6: show resolved attribute labels */}
-          {attrLabel && (
-            <p className="text-caption text-foreground-muted">{attrLabel}</p>
-          )}
+          {attrLabel && <p className="text-caption text-foreground-muted">{attrLabel}</p>}
         </div>
         <div className="flex gap-1 shrink-0">
-          {/* Stock toggle */}
-          <button
-            aria-label={showStock ? "Hide stock" : "Manage stock"}
-            onClick={() => setShowStock((v) => !v)}
-            className={cn(
-              "flex h-7 w-7 items-center justify-center rounded transition-colors",
-              showStock
-                ? "bg-primary/10 text-primary"
-                : "text-foreground-muted hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <Package className="size-3.5" />
-          </button>
           <button
             aria-label="Edit variant"
             onClick={() => onEdit(variant)}
-            className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
+            className="h-6 w-6 flex items-center justify-center rounded text-foreground-muted hover:bg-muted hover:text-foreground"
           >
-            <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
           <button
             aria-label="Delete variant"
             onClick={() => onDelete(variant)}
-            className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors"
+            className="h-6 w-6 flex items-center justify-center rounded text-foreground-muted hover:bg-danger/10 hover:text-danger"
           >
-            <Trash2 className="size-3.5" />
+            <Trash2 className="size-3" />
           </button>
         </div>
       </div>
 
-      {/* Per-variant inline stock manager */}
-      {showStock && (
-        <div className="pl-7 border-t border-border pt-2">
-          <StockManager
-            productId={productId}
-            variantId={variant.id}
-            label={`Stock for ${variant.sku ?? variant.id.slice(0, 8)}`}
-          />
-        </div>
-      )}
+      {/* Inline stock manager per variant — always visible */}
+      <div className="border-t border-border pt-1.5">
+        <StockManager productId={productId} variantId={variant.id} compact />
+      </div>
     </div>
   );
 }
 
-// ── Variant form dialog ───────────────────────────────────────────────────────
+// ── Variant editor ────────────────────────────────────────────────────────────
 
 interface VariantFormState {
   sku: string;
   priceOverride: string;
-  /** Blank means null (append at end per §1.5). Non-blank = explicit position. */
   sortOrder: string;
   isActive: boolean;
   attributeValueIds: string;
 }
 
-const emptyVariantForm: VariantFormState = {
-  sku: "",
-  priceOverride: "",
-  sortOrder: "", // §1.5: blank → null → server appends at end
-  isActive: true,
-  attributeValueIds: "",
-};
+const emptyVariantForm: VariantFormState = { sku: "", priceOverride: "", sortOrder: "", isActive: true, attributeValueIds: "" };
 
 function variantToForm(v: VariantResponse): VariantFormState {
   return {
@@ -330,38 +256,17 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
   const [deleteTarget, setDeleteTarget] = useState<VariantResponse | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  function openNew() {
-    setIsNew(true);
-    setEditTarget(null);
-    setForm(emptyVariantForm);
-    setFormErrors({});
-    setApiError("");
-  }
-
-  function openEdit(v: VariantResponse) {
-    setIsNew(false);
-    setEditTarget(v);
-    setForm(variantToForm(v));
-    setFormErrors({});
-    setApiError("");
-  }
-
-  function closeEditor() {
-    setIsNew(false);
-    setEditTarget(null);
-    setForm(emptyVariantForm);
-  }
+  function openNew() { setIsNew(true); setEditTarget(null); setForm(emptyVariantForm); setFormErrors({}); setApiError(""); }
+  function openEdit(v: VariantResponse) { setIsNew(false); setEditTarget(v); setForm(variantToForm(v)); setFormErrors({}); setApiError(""); }
+  function closeEditor() { setIsNew(false); setEditTarget(null); setForm(emptyVariantForm); }
 
   function validate() {
     const e: Record<string, string> = {};
     const price = parseFloat(form.priceOverride);
-    if (form.priceOverride !== "" && (isNaN(price) || price < 0))
-      e.priceOverride = "Price override must be a non-negative number.";
-    // §1.5: blank sortOrder is valid (means null = append at end)
+    if (form.priceOverride !== "" && (isNaN(price) || price < 0)) e.priceOverride = "Must be non-negative.";
     if (form.sortOrder !== "") {
       const sort = parseInt(form.sortOrder);
-      if (isNaN(sort) || sort < 0)
-        e.sortOrder = "Sort order must be a non-negative integer, or leave blank to append.";
+      if (isNaN(sort) || sort < 0) e.sortOrder = "Must be a non-negative integer.";
     }
     return e;
   }
@@ -369,42 +274,21 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
   async function handleSave() {
     const errs = validate();
     if (Object.keys(errs).length) { setFormErrors(errs); return; }
-    setFormErrors({});
-    setApiError("");
-    setSaving(true);
-
-    // attributeValueIds: API expects string[] (array of UUIDs) in the request
-    const attrIds = form.attributeValueIds.trim()
-      ? form.attributeValueIds.split(",").map((s) => s.trim()).filter(Boolean)
-      : undefined;
-
+    setFormErrors({}); setApiError(""); setSaving(true);
+    const attrIds = form.attributeValueIds.trim() ? form.attributeValueIds.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
     const createPayload: CreateVariantRequest = {
       sku: form.sku.trim() || undefined,
       priceOverride: form.priceOverride !== "" ? parseFloat(form.priceOverride) : undefined,
-      // §1.5: blank sortOrder → null → server appends after current max
-      // Do NOT default to 0 (that would position at the top)
       sortOrder: form.sortOrder.trim() !== "" ? parseInt(form.sortOrder) : undefined,
       attributeValueIds: attrIds,
     };
-
-    const updatePayload: UpdateVariantRequest = {
-      ...createPayload,
-      isActive: form.isActive,
-    };
-
+    const updatePayload: UpdateVariantRequest = { ...createPayload, isActive: form.isActive };
     const res = isNew
       ? await adminVariantsApi.create(productId, createPayload)
       : await adminVariantsApi.update(productId, editTarget!.id, updatePayload);
-
     setSaving(false);
-    if (res.ok) {
-      closeEditor();
-      onRefresh();
-    } else {
-      setApiError(
-        extractApiError(res.error, "Failed to save variant."),
-      );
-    }
+    if (res.ok) { closeEditor(); onRefresh(); }
+    else setApiError(extractApiError(res.error, "Failed to save variant."));
   }
 
   async function handleDelete() {
@@ -419,90 +303,36 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
   const showEditor = isNew || editTarget !== null;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       {variants.length === 0 && !showEditor && (
-        <p className="text-body-sm text-foreground-muted">No variants yet. Add a variant to offer size/color options.</p>
+        <p className="text-caption text-foreground-muted">No variants yet.</p>
       )}
-
-      {/* Variant list */}
       <div className="flex flex-col gap-2">
         {variants.map((v) => (
-          <VariantRow
-            key={v.id}
-            productId={productId}
-            variant={v}
-            onEdit={openEdit}
-            onDelete={() => setDeleteTarget(v)}
-          />
+          <VariantRow key={v.id} productId={productId} variant={v} onEdit={openEdit} onDelete={() => setDeleteTarget(v)} />
         ))}
       </div>
 
-      {/* Inline editor */}
       {showEditor && (
-        <div className="rounded-lg border border-border bg-surface-elevated p-4 flex flex-col gap-4">
+        <div className="rounded-lg border border-border bg-surface-elevated p-3 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <p className="text-body-sm font-semibold text-foreground">
-              {isNew ? "New Variant" : "Edit Variant"}
-            </p>
-            <button onClick={closeEditor} aria-label="Close" className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-muted">
-              <X className="size-4" />
-            </button>
+            <p className="text-body-sm font-semibold text-foreground">{isNew ? "New Variant" : "Edit Variant"}</p>
+            <button onClick={closeEditor} aria-label="Close" className="h-6 w-6 flex items-center justify-center rounded text-foreground-muted hover:bg-muted"><X className="size-3.5" /></button>
           </div>
-
-          {apiError && (
-            <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-4 py-3">
-              {apiError}
-            </p>
-          )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="SKU"
-              value={form.sku}
-              onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))}
-              placeholder="e.g. PROD-001-M-RED"
-            />
-            <Input
-              label="Price override (optional)"
-              type="number"
-              min={0}
-              step={0.01}
-              value={form.priceOverride}
-              onChange={(e) => setForm((f) => ({ ...f, priceOverride: e.target.value }))}
-              placeholder="Leave blank to inherit"
-              error={formErrors.priceOverride}
-            />
-            <Input
-              label="Sort order (leave blank to append)"
-              type="number"
-              min={0}
-              value={form.sortOrder}
-              onChange={(e) => setForm((f) => ({ ...f, sortOrder: e.target.value }))}
-              error={formErrors.sortOrder}
-              hint="Blank = add after last variant. Set explicitly only to control position."
-            />
-            <div className="flex flex-col gap-1.5">
+          {apiError && <p role="alert" className="text-caption text-danger">{apiError}</p>}
+          <div className="grid grid-cols-2 gap-2">
+            <Input label="SKU" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} placeholder="e.g. SKU-M-RED" />
+            <Input label="Price override" type="number" min={0} step={0.01} value={form.priceOverride} onChange={(e) => setForm((f) => ({ ...f, priceOverride: e.target.value }))} placeholder="Blank = inherit" error={formErrors.priceOverride} />
+            <Input label="Sort order" type="number" min={0} value={form.sortOrder} onChange={(e) => setForm((f) => ({ ...f, sortOrder: e.target.value }))} error={formErrors.sortOrder} hint="Blank = append at end" />
+            <div className="flex flex-col gap-1">
               <label className="text-body-sm font-medium text-foreground">Status</label>
-              <select
-                value={form.isActive ? "active" : "inactive"}
-                onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.value === "active" }))}
-                aria-label="Variant status"
-                className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
-              >
+              <select value={form.isActive ? "active" : "inactive"} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.value === "active" }))} aria-label="Variant status" className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus">
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
             </div>
           </div>
-
-          <Input
-            label="Attribute value IDs (comma-separated UUIDs)"
-            value={form.attributeValueIds}
-            onChange={(e) => setForm((f) => ({ ...f, attributeValueIds: e.target.value }))}
-            placeholder="e.g. uuid1,uuid2"
-            hint="Comma-separated attribute value IDs for this variant combination."
-          />
-
+          <Input label="Attribute value IDs (comma-separated)" value={form.attributeValueIds} onChange={(e) => setForm((f) => ({ ...f, attributeValueIds: e.target.value }))} placeholder="uuid1,uuid2" hint="Comma-separated attribute value UUIDs" />
           <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={closeEditor} disabled={saving}>Cancel</Button>
             <Button variant="primary" size="sm" onClick={handleSave} loading={saving}>Save Variant</Button>
@@ -512,7 +342,7 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
 
       {!showEditor && (
         <Button variant="outline" size="sm" className="self-start" onClick={openNew}>
-          <Plus className="size-3.5 mr-1.5" /> Add Variant
+          <Plus className="size-3.5 mr-1" /> Add Variant
         </Button>
       )}
 
@@ -521,7 +351,7 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title="Delete variant"
-        description={`Delete variant "${deleteTarget?.sku ?? deleteTarget?.id.slice(0, 8)}"? This cannot be undone.`}
+        description={`Delete variant "${deleteTarget?.sku ?? deleteTarget?.id.slice(0, 8)}"?`}
         confirmLabel="Delete"
         confirmVariant="danger"
         loading={deleting}
@@ -530,25 +360,19 @@ function VariantEditor({ productId, variants, onRefresh }: VariantEditorProps) {
   );
 }
 
-// ── Attribute editor (§2.4/§2.5/§2.6) ───────────────────────────────────────
-// Manages attribute axes (e.g. "Storage", "Color") and their values.
-// Called from ProductForm on existing products only.
+// ── Attribute editor ──────────────────────────────────────────────────────────
 
 interface AttributeEditorProps {
   productId: string;
-  onRefresh: () => void; // refresh variants after attribute changes
+  onRefresh: () => void;
 }
 
 function AttributeEditor({ productId, onRefresh }: AttributeEditorProps) {
   const [attributes, setAttributes] = useState<ProductAttributeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expanded, setExpanded] = useState(false);
-
-  // Form state for adding/editing a single attribute
   const [editAttr, setEditAttr] = useState<ProductAttributeItem | null>(null);
   const [attrName, setAttrName] = useState("");
-  // Each value: { id?: string (existing); value: string; _deleted?: boolean }
   type EditValue = { id?: string; value: string; _key: string };
   const [editValues, setEditValues] = useState<EditValue[]>([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -561,240 +385,132 @@ function AttributeEditor({ productId, onRefresh }: AttributeEditorProps) {
     setLoading(true);
     setError("");
     const res = await adminAttributesApi.get(productId);
-    if (res.ok) {
-      setAttributes(res.data.attributes);
-    } else {
-      setError("Failed to load attributes.");
-    }
+    if (res.ok) setAttributes(res.data.attributes);
+    else setError("Failed to load attributes.");
     setLoading(false);
   }, [productId]);
 
   useEffect(() => { void load(); }, [load]);
-  // useEffect needs to be imported — it is already imported at top via useState
 
-  function openNew() {
-    setEditAttr(null);
-    setAttrName("");
-    setEditValues([{ value: "", _key: crypto.randomUUID() }]);
-    setSaveError("");
-    setFormOpen(true);
-  }
-
+  function openNew() { setEditAttr(null); setAttrName(""); setEditValues([{ value: "", _key: crypto.randomUUID() }]); setSaveError(""); setFormOpen(true); }
   function openEdit(attr: ProductAttributeItem) {
     setEditAttr(attr);
     setAttrName(attr.name);
-    setEditValues(
-      attr.values
-        .slice()
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((v) => ({ id: v.id, value: v.value, _key: v.id }))
-    );
-    setSaveError("");
-    setFormOpen(true);
+    setEditValues(attr.values.slice().sort((a, b) => a.sortOrder - b.sortOrder).map((v) => ({ id: v.id, value: v.value, _key: v.id })));
+    setSaveError(""); setFormOpen(true);
   }
-
-  function closeForm() {
-    setFormOpen(false);
-    setEditAttr(null);
-    setAttrName("");
-    setEditValues([]);
-  }
-
-  function addValue() {
-    setEditValues((prev) => [...prev, { value: "", _key: crypto.randomUUID() }]);
-  }
-
-  function updateValue(key: string, val: string) {
-    setEditValues((prev) => prev.map((v) => v._key === key ? { ...v, value: val } : v));
-  }
-
-  function removeValue(key: string) {
-    setEditValues((prev) => prev.filter((v) => v._key !== key));
-  }
+  function closeForm() { setFormOpen(false); setEditAttr(null); setAttrName(""); setEditValues([]); }
 
   async function handleSave() {
-    if (!attrName.trim()) { setSaveError("Attribute name is required."); return; }
+    if (!attrName.trim()) { setSaveError("Name is required."); return; }
     const cleanValues = editValues.filter((v) => v.value.trim());
     if (cleanValues.length === 0) { setSaveError("At least one value is required."); return; }
-    setSaving(true);
-    setSaveError("");
-    // §2.5: send complete value list; include id for existing values
+    setSaving(true); setSaveError("");
     const res = await adminAttributesApi.upsert(productId, {
       name: attrName.trim(),
       values: cleanValues.map((v) => ({ value: v.value.trim(), ...(v.id ? { id: v.id } : {}) })),
     });
     setSaving(false);
-    if (res.ok) {
-      setAttributes(res.data.attributes);
-      closeForm();
-      onRefresh(); // variants may gain/lose attribute data
-    } else {
-      setSaveError(extractApiError(res.error, "Failed to save attribute."));
-    }
+    if (res.ok) { setAttributes(res.data.attributes); closeForm(); onRefresh(); }
+    else setSaveError(extractApiError(res.error, "Failed."));
   }
 
   async function handleDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
     await adminAttributesApi.delete(productId, deleteTarget.id);
-    setDeleting(false);
-    setDeleteTarget(null);
-    await load();
-    onRefresh();
+    setDeleting(false); setDeleteTarget(null);
+    await load(); onRefresh();
   }
 
-  const toggle = () => setExpanded((v) => !v);
-
   return (
-    <div className="flex flex-col gap-3">
-      <button
-        type="button"
-        onClick={toggle}
-        className="flex items-center gap-2 text-body-sm font-medium text-foreground-muted hover:text-foreground transition-colors self-start"
-        aria-expanded={expanded}
-      >
-        {expanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
-        {expanded ? "Hide" : "Manage"} Attribute Axes
-        {attributes.length > 0 && (
-          <span className="text-caption text-foreground-muted">({attributes.length} axis{attributes.length !== 1 ? "es" : ""})</span>
-        )}
-      </button>
+    <div className="flex flex-col gap-2">
+      {loading && <p className="text-caption text-foreground-muted">Loading…</p>}
+      {error && <p className="text-caption text-danger">{error}</p>}
 
-      {expanded && (
-        <>
-          {loading && <p className="text-caption text-foreground-muted">Loading…</p>}
-          {error && <p className="text-caption text-danger">{error}</p>}
+      {!loading && attributes.map((attr) => (
+        <div key={attr.id} className="rounded-md border border-border bg-surface px-3 py-2 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-body-sm font-medium text-foreground">{attr.name}</p>
+            <p className="text-caption text-foreground-muted truncate">{attr.values.map((v) => v.value).join(", ")}</p>
+          </div>
+          <div className="flex gap-1 shrink-0">
+            <button aria-label={`Edit ${attr.name}`} type="button" onClick={() => openEdit(attr)} className="h-6 w-6 flex items-center justify-center rounded text-foreground-muted hover:bg-muted hover:text-foreground">
+              <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button aria-label={`Delete ${attr.name}`} type="button" onClick={() => setDeleteTarget(attr)} className="h-6 w-6 flex items-center justify-center rounded text-foreground-muted hover:bg-danger/10 hover:text-danger">
+              <Trash2 className="size-3" />
+            </button>
+          </div>
+        </div>
+      ))}
 
-          {/* Existing attribute list */}
-          {!loading && attributes.map((attr) => (
-            <div key={attr.id} className="rounded-md border border-border bg-surface px-3 py-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-body-sm font-medium text-foreground">{attr.name}</p>
-                  <p className="text-caption text-foreground-muted">
-                    {attr.values.map((v) => v.value).join(" / ")}
-                  </p>
-                </div>
-                <div className="flex gap-1 shrink-0">
-                  <button
-                    type="button"
-                    aria-label={`Edit ${attr.name}`}
-                    onClick={() => openEdit(attr)}
-                    className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
-                  >
-                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Delete ${attr.name}`}
-                    onClick={() => setDeleteTarget(attr)}
-                    className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Inline form for add/edit */}
-          {formOpen && (
-            <div className="rounded-lg border border-border bg-surface-elevated p-4 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <p className="text-body-sm font-semibold text-foreground">
-                  {editAttr ? `Edit “${editAttr.name}”` : "New Attribute"}
-                </p>
-                <button type="button" onClick={closeForm} aria-label="Close" className="h-7 w-7 flex items-center justify-center rounded text-foreground-muted hover:bg-muted">
-                  <X className="size-4" />
+      {formOpen && (
+        <div className="rounded-lg border border-border bg-surface-elevated p-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <p className="text-body-sm font-semibold text-foreground">{editAttr ? `Edit "${editAttr.name}"` : "New Attribute"}</p>
+            <button type="button" onClick={closeForm} aria-label="Close" className="h-6 w-6 flex items-center justify-center rounded text-foreground-muted hover:bg-muted"><X className="size-3.5" /></button>
+          </div>
+          {saveError && <p className="text-caption text-danger">{saveError}</p>}
+          <Input label="Attribute name" value={attrName} onChange={(e) => setAttrName(e.target.value)} placeholder="e.g. Color" />
+          <div className="flex flex-col gap-1.5">
+            <p className="text-body-sm font-medium text-foreground">Values</p>
+            {editValues.map((ev) => (
+              <div key={ev._key} className="flex gap-2">
+                <Input value={ev.value} onChange={(e) => setEditValues((prev) => prev.map((v) => v._key === ev._key ? { ...v, value: e.target.value } : v))} placeholder="e.g. Red" />
+                <button type="button" aria-label="Remove" onClick={() => setEditValues((prev) => prev.filter((v) => v._key !== ev._key))} disabled={editValues.length <= 1} className="h-9 w-9 flex items-center justify-center rounded border border-border text-foreground-muted hover:text-danger disabled:opacity-30">
+                  <X className="size-3.5" />
                 </button>
               </div>
-              {saveError && <p className="text-caption text-danger">{saveError}</p>}
-              <Input
-                label="Attribute name (e.g. Storage)"
-                value={attrName}
-                onChange={(e) => setAttrName(e.target.value)}
-                placeholder="e.g. Color"
-              />
-              <div className="flex flex-col gap-2">
-                <p className="text-body-sm font-medium text-foreground">Values</p>
-                {/* §2.5: send the complete list; include id for existing values */}
-                {editValues.map((ev) => (
-                  <div key={ev._key} className="flex gap-2">
-                    <Input
-                      value={ev.value}
-                      onChange={(e) => updateValue(ev._key, e.target.value)}
-                      placeholder="e.g. 128GB"
-                    />
-                    <button
-                      type="button"
-                      aria-label="Remove value"
-                      onClick={() => removeValue(ev._key)}
-                      disabled={editValues.length <= 1}
-                      className="h-9 w-9 flex items-center justify-center rounded border border-border text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors disabled:opacity-30"
-                    >
-                      <X className="size-3.5" />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addValue}
-                  className="flex items-center gap-1.5 text-caption text-foreground-muted hover:text-foreground transition-colors self-start"
-                >
-                  <Plus className="size-3" /> Add value
-                </button>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" type="button" onClick={closeForm} disabled={saving}>Cancel</Button>
-                <Button variant="primary" size="sm" type="button" onClick={handleSave} loading={saving}>Save</Button>
-              </div>
-            </div>
-          )}
-
-          {!formOpen && (
-            <Button variant="outline" size="sm" className="self-start" type="button" onClick={openNew}>
-              <Plus className="size-3.5 mr-1.5" /> Add Attribute
-            </Button>
-          )}
-
-          <ConfirmDialog
-            open={!!deleteTarget}
-            onClose={() => setDeleteTarget(null)}
-            onConfirm={handleDelete}
-            title="Delete attribute"
-            description={`Delete “${deleteTarget?.name}” and all its values? Any variant referencing these values will become unconfigured.`}
-            confirmLabel="Delete"
-            confirmVariant="danger"
-            loading={deleting}
-          />
-        </>
+            ))}
+            <button type="button" onClick={() => setEditValues((p) => [...p, { value: "", _key: crypto.randomUUID() }])} className="flex items-center gap-1 text-caption text-foreground-muted hover:text-foreground self-start">
+              <Plus className="size-3" /> Add value
+            </button>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" type="button" onClick={closeForm} disabled={saving}>Cancel</Button>
+            <Button variant="primary" size="sm" type="button" onClick={handleSave} loading={saving}>Save</Button>
+          </div>
+        </div>
       )}
+
+      {!formOpen && (
+        <Button variant="outline" size="sm" type="button" className="self-start" onClick={openNew}>
+          <Plus className="size-3.5 mr-1" /> Add Attribute
+        </Button>
+      )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete attribute"
+        description={`Delete "${deleteTarget?.name}" and all its values? Variants referencing these will be affected.`}
+        confirmLabel="Delete"
+        confirmVariant="danger"
+        loading={deleting}
+      />
     </div>
   );
 }
 
-// ── Stock manager ─────────────────────────────────────────────────────────────
+// ── Stock manager — always expanded, compact layout ───────────────────────────
 
 interface StockManagerProps {
   productId: string;
-  /** When provided, manages stock for that specific variant */
   variantId?: string;
   label?: string;
+  /** When true renders a minimal inline form */
+  compact?: boolean;
 }
 
-function StockManager({ productId, variantId, label }: StockManagerProps) {
-  // Latest inventory snapshot returned from the last mutating call
+function StockManager({ productId, variantId, label, compact = false }: StockManagerProps) {
   const [inventory, setInventory] = useState<InventoryResponse | null>(null);
-  const [expanded, setExpanded] = useState(false);
-
-  // Set stock form
   const [onHand, setOnHand] = useState("");
   const [lowStockThreshold, setLowStockThreshold] = useState("");
   const [setSaving, setSetSaving] = useState(false);
   const [setError, setSetError] = useState("");
   const [setSuccess, setSetSuccess] = useState("");
-
-  // Adjust stock form
   const [delta, setDelta] = useState("");
   const [reason, setReason] = useState("");
   const [adjSaving, setAdjSaving] = useState(false);
@@ -810,180 +526,115 @@ function StockManager({ productId, variantId, label }: StockManagerProps) {
   async function handleSet(e: React.FormEvent) {
     e.preventDefault();
     const parsed = parseInt(onHand);
-    if (isNaN(parsed) || parsed < 0) {
-      setSetError("On-hand quantity must be a non-negative integer.");
-      return;
-    }
-    setSetError("");
-    setSetSuccess("");
-    setSetSaving(true);
+    if (isNaN(parsed) || parsed < 0) { setSetError("Non-negative integer required."); return; }
+    setSetError(""); setSetSuccess(""); setSetSaving(true);
     const threshold = lowStockThreshold.trim() !== "" ? parseInt(lowStockThreshold) : undefined;
-    const res = await adminInventoryApi.set(
-      productId,
-      { onHand: parsed, lowStockThreshold: threshold },
-      variantId,
-    );
+    const res = await adminInventoryApi.set(productId, { onHand: parsed, lowStockThreshold: threshold }, variantId);
     setSetSaving(false);
-    if (res.ok) {
-      applyInventory(res.data);
-      setSetSuccess("Stock updated.");
-      setTimeout(() => setSetSuccess(""), 3000);
-    } else {
-      setSetError(extractApiError(res.error, "Failed to set stock."));
-    }
+    if (res.ok) { applyInventory(res.data); setSetSuccess("Updated."); setTimeout(() => setSetSuccess(""), 3000); }
+    else setSetError(extractApiError(res.error, "Failed."));
   }
 
   async function handleAdjust(e: React.FormEvent) {
     e.preventDefault();
     const parsedDelta = parseInt(delta);
-    if (isNaN(parsedDelta) || parsedDelta === 0) {
-      setAdjError("Delta must be a non-zero integer.");
-      return;
-    }
-    setAdjError("");
-    setAdjSuccess("");
-    setAdjSaving(true);
-    const res = await adminInventoryApi.adjust(
-      productId,
-      { delta: parsedDelta, reason: reason.trim() || undefined },
-      variantId,
-    );
+    if (isNaN(parsedDelta) || parsedDelta === 0) { setAdjError("Non-zero integer required."); return; }
+    setAdjError(""); setAdjSuccess(""); setAdjSaving(true);
+    const res = await adminInventoryApi.adjust(productId, { delta: parsedDelta, reason: reason.trim() || undefined }, variantId);
     setAdjSaving(false);
-    if (res.ok) {
-      applyInventory(res.data);
-      setAdjSuccess(`Stock adjusted by ${parsedDelta > 0 ? "+" : ""}${parsedDelta}.`);
-      setDelta("");
-      setReason("");
-      setTimeout(() => setAdjSuccess(""), 3000);
-    } else {
-      setAdjError(extractApiError(res.error, "Failed to adjust stock."));
-    }
+    if (res.ok) { applyInventory(res.data); setAdjSuccess(`Adjusted ${parsedDelta > 0 ? "+" : ""}${parsedDelta}.`); setDelta(""); setReason(""); setTimeout(() => setAdjSuccess(""), 3000); }
+    else setAdjError(extractApiError(res.error, "Failed."));
   }
 
-  // Stock status pill
-  function StockPill() {
-    if (!inventory) return null;
-    if (inventory.isOutOfStock) {
-      return (
-        <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-danger/10 text-danger">
-          Out of stock
-        </span>
-      );
-    }
-    if (inventory.isLowStock) {
-      return (
-        <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-warning/15 text-warning">
-          Low stock · {inventory.available} left
-        </span>
-      );
-    }
+  // Compact layout (inline in variant row)
+  if (compact) {
     return (
-      <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-success/10 text-success">
-        In stock · {inventory.available} available
-      </span>
+      <div className="flex flex-col gap-1.5">
+        {inventory && (
+          <div className="flex flex-wrap gap-2 text-caption text-foreground-muted">
+            <StockPill inventory={inventory} />
+            <span>On hand: <strong className="text-foreground">{inventory.onHand}</strong></span>
+            <span>Reserved: <strong className="text-foreground">{inventory.reserved}</strong></span>
+            <span>Available: <strong className="text-foreground">{inventory.available}</strong></span>
+          </div>
+        )}
+        {!inventory && (
+          <p className="text-caption text-foreground-muted">No inventory record — use Set stock to initialise.</p>
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          <form onSubmit={handleSet} noValidate className="flex flex-col gap-1.5">
+            <p className="text-caption font-semibold text-foreground">Set stock</p>
+            {setError && <p className="text-caption text-danger">{setError}</p>}
+            {setSuccess && <p className="text-caption text-success">{setSuccess}</p>}
+            <div className="flex gap-1.5">
+              <input type="number" min={0} value={onHand} onChange={(e) => setOnHand(e.target.value)} placeholder="On hand" aria-label="On hand quantity" className="flex-1 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus" />
+              <Button variant="outline" size="sm" type="submit" loading={setSaving} className="h-7 px-2 text-caption">Set</Button>
+            </div>
+          </form>
+          <form onSubmit={handleAdjust} noValidate className="flex flex-col gap-1.5">
+            <p className="text-caption font-semibold text-foreground">Adjust</p>
+            {adjError && <p className="text-caption text-danger">{adjError}</p>}
+            {adjSuccess && <p className="text-caption text-success">{adjSuccess}</p>}
+            <div className="flex gap-1.5">
+              <input type="number" value={delta} onChange={(e) => setDelta(e.target.value)} placeholder="±delta" aria-label="Stock delta" className="flex-1 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus" />
+              <Button variant="outline" size="sm" type="submit" loading={adjSaving} className="h-7 px-2 text-caption">Adj</Button>
+            </div>
+          </form>
+        </div>
+      </div>
     );
   }
 
+  // Full layout (product-level stock card)
   return (
-    <div className="flex flex-col gap-2">
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="flex items-center gap-2 text-body-sm font-medium text-foreground-muted hover:text-foreground transition-colors self-start"
-        aria-expanded={expanded}
-      >
-        <Package className="size-3.5" aria-hidden="true" />
-        {label ?? "Stock"}
-        {expanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
-        {inventory && !expanded && (
-          <span className="ml-1">
-            <StockPill />
-          </span>
-        )}
-      </button>
+    <div className="flex flex-col gap-4">
+      {label && <p className="text-body-sm font-medium text-foreground flex items-center gap-1.5"><Package className="size-3.5" aria-hidden="true" />{label}</p>}
 
-      {expanded && (
-        <div className="rounded-lg border border-border bg-surface p-4 flex flex-col gap-5">
-          {/* Current inventory snapshot */}
-          {inventory && (
-            <div className="flex flex-wrap items-center gap-3 text-caption text-foreground-muted border-b border-border pb-3">
-              <StockPill />
-              <span>On hand: <strong className="text-foreground">{inventory.onHand}</strong></span>
-              <span>Reserved: <strong className="text-foreground">{inventory.reserved}</strong></span>
-              <span>Available: <strong className="text-foreground">{inventory.available}</strong></span>
-              <span>Low-stock threshold: <strong className="text-foreground">{inventory.lowStockThreshold}</strong></span>
-            </div>
-          )}
-          {!inventory && (
-            <p className="text-caption text-foreground-muted -mt-1">
-              Use <strong>Set stock</strong> below to initialise inventory for this {variantId ? "variant" : "product"}.
-              Changes are reflected immediately on the storefront.
-            </p>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* Set stock */}
-            <form onSubmit={handleSet} className="flex flex-col gap-3" noValidate>
-              <p className="text-body-sm font-semibold text-foreground">Set stock</p>
-              {setError && <p className="text-caption text-danger">{setError}</p>}
-              {setSuccess && <p className="text-caption text-success">{setSuccess}</p>}
-              <Input
-                label="On hand (absolute)"
-                type="number"
-                min={0}
-                value={onHand}
-                onChange={(e) => setOnHand(e.target.value)}
-                placeholder="e.g. 100"
-                hint="Total units physically available."
-              />
-              <Input
-                label="Low-stock threshold"
-                type="number"
-                min={0}
-                value={lowStockThreshold}
-                onChange={(e) => setLowStockThreshold(e.target.value)}
-                placeholder="e.g. 10"
-                hint="Alert when available stock falls below this."
-              />
-              <Button variant="outline" size="sm" type="submit" loading={setSaving} className="self-start">
-                Set stock
-              </Button>
-            </form>
-
-            {/* Adjust stock */}
-            <form onSubmit={handleAdjust} className="flex flex-col gap-3" noValidate>
-              <p className="text-body-sm font-semibold text-foreground">Adjust stock</p>
-              {adjError && <p className="text-caption text-danger">{adjError}</p>}
-              {adjSuccess && <p className="text-caption text-success">{adjSuccess}</p>}
-              <Input
-                label="Delta"
-                type="number"
-                value={delta}
-                onChange={(e) => setDelta(e.target.value)}
-                placeholder="e.g. +10 or -5"
-                hint="Positive to add units, negative to remove."
-              />
-              <Input
-                label="Reason (optional)"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="e.g. Restocked from supplier"
-              />
-              <Button variant="outline" size="sm" type="submit" loading={adjSaving} className="self-start">
-                Adjust stock
-              </Button>
-            </form>
-          </div>
+      {inventory && (
+        <div className="flex flex-wrap items-center gap-3 text-caption text-foreground-muted rounded-lg bg-surface border border-border px-3 py-2.5">
+          <StockPill inventory={inventory} />
+          <span>On hand: <strong className="text-foreground">{inventory.onHand}</strong></span>
+          <span>Reserved: <strong className="text-foreground">{inventory.reserved}</strong></span>
+          <span>Available: <strong className="text-foreground">{inventory.available}</strong></span>
+          <span>Low-stock threshold: <strong className="text-foreground">{inventory.lowStockThreshold}</strong></span>
         </div>
       )}
+      {!inventory && (
+        <p className="text-caption text-foreground-muted">No inventory record yet. Use Set stock to create one.</p>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSet} noValidate className="flex flex-col gap-2.5">
+          <p className="text-body-sm font-semibold text-foreground">Set stock</p>
+          {setError && <p className="text-caption text-danger">{setError}</p>}
+          {setSuccess && <p className="text-caption text-success">{setSuccess}</p>}
+          <Input label="On hand (absolute)" type="number" min={0} value={onHand} onChange={(e) => setOnHand(e.target.value)} placeholder="e.g. 100" hint="Replaces current quantity." />
+          <Input label="Low-stock threshold" type="number" min={0} value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} placeholder="e.g. 10" />
+          <Button variant="outline" size="sm" type="submit" loading={setSaving} className="self-start">Set stock</Button>
+        </form>
+
+        <form onSubmit={handleAdjust} noValidate className="flex flex-col gap-2.5">
+          <p className="text-body-sm font-semibold text-foreground">Adjust stock</p>
+          {adjError && <p className="text-caption text-danger">{adjError}</p>}
+          {adjSuccess && <p className="text-caption text-success">{adjSuccess}</p>}
+          <Input label="Delta" type="number" value={delta} onChange={(e) => setDelta(e.target.value)} placeholder="+10 or -5" hint="Positive adds, negative removes." />
+          <Input label="Reason (optional)" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Restocked" />
+          <Button variant="outline" size="sm" type="submit" loading={adjSaving} className="self-start">Adjust stock</Button>
+        </form>
+      </div>
     </div>
   );
+}
+
+function StockPill({ inventory }: { inventory: InventoryResponse }) {
+  if (inventory.isOutOfStock) return <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-danger/10 text-danger">Out of stock</span>;
+  if (inventory.isLowStock) return <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-warning/15 text-warning">Low stock · {inventory.available} left</span>;
+  return <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-success/10 text-success">In stock · {inventory.available}</span>;
 }
 
 // ── Main product form ─────────────────────────────────────────────────────────
 
 interface ProductFormProps {
-  /** Existing product for edit mode; null for create */
   product: ProductResponse | null;
   categories: CategoryResponse[];
   brands: BrandResponse[];
@@ -1030,17 +681,13 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
   }
 
   function handleNameChange(name: string) {
-    setForm((f) => ({
-      ...f,
-      name,
-      slug: f.slug ? f.slug : slugify(name),
-    }));
+    setForm((f) => ({ ...f, name, slug: f.slug ? f.slug : slugify(name) }));
   }
 
   function validate() {
     const e: Record<string, string> = {};
     if (!form.name?.trim()) e.name = "Product name is required.";
-    if (form.price < 0) e.price = "Price must be a non-negative number.";
+    if (form.price < 0) e.price = "Price must be non-negative.";
     if (!form.price && form.price !== 0) e.price = "Price is required.";
     return e;
   }
@@ -1049,10 +696,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
-    setErrors({});
-    setApiError("");
-    setSaving(true);
-
+    setErrors({}); setApiError(""); setSaving(true);
     const payload: CreateProductRequest = {
       ...form,
       slug: form.slug?.trim() || slugify(form.name ?? ""),
@@ -1064,52 +708,38 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
       metaDescription: form.metaDescription?.trim() || undefined,
       metaKeywords: form.metaKeywords?.trim() || undefined,
     };
-
     const res = isEdit
       ? await adminProductsApi.update(product.id, payload)
       : await adminProductsApi.create(payload);
-
     setSaving(false);
     if (res.ok) {
-      if (!isEdit) {
-        router.push(`/admin/products/${res.data.id}`);
-      } else {
-        if (onRefresh) onRefresh();
-        setApiError("");
-      }
+      if (!isEdit) router.push(`/admin/products/${res.data.id}`);
+      else if (onRefresh) onRefresh();
     } else {
-      setApiError(
-        extractApiError(res.error, "Failed to save product."),
-      );
+      setApiError(extractApiError(res.error, "Failed to save product."));
     }
   }
 
   async function handlePublishToggle() {
     if (!isEdit) return;
-    setPublishing(true);
-    setApiError("");
-    const isPublished = product.status === "Published";
-    const res = isPublished
+    setPublishing(true); setApiError("");
+    const res = product.status === "Published"
       ? await adminProductsApi.unpublish(product.id)
       : await adminProductsApi.publish(product.id);
     setPublishing(false);
-    if (res.ok) {
-      if (onRefresh) onRefresh();
-    } else {
-      setApiError(extractApiError(res.error, "Failed to update publish status."));
-    }
+    if (res.ok) { if (onRefresh) onRefresh(); }
+    else setApiError(extractApiError(res.error, "Failed to update publish status."));
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <AdminPageHeader
         title={isEdit ? (product.name ?? "Edit Product") : "New Product"}
         description={isEdit ? <AdminStatusBadge status={product.status ?? "Draft"} /> as unknown as string : undefined}
         action={
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" type="button" onClick={() => router.push("/admin/products")}>
-              Cancel
-            </Button>
+            <Button variant="outline" size="sm" type="button" onClick={() => router.push("/admin/products")}>Cancel</Button>
             {isEdit && (
               <Button
                 variant={product.status === "Published" ? "outline" : "secondary"}
@@ -1134,10 +764,12 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
         </p>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main content — 2 cols */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <Section title="Basic Information">
+      {/* ── 3-column grid ──────────────────────────────────────────────────── */}
+      <div className="grid gap-4 lg:grid-cols-3">
+
+        {/* ── Column 1: Core content ─────────────────────────────────────── */}
+        <div className="flex flex-col gap-4">
+          <Card title="Basic Information">
             <Input
               label="Product name"
               required
@@ -1149,7 +781,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
               label="Slug"
               value={form.slug ?? ""}
               onChange={(e) => set("slug", e.target.value)}
-              hint="URL-friendly identifier. Auto-generated from name if left blank."
+              hint="Auto-generated from name if blank."
             />
             <Input
               label="SKU"
@@ -1157,12 +789,15 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
               onChange={(e) => set("sku", e.target.value)}
               placeholder="e.g. PROD-001"
             />
+          </Card>
+
+          <Card title="Description">
             <div className="flex flex-col gap-1.5">
               <label className="text-body-sm font-medium text-foreground">Description</label>
               <textarea
                 value={form.description ?? ""}
                 onChange={(e) => set("description", e.target.value)}
-                rows={5}
+                rows={4}
                 aria-label="Product description"
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus resize-none"
                 placeholder="Detailed product description…"
@@ -1176,13 +811,25 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 rows={2}
                 aria-label="Short description"
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus resize-none"
-                placeholder="Brief summary shown on product cards…"
+                placeholder="Brief summary for product cards…"
               />
             </div>
-          </Section>
+          </Card>
 
-          <Section title="Pricing">
-            <div className="grid grid-cols-2 gap-4">
+          <Card title="SEO">
+            <Input label="Meta title" value={form.metaTitle ?? ""} onChange={(e) => set("metaTitle", e.target.value)} />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-body-sm font-medium text-foreground">Meta description</label>
+              <textarea value={form.metaDescription ?? ""} onChange={(e) => set("metaDescription", e.target.value)} rows={2} aria-label="Meta description" className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus resize-none" />
+            </div>
+            <Input label="Meta keywords" value={form.metaKeywords ?? ""} onChange={(e) => set("metaKeywords", e.target.value)} hint="Comma-separated." />
+          </Card>
+        </div>
+
+        {/* ── Column 2: Pricing, Images, Attributes, Variants ───────────── */}
+        <div className="flex flex-col gap-4">
+          <Card title="Pricing">
+            <div className="grid grid-cols-2 gap-3">
               <Input
                 label="Price"
                 type="number"
@@ -1194,7 +841,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 error={errors.price}
               />
               <Input
-                label="Compare-at price (optional)"
+                label="Compare-at price"
                 type="number"
                 min={0}
                 step={0.01}
@@ -1202,85 +849,41 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 onChange={(e) => set("compareAtPrice", e.target.value ? parseFloat(e.target.value) : undefined)}
               />
             </div>
-          </Section>
+          </Card>
 
-          {/* Images — only for existing products */}
           {isEdit && productId && (
-            <Section title="Images">
+            <Card title="Images">
               <ImageManager
                 productId={productId}
                 images={product.images}
                 onRefresh={() => { if (onRefresh) onRefresh(); }}
               />
-            </Section>
+            </Card>
           )}
 
-          {/* Attributes — only for existing products (§2.4/§2.5/§2.6) */}
           {isEdit && productId && (
-            <Section title="Attribute Axes">
-              <p className="text-caption text-foreground-muted -mt-1">
-                Define dimensions like “Storage” or “Color”. Variants are then configured with combinations of values.
-              </p>
-              <AttributeEditor
-                productId={productId}
-                onRefresh={refreshVariants}
-              />
-            </Section>
+            <Card title="Attribute Axes">
+              <p className="text-caption text-foreground-muted -mt-1">Define dimensions like "Storage" or "Color" for variant selection.</p>
+              <AttributeEditor productId={productId} onRefresh={refreshVariants} />
+            </Card>
           )}
 
-          {/* Variants — only for existing products */}
           {isEdit && productId && (
-            <Section title="Variants">
-              <VariantEditor
-                productId={productId}
-                variants={variants}
-                onRefresh={refreshVariants}
-              />
-            </Section>
+            <Card title="Variants">
+              <VariantEditor productId={productId} variants={variants} onRefresh={refreshVariants} />
+            </Card>
           )}
 
-          {/* Stock — only for existing products without variants */}
-          {isEdit && productId && variants.length === 0 && (
-            <Section title="Stock">
-              <p className="text-caption text-foreground-muted -mt-1">
-                Manage product-level inventory. For products with variants, set stock per variant below.
-              </p>
-              <StockManager productId={productId} label="Product stock" />
-            </Section>
+          {!isEdit && (
+            <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
+              <p className="text-caption text-foreground-muted">Images, attributes, variants and stock can be managed after saving.</p>
+            </div>
           )}
-
-          {/* Stock — variant-level hint when variants exist */}
-          {isEdit && productId && variants.length > 0 && (
-            <Section title="Stock">
-              <p className="text-caption text-foreground-muted -mt-1">
-                This product has variants. Use the <strong className="text-foreground">📦 stock icon</strong> on each variant above to manage per-variant inventory.
-              </p>
-            </Section>
-          )}
-
-          <Section title="SEO">
-            <Input
-              label="Meta title"
-              value={form.metaTitle ?? ""}
-              onChange={(e) => set("metaTitle", e.target.value)}
-            />
-            <Input
-              label="Meta description"
-              value={form.metaDescription ?? ""}
-              onChange={(e) => set("metaDescription", e.target.value)}
-            />
-            <Input
-              label="Meta keywords"
-              value={form.metaKeywords ?? ""}
-              onChange={(e) => set("metaKeywords", e.target.value)}
-              hint="Comma-separated keywords."
-            />
-          </Section>
         </div>
 
-        {/* Sidebar — 1 col */}
-        <div className="flex flex-col gap-6">
-          <Section title="Organisation">
+        {/* ── Column 3: Organisation, Settings, Stock ────────────────────── */}
+        <div className="flex flex-col gap-4">
+          <Card title="Organisation">
             <div className="flex flex-col gap-1.5">
               <label className="text-body-sm font-medium text-foreground">Category</label>
               <select
@@ -1290,9 +893,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
               >
                 <option value="">— No category —</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
@@ -1304,14 +905,12 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
               >
                 <option value="">— No brand —</option>
-                {brands.map((b) => (
-                  <option key={b.id} value={b.id}>{b.name}</option>
-                ))}
+                {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
-          </Section>
+          </Card>
 
-          <Section title="Settings">
+          <Card title="Settings">
             <label className="flex items-center gap-2.5 cursor-pointer">
               <input
                 type="checkbox"
@@ -1330,14 +929,25 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
               />
               <span className="text-body-sm text-foreground">Taxable</span>
             </label>
-          </Section>
+          </Card>
 
-          {!isEdit && (
-            <div className="rounded-lg border border-border bg-surface p-4">
-              <p className="text-caption text-foreground-muted">
-                Images and variants can be added after saving the product.
+          {/* Product-level stock — only when no variants */}
+          {isEdit && productId && variants.length === 0 && (
+            <Card title="Stock">
+              <p className="text-caption text-foreground-muted -mt-1">
+                Product-level inventory. Add variants above to enable per-variant stock.
               </p>
-            </div>
+              <StockManager productId={productId} label="Product stock" />
+            </Card>
+          )}
+
+          {/* When variants exist, stock is inline per variant in column 2 */}
+          {isEdit && productId && variants.length > 0 && (
+            <Card title="Stock">
+              <p className="text-caption text-foreground-muted">
+                Stock is managed per variant — use the inline controls on each variant in the Variants section.
+              </p>
+            </Card>
           )}
         </div>
       </div>

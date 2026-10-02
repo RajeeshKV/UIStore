@@ -14,7 +14,6 @@ import type { OrderSummaryResponse } from "@/types/api";
 const PAGE_SIZE = 20;
 
 const ORDER_STATUSES = ["", "PendingPayment", "PaymentProcessing", "Confirmed", "Processing", "Packed", "Shipped", "Delivered", "Cancelled", "Failed", "RefundPending", "Refunded"];
-const PAYMENT_STATUSES = ["", "Pending", "Authorized", "Paid", "Failed", "RefundPending", "Refunded"];
 
 export function AdminOrdersClient() {
   const [orders, setOrders] = useState<OrderSummaryResponse[]>([]);
@@ -24,7 +23,8 @@ export function AdminOrdersClient() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +42,8 @@ export function AdminOrdersClient() {
       pageSize: PAGE_SIZE,
       search: debouncedSearch || undefined,
       status: status || undefined,
-      paymentStatus: paymentStatus || undefined,
+      fromDate: fromDate || undefined,
+      toDate: toDate || undefined,
     });
     if (res.ok) {
       setOrders(res.data.items);
@@ -52,7 +53,7 @@ export function AdminOrdersClient() {
       setError(extractApiError(res.error, "Failed to load orders."));
     }
     setLoading(false);
-  }, [page, debouncedSearch, status, paymentStatus]);
+  }, [page, debouncedSearch, status, fromDate, toDate]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -146,16 +147,28 @@ export function AdminOrdersClient() {
             <option key={s} value={s}>{s || "All statuses"}</option>
           ))}
         </select>
-        <select
-          value={paymentStatus}
-          onChange={(e) => { setPaymentStatus(e.target.value); setPage(1); }}
-          aria-label="Filter by payment status"
-          className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
-        >
-          {PAYMENT_STATUSES.map((s) => (
-            <option key={s} value={s}>{s || "All payments"}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <label htmlFor="order-from" className="text-body-sm text-foreground-muted whitespace-nowrap">From</label>
+          <input
+            id="order-from"
+            type="date"
+            value={fromDate}
+            onChange={(e) => { setFromDate(e.target.value); setPage(1); }}
+            aria-label="From date"
+            className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label htmlFor="order-to" className="text-body-sm text-foreground-muted whitespace-nowrap">To</label>
+          <input
+            id="order-to"
+            type="date"
+            value={toDate}
+            onChange={(e) => { setToDate(e.target.value); setPage(1); }}
+            aria-label="To date"
+            className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
+          />
+        </div>
       </div>
 
       <AdminTable

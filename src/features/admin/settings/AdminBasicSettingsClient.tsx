@@ -44,8 +44,8 @@ export function AdminBasicSettingsClient() {
         instagramUrl: d.instagramUrl ?? "",
         twitterUrl: d.twitterUrl ?? "",
         youtubeUrl: d.youtubeUrl ?? "",
-        whatsAppNumber: "",
-        linkedInUrl: "",
+        whatsAppNumber: d.whatsAppNumber ?? "",
+        linkedInUrl: d.linkedInUrl ?? "",
       });
     } else {
       setError(extractApiError(res.error, "Failed to load settings."));

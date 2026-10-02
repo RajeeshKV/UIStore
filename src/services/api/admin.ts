@@ -306,9 +306,8 @@ export const adminIntegrationsApi = {
   updatePayment: (data: UpdateRazorpayConfigRequest) =>
     apiClient.put<IntegrationStatusResponse>("/api/v1/admin/integrations/payment", data),
 
-  /** PUT /api/v1/admin/integrations/payment/cod — 204 No Content */
-  updateCod: (enabled: boolean) =>
-    apiClient.put<void>("/api/v1/admin/integrations/payment/cod", { enabled }),
+  // NOTE: PUT /api/v1/admin/integrations/payment/cod has been REMOVED.
+  // COD is managed exclusively via PUT /api/v1/admin/settings/delivery.
 
   getGoogle: () =>
     apiClient.get<IntegrationStatusResponse>("/api/v1/admin/integrations/google"),

@@ -3,6 +3,7 @@ import { CartProvider } from "@/features/cart/CartContext";
 import { CartDrawer } from "@/features/cart/CartDrawer";
 import { CartAwareHeader } from "./CartAwareHeader";
 import { AuthProvider } from "@/features/auth/AuthContext";
+import { WishlistProvider } from "@/features/wishlist/WishlistContext";
 import { PendingPaymentResumeDialog } from "@/features/checkout/PendingPaymentResumeDialog";
 import type {
   PublicBusinessSettingsResponse,
@@ -32,20 +33,22 @@ export function StorefrontLayout({
 
   return (
     <AuthProvider>
-      <CartProvider>
-        <div className="flex flex-col min-h-screen">
-          <CartAwareHeader
-            storeName={settings?.businessName ?? "Shopey"}
-            logoUrl={settings?.logoUrl}
-          />
-          <main id="main-content" className="flex-1">
-            {children}
-          </main>
-          <Footer settings={settings} policies={policyList} />
-        </div>
-        <CartDrawer currency={currency} locale={locale} />
-        <PendingPaymentResumeDialog />
-      </CartProvider>
+      <WishlistProvider>
+        <CartProvider>
+          <div className="flex flex-col min-h-screen">
+            <CartAwareHeader
+              storeName={settings?.businessName ?? "Shopey"}
+              logoUrl={settings?.logoUrl}
+            />
+            <main id="main-content" className="flex-1">
+              {children}
+            </main>
+            <Footer settings={settings} policies={policyList} />
+          </div>
+          <CartDrawer currency={currency} locale={locale} />
+          <PendingPaymentResumeDialog />
+        </CartProvider>
+      </WishlistProvider>
     </AuthProvider>
   );
 }

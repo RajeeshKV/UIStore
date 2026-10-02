@@ -28,6 +28,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
   const [newStatus, setNewStatus] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingProvider, setTrackingProvider] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState("");
@@ -57,6 +58,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
       status: newStatus,
       trackingNumber: trackingNumber.trim() || undefined,
       trackingProvider: trackingProvider.trim() || undefined,
+      reason: cancellationReason.trim() || undefined,
     });
     setUpdating(false);
 
@@ -310,6 +312,21 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
               className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus"
             />
           </div>
+          {(newStatus === "Cancelled" || newStatus === "Failed") && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-body-sm font-medium text-foreground">
+                Reason {newStatus === "Cancelled" ? "(recommended)" : "(optional)"}
+              </label>
+              <input
+                type="text"
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                placeholder="e.g. Customer requested cancellation"
+                aria-label="Cancellation reason"
+                className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus"
+              />
+            </div>
+          )}
         </div>
       </ConfirmDialog>
     </>

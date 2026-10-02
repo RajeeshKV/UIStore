@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   XCircle,
   ChevronDown,
-  Heart,
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -17,6 +16,7 @@ import { formatPrice, discountPercent } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/features/cart/CartContext";
 import { ProductVariantSelector } from "./ProductVariantSelector";
+import { WishlistButton } from "@/features/wishlist/WishlistButton";
 import { transitions } from "@/lib/motion";
 import type {
   StorefrontProductResponse,
@@ -39,7 +39,6 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
   const [selectedVariant, setSelectedVariant] = useState<StorefrontVariantResponse | null>(
     product.variants?.find((v) => v.canPurchase) ?? product.variants?.[0] ?? null,
   );
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
   const effectivePrice      = selectedVariant?.effectivePrice ?? product.price;
   const effectiveCompareAt  = product.compareAtPrice;
@@ -151,20 +150,13 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
         >
           {effectiveCanPurchase ? "Add to Cart" : "Out of Stock"}
         </Button>
-        {/* Wishlist circle button — matches design floating controls */}
-        <button
-          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          aria-pressed={isWishlisted}
-          onClick={() => setIsWishlisted((w) => !w)}
-          className={cn(
-            "h-12 w-12 shrink-0 flex items-center justify-center rounded-xl",
-            "border border-[#E5E7EB] bg-white",
-            "hover:border-[#0D0D0D] transition-all duration-150",
-            "shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
-          )}
-        >
-          <Heart className={cn("size-5 transition-colors", isWishlisted ? "fill-[#E02E2E] text-[#E02E2E]" : "text-[#5A6578]")} />
-        </button>
+        {/* Wishlist circle button */}
+        <WishlistButton
+          productId={product.id}
+          variantId={selectedVariant?.id}
+          size="md"
+          className="h-12 w-12 rounded-xl"
+        />
       </div>
 
       {/* Delivery estimate */}
