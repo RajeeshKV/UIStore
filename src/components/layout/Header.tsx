@@ -288,9 +288,6 @@ function DesktopNavItem({
     ? pathname === "/shop" && !search.includes("sort=") && !search.includes("sale=")
     : pathname.startsWith(item.href);
 
-  // Sale is always crimson; still gets underline when active
-  const isSaleActive = item.isSale ? fullUrl === item.href : false;
-
   if (!item.children?.length) {
     return (
       <Link
@@ -299,16 +296,22 @@ function DesktopNavItem({
           "relative py-1 text-[14px] transition-colors duration-150",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D] rounded",
           item.isSale
-            ? cn(
-                "font-semibold text-[#ba0918] hover:opacity-80",
-                isSaleActive && "after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#ba0918] after:rounded-full",
-              )
+            ? "font-semibold text-[#ba0918] hover:opacity-80"
             : isActive
-            ? "font-bold text-[#191c1e] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0D0D0D] after:rounded-full"
+            ? "font-bold text-[#191c1e]"
             : "font-medium text-[#444748] hover:text-[#191c1e]",
         )}
       >
         {item.label}
+        {isActive && (
+          <span
+            aria-hidden="true"
+            className={cn(
+              "absolute left-0 bottom-0 h-[2px] w-full rounded-full",
+              item.isSale ? "bg-[#ba0918]" : "bg-[#0D0D0D]",
+            )}
+          />
+        )}
       </Link>
     );
   }

@@ -70,7 +70,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   return (
     <div className="flex flex-col gap-3">
       {/* Main image — design: rounded-2xl, white bg, hover zoom arrows */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-[#F4F5F7] border border-[#E5E7EB] group">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#F4F5F7] border border-[#E5E7EB] group">
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
             key={activeIdx}
@@ -260,7 +260,7 @@ export function ProductGalleryFallback({ imageUrl, productName }: { imageUrl?: s
     );
   }
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-[#F4F5F7] border border-[#E5E7EB]">
+    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#F4F5F7] border border-[#E5E7EB]">
       <Image src={imageUrl} alt={productName} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-contain p-4" priority />
     </div>
   );
