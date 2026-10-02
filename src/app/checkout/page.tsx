@@ -21,7 +21,7 @@ export default async function CheckoutPage() {
 
   const currency = settings?.currencyCode ?? "INR";
   const locale = settings?.culture ?? "en-IN";
-  const storeName = settings?.businessName ?? "Kromic Store";
+  const storeName = settings?.businessName ?? "Shopey";
 
   // These are hints only — authoritative values come from CheckoutSummaryResponse.paymentMethods[].
   const razorpayEnabled = settings?.payment?.razorpayEnabled ?? false;

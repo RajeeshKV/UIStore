@@ -1,5 +1,5 @@
 /**
- * Kromic Store – Theme Configuration
+ * Shopey – Theme Configuration
  *
  * This is the ONE place to change the visual identity of a customer deployment.
  * All values must map to CSS variable names defined in globals.css.
@@ -23,7 +23,7 @@ export type ThemeConfig = {
  * Product photography always remains colorful.
  */
 export const defaultTheme: ThemeConfig = {
-  name: "Kromic",
+  name: "Shopey",
   logo: undefined,
   favicon: undefined,
   displayFont: "Geist",

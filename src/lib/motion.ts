@@ -1,5 +1,5 @@
 /**
- * Kromic Store – Motion System
+ * Shopey – Motion System
  *
  * Centralised animation variants for Motion (Framer Motion).
  * All durations/easings here must mirror the CSS token values in globals.css.

@@ -1,51 +1,87 @@
 "use client";
 
 import { forwardRef } from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
-type ButtonSize = "sm" | "md" | "lg";
+const buttonVariants = cva(
+  // Base
+  [
+    "inline-flex items-center justify-center font-semibold whitespace-nowrap select-none",
+    "transition-all duration-150",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+    "active:scale-[0.98]",
+  ],
+  {
+    variants: {
+      variant: {
+        /** Obsidian black — primary CTA (Add to Cart, Shop Now, etc.) */
+        primary: [
+          "bg-[#0D0D0D] text-white",
+          "hover:bg-[#262626]",
+          "disabled:bg-[#0D0D0D]/40",
+        ],
+        /** White with border — secondary/ghost actions */
+        secondary: [
+          "bg-white text-foreground border border-[#D1D5DB]",
+          "hover:bg-surface hover:border-border-strong",
+        ],
+        /** Transparent with border */
+        outline: [
+          "bg-transparent text-foreground border border-border",
+          "hover:bg-muted",
+        ],
+        /** Transparent, no border */
+        ghost: [
+          "bg-transparent text-foreground",
+          "hover:bg-muted",
+        ],
+        /** Destructive */
+        danger: [
+          "bg-danger text-danger-foreground",
+          "hover:bg-danger/85",
+          "disabled:bg-danger/40",
+        ],
+      },
+      size: {
+        sm: "h-8 px-3 text-[12px] rounded-md gap-1.5",
+        md: "h-10 px-4 text-[13px] rounded-md gap-2",
+        lg: "h-11 px-6 text-[14px] rounded-lg gap-2",
+        /** Full-rounded pill — matches design's rounded-full CTAs */
+        pill: "h-11 px-7 text-[13px] rounded-full gap-2.5",
+        icon: "h-9 w-9 rounded-md",
+      },
+    },
+    defaultVariants: {
+      variant: "primary",
+      size: "md",
+    },
+  },
+);
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
   loading?: boolean;
-  /** Fill full width of parent */
   fullWidth?: boolean;
-  /** Left icon element */
   iconLeft?: React.ReactNode;
-  /** Right icon element */
   iconRight?: React.ReactNode;
+  /** Render as a child element (Radix Slot) */
+  asChild?: boolean;
 }
-
-const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    "bg-primary text-primary-foreground hover:bg-primary/85 active:bg-primary/75 disabled:bg-primary/40",
-  secondary:
-    "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/70 border border-border",
-  outline:
-    "bg-transparent text-foreground border border-border hover:bg-muted active:bg-muted/80",
-  ghost:
-    "bg-transparent text-foreground hover:bg-muted active:bg-muted/80",
-  danger:
-    "bg-danger text-danger-foreground hover:bg-danger/85 active:bg-danger/75 disabled:bg-danger/40",
-};
-
-const sizeClasses: Record<ButtonSize, string> = {
-  sm: "h-8 px-3 text-sm gap-1.5",
-  md: "h-10 px-4 text-sm gap-2",
-  lg: "h-12 px-6 text-base gap-2",
-};
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
-      variant = "primary",
-      size = "md",
+      variant,
+      size,
       loading = false,
       fullWidth = false,
       iconLeft,
       iconRight,
+      asChild = false,
       className,
       children,
       disabled,
@@ -53,20 +89,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
+    const Comp = asChild ? Slot : "button";
+
     return (
-      <button
+      <Comp
         ref={ref}
         disabled={disabled || loading}
-        aria-busy={loading}
+        aria-busy={loading || undefined}
         className={cn(
-          // Base
-          "inline-flex items-center justify-center font-medium rounded-md",
-          "transition-colors duration-150",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-          "disabled:cursor-not-allowed disabled:opacity-60 select-none",
-          "whitespace-nowrap",
-          variantClasses[variant],
-          sizeClasses[size],
+          buttonVariants({ variant, size }),
           fullWidth && "w-full",
           className,
         )}
@@ -84,7 +115,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             {iconRight}
           </>
         )}
-      </button>
+      </Comp>
     );
   },
 );
@@ -99,19 +130,10 @@ function SpinnerIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       aria-hidden="true"
     >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-      />
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
   );
 }
+
+export { buttonVariants };

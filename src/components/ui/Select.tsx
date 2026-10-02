@@ -28,7 +28,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={selectId} className="text-label text-foreground">
+          <label htmlFor={selectId} className="text-[13px] font-semibold text-foreground">
             {label}
             {props.required && (
               <span className="ml-1 text-danger" aria-hidden="true">*</span>
@@ -41,15 +41,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             id={selectId}
             aria-describedby={
-              [hint && hintId, error && errorId].filter(Boolean).join(" ") ||
-              undefined
+              [hint && hintId, error && errorId].filter(Boolean).join(" ") || undefined
             }
             aria-invalid={!!error}
             className={cn(
-              "w-full appearance-none rounded-md border border-border bg-surface-elevated",
-              "px-3 py-2 pr-9 text-body text-foreground",
+              "w-full appearance-none rounded-md border border-border bg-[#F4F5F7]",
+              "h-11 px-3 pr-9 text-[14px] text-foreground",
               "transition-colors duration-150",
-              "focus:outline-none focus:border-foreground",
+              "focus:outline-none focus:bg-white focus:border-[#0D0D0D]/40 focus:ring-1 focus:ring-[#0D0D0D]/10",
               "disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-muted",
               error && "border-danger focus:border-danger",
               className,
@@ -74,14 +73,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </div>
 
         {hint && !error && (
-          <p id={hintId} className="text-caption text-foreground-muted">
-            {hint}
-          </p>
+          <p id={hintId} className="text-[12px] text-foreground-muted">{hint}</p>
         )}
         {error && (
-          <p id={errorId} className="text-caption text-danger" role="alert">
-            {error}
-          </p>
+          <p id={errorId} className="text-[12px] text-danger" role="alert">{error}</p>
         )}
       </div>
     );

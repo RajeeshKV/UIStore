@@ -1,5 +1,5 @@
 /**
- * Kromic Store – Environment Configuration
+ * Shopey – Environment Configuration
  *
  * NEXT_PUBLIC_* variables are inlined at BUILD TIME by Next.js/Turbopack.
  * They MUST be set in Vercel → Project Settings → Environment Variables

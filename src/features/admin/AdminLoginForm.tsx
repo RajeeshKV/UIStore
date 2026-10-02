@@ -48,7 +48,7 @@ export function AdminLoginForm() {
       {apiError && (
         <p
           role="alert"
-          className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-4 py-3"
+          className="text-[13px] text-danger bg-danger/5 border border-danger/20 rounded-xl px-4 py-3"
         >
           {apiError}
         </p>
@@ -102,7 +102,7 @@ export function AdminLoginForm() {
       <div className="text-center">
         <Link
           href="/admin/forgot-password"
-          className="text-body-sm text-foreground-muted hover:text-foreground transition-colors"
+        className="text-[13px] text-[#5A6578] hover:text-[#191c1e] transition-colors"
         >
           Forgot password?
         </Link>

@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PolicyPageProps): Promise<Met
     (p) => (p.policyType ?? "").toLowerCase() === policyType.toLowerCase(),
   );
   if (!policy) return { title: "Policy Not Found" };
-  const storeName = settings?.businessName ?? "Kromic Store";
+  const storeName = settings?.businessName ?? "Shopey";
   return {
     title: `${policy.title ?? policy.policyType} — ${storeName}`,
     robots: { index: false, follow: true },

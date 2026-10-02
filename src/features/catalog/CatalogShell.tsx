@@ -24,6 +24,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from "@/types/catalog";
 import { storeApi } from "@/services/api/store";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface CatalogShellProps {
   initialProducts: StorefrontProductSummaryResponse[];
@@ -61,11 +62,8 @@ export function CatalogShell({
   const shouldReduce = useReducedMotion();
   const [isPending, startTransition] = useTransition();
 
-  // Client state — seeded from server-rendered initial values.
-  // Subsequent filter/sort/page interactions update this state + URL
-  // without a full server round-trip (window.history.pushState + client fetch).
-  const [params, setParams] = useState<CatalogParams>(initialParams);
-  const [products, setProducts] = useState(initialProducts);
+  const [params, setParams]         = useState<CatalogParams>(initialParams);
+  const [products, setProducts]     = useState(initialProducts);
   const [totalCount, setTotalCount] = useState(initialTotalCount);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [fetchError, setFetchError] = useState(false);
@@ -75,12 +73,11 @@ export function CatalogShell({
   const applyParams = useCallback(
     (next: CatalogParams) => {
       if (lockedCategory) next.CategorySlug = lockedCategory;
-      if (lockedBrand) next.BrandSlug = lockedBrand;
+      if (lockedBrand)    next.BrandSlug    = lockedBrand;
 
       setParams(next);
       setFetchError(false);
 
-      // Reflect state in URL for shareability / back-forward
       const url = buildCatalogUrl(next, baseHref);
       window.history.pushState({}, "", url);
 
@@ -108,7 +105,7 @@ export function CatalogShell({
   const handleReset = useCallback(() => {
     const next: CatalogParams = { Page: 1, PageSize: params.PageSize ?? DEFAULT_PAGE_SIZE };
     if (lockedCategory) next.CategorySlug = lockedCategory;
-    if (lockedBrand) next.BrandSlug = lockedBrand;
+    if (lockedBrand)    next.BrandSlug    = lockedBrand;
     applyParams(next);
   }, [params.PageSize, lockedCategory, lockedBrand, applyParams]);
 
@@ -120,19 +117,12 @@ export function CatalogShell({
     [handleParamChange],
   );
 
-  const handlePageChange = useCallback(
-    (page: number) => handleParamChange({ Page: page }),
-    [handleParamChange],
-  );
+  const handlePageChange  = useCallback((page: number) => handleParamChange({ Page: page }), [handleParamChange]);
+  const handleClearSearch = useCallback(() => handleParamChange({ Search: undefined, Page: 1 }), [handleParamChange]);
 
-  const handleClearSearch = useCallback(
-    () => handleParamChange({ Search: undefined, Page: 1 }),
-    [handleParamChange],
-  );
-
-  const visibleCategories = lockedCategory ? [] : categories;
-  const visibleBrands = lockedBrand ? [] : brands;
-  const hasVisibleFilters = visibleCategories.length > 0 || visibleBrands.length > 0;
+  const visibleCategories  = lockedCategory ? [] : categories;
+  const visibleBrands      = lockedBrand    ? [] : brands;
+  const hasVisibleFilters  = visibleCategories.length > 0 || visibleBrands.length > 0;
 
   const filterProps = {
     params,
@@ -144,62 +134,73 @@ export function CatalogShell({
   };
 
   return (
-    <div className="bg-background">
-      <div className="container-x mx-auto">
-
-        {/* Breadcrumb */}
-        {breadcrumbs && breadcrumbs.length > 0 && (
-          <div className="pt-6">
-            <CatalogBreadcrumb items={breadcrumbs} />
+    <div className="bg-[#f8f9fb] min-h-screen">
+      {/* ── Page header band — design reference architectural style ──── */}
+      <section className="w-full bg-[#f8f9fb] py-8 border-b border-[#e1e2e4]">
+        <div className="px-5 md:px-8 lg:px-10">
+          {/* Breadcrumb + status */}
+          <div className="flex items-center justify-between pb-5">
+            {breadcrumbs && breadcrumbs.length > 0 && (
+              <CatalogBreadcrumb items={breadcrumbs} />
+            )}
+            {/* Live indicator — matches design "Live Inventory Sync" */}
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#ba0918] animate-pulse" aria-hidden="true" />
+              <span className="text-[11px] font-bold tracking-widest uppercase text-[#444748]">
+                Live Inventory
+              </span>
+            </div>
           </div>
-        )}
 
-        {/* Page heading */}
-        <div className="pt-4 pb-0">
-          <h1 className="text-h3 font-bold text-foreground">{heading}</h1>
-          {description && (
-            <p className="mt-1 text-body-sm text-foreground-muted max-w-2xl">
-              {description}
-            </p>
-          )}
+          {/* Hero header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
+            <div>
+              <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#444748] mb-1">
+                Catalog Index
+              </p>
+              <div className="flex items-baseline gap-4">
+                <h1 className="text-[clamp(1.75rem,4vw,3rem)] font-extrabold text-[#191c1e] tracking-tight leading-none">
+                  {heading}
+                </h1>
+                {totalCount > 0 && (
+                  <span className="text-[16px] font-semibold text-[#444748]">
+                    / {totalCount} items
+                  </span>
+                )}
+              </div>
+              {description && (
+                <p className="mt-2 text-[14px] text-[#444748] max-w-2xl leading-relaxed">
+                  {description}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* Toolbar */}
-        <div ref={resultsRef}>
-          <CatalogToolbar
-            params={params}
-            totalCount={totalCount}
-            loading={isPending}
-            onSortChange={handleSortChange}
-            onOpenFilters={() => setFilterDrawerOpen(true)}
-            onClearSearch={params.Search ? handleClearSearch : undefined}
-          />
-        </div>
+      {/* ── Toolbar ───────────────────────────────────────────────────── */}
+      <div ref={resultsRef} className="px-5 md:px-8 lg:px-10">
+        <CatalogToolbar
+          params={params}
+          totalCount={totalCount}
+          loading={isPending}
+          onSortChange={handleSortChange}
+          onOpenFilters={() => setFilterDrawerOpen(true)}
+          onClearSearch={params.Search ? handleClearSearch : undefined}
+        />
+      </div>
 
-        {/* Main layout */}
-        <div className={cn("flex gap-8 py-6", !hasVisibleFilters && "lg:gap-0")}>
+      {/* ── Main layout: sidebar + product grid ──────────────────────── */}
+      <div className="px-5 md:px-8 lg:px-10 py-6">
+        <div className={cn("flex gap-8", !hasVisibleFilters && "lg:gap-0")}>
 
-          {/* Desktop sidebar */}
+          {/* Desktop filter sidebar */}
           {hasVisibleFilters && <CatalogFilterSidebar {...filterProps} />}
 
           {/* Product area */}
           <div className="flex-1 min-w-0">
             {isPending ? (
-              <div
-                aria-busy="true"
-                aria-label="Loading products"
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3"
-              >
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} aria-hidden="true" className="flex flex-col gap-3">
-                    <div className="animate-skeleton bg-muted aspect-square rounded-lg" />
-                    <div className="animate-skeleton bg-muted h-3 w-3/4 rounded" />
-                    <div className="animate-skeleton bg-muted h-4 w-full rounded" />
-                    <div className="animate-skeleton bg-muted h-4 w-2/3 rounded" />
-                    <div className="animate-skeleton bg-muted h-9 w-full rounded-md" />
-                  </div>
-                ))}
-              </div>
+              <CatalogGridSkeleton />
             ) : (
               <motion.div
                 key={`${params.Page}-${params.SortBy}-${params.Search}`}
@@ -222,13 +223,13 @@ export function CatalogShell({
 
             {/* Pagination */}
             {!fetchError && totalPages > 1 && !isPending && (
-              <div className="mt-10 mb-4">
+              <div className="mt-12 mb-4 flex flex-col items-center gap-3">
                 <Pagination
                   page={params.Page ?? 1}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
-                <p className="text-center text-caption text-foreground-muted mt-3">
+                <p className="text-[12px] text-[#444748]">
                   Page {params.Page ?? 1} of {totalPages} &mdash;{" "}
                   {totalCount} product{totalCount !== 1 ? "s" : ""}
                 </p>
@@ -246,6 +247,28 @@ export function CatalogShell({
           onClose={() => setFilterDrawerOpen(false)}
         />
       )}
+    </div>
+  );
+}
+
+// ── Loading skeleton for product grid ────────────────────────────────────────
+
+function CatalogGridSkeleton() {
+  return (
+    <div
+      aria-busy="true"
+      aria-label="Loading products"
+      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+    >
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} aria-hidden="true" className="flex flex-col gap-2">
+          <Skeleton className="aspect-square w-full rounded-2xl" />
+          <Skeleton className="h-3.5 w-3/4" />
+          <Skeleton className="h-3.5 w-full" />
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-9 w-full rounded-lg" />
+        </div>
+      ))}
     </div>
   );
 }

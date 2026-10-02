@@ -71,7 +71,7 @@ interface FieldMeta {
 
 const FIELD_META: Record<string, FieldMeta> = {
   apiKey:        { label: "API Key",       secret: true,  hint: "Write-only — leave blank to keep the current value." },
-  senderId:      { label: "Sender ID",     secret: false, hint: "Registered 6-character alphabetic ID (e.g. KROMIC)." },
+  senderId: { label: "Sender ID", secret: false, hint: "Registered 6-character alphabetic Sender ID." },
   accountSid:    { label: "Account SID",   secret: false, hint: "From your Twilio console dashboard." },
   authToken:     { label: "Auth Token",    secret: true,  hint: "Write-only — leave blank to keep the current value." },
   serviceSid:    { label: "Service SID",   secret: false, hint: "Twilio Messaging Service SID (starts with MG…)." },
@@ -95,7 +95,7 @@ function ProviderInstructions({ provider }: { provider: string }) {
         </p>
         <ul className="list-disc list-inside text-caption space-y-1">
           <li>Sign in at <strong>free2sms.com</strong> → Developer → API and copy your API key.</li>
-          <li>Register a <strong>Sender ID</strong> (6-character alphabetic, e.g. KROMIC).</li>
+          <li>Register a <strong>Sender ID</strong> (6-character alphabetic, e.g. SHOPEY).</li>
           <li>Create and register a DLT template on the TRAI portal — the body must include{" "}
             <code className="text-[11px] bg-blue-100 px-1 rounded">{"{#var#}"}</code> where the code goes.
           </li>

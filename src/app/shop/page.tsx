@@ -24,7 +24,7 @@ export async function generateMetadata({
 
   const settingsResult = await storeApi.getSettings();
   const settings = settingsResult.ok ? settingsResult.data : null;
-  const storeName = settings?.businessName ?? "Kromic Store";
+  const storeName = settings?.businessName ?? "Shopey";
 
   const title = search
     ? `Search: "${search}" — ${storeName}`

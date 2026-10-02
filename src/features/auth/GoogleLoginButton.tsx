@@ -120,7 +120,7 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
   return (
     <div className="flex flex-col gap-3">
       {error && (
-        <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-4 py-3 text-center">
+        <p role="alert" className="text-[13px] text-danger bg-danger/5 border border-danger/20 rounded-xl px-4 py-3 text-center">
           {error}
         </p>
       )}
@@ -132,12 +132,12 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
         aria-busy={loading}
         aria-label="Continue with Google"
         className={cn(
-          "relative flex h-12 w-full items-center justify-center gap-3 rounded-md",
-          "border border-border bg-surface-elevated",
-          "text-body font-medium text-foreground",
+          "relative flex h-12 w-full items-center justify-center gap-3 rounded-xl",
+          "border border-[#E5E7EB] bg-white",
+          "text-[14px] font-semibold text-[#191c1e]",
           "transition-all duration-150",
-          "hover:bg-muted hover:border-border-strong",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+          "hover:bg-[#f3f4f6] hover:border-[#c4c7c7] hover:shadow-sm",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D]",
           "disabled:cursor-not-allowed disabled:opacity-60",
           className,
         )}

@@ -21,16 +21,20 @@ export default async function ResetPasswordPage() {
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>
-      <div className="container-x mx-auto py-16 max-w-md min-h-[70vh]">
-        <div className="mb-8">
-          <h1 className="text-h2 font-bold text-foreground">Set new password</h1>
-          <p className="mt-2 text-body-sm text-foreground-muted">
-            Enter and confirm your new password.
-          </p>
+      <div className="min-h-[80vh] flex items-center justify-center py-16 px-4 bg-[#f8f9fb]">
+        <div className="w-full max-w-[400px]">
+          <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-[0_8px_32px_rgba(0,0,0,0.06)] px-8 py-10">
+            <div className="mb-8">
+              <h1 className="text-[22px] font-extrabold text-[#191c1e] tracking-tight">Set new password</h1>
+              <p className="mt-1.5 text-[13px] text-[#444748]">
+                Enter and confirm your new password.
+              </p>
+            </div>
+            <Suspense>
+              <ResetPasswordForm />
+            </Suspense>
+          </div>
         </div>
-        <Suspense>
-          <ResetPasswordForm />
-        </Suspense>
       </div>
     </StorefrontLayout>
   );

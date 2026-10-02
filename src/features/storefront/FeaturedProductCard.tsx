@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, ShoppingBag } from "lucide-react";
 import { useState } from "react";
+import { motion } from "motion/react";
 import { cn, formatPrice, discountPercent } from "@/lib/utils";
 import type { StorefrontProductSummaryResponse } from "@/types/api";
 import { normalizeStock } from "@/types/api";
@@ -17,9 +18,12 @@ interface FeaturedProductCardProps {
 }
 
 /**
- * Horizontal card used only on the homepage Featured Products strip.
- * Layout: [square image] | [name · price · Add to Cart]
- * Matches the reference design exactly.
+ * Matches the design reference exactly:
+ * - bg-white rounded-2xl p-5, border, subtle shadow
+ * - Discount badge top-left (crimson pill)
+ * - Wishlist top-right (circle button)
+ * - Image inside a contained rounded-xl bg area (not edge-to-edge)
+ * - Title, price row, Add to Cart CTA
  */
 export function FeaturedProductCard({
   product,
@@ -28,19 +32,19 @@ export function FeaturedProductCard({
   onAddToCart,
   eager = false,
 }: FeaturedProductCardProps) {
-  const [imgError, setImgError] = useState(false);
+  const [imgError, setImgError]         = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
 
   const effectiveCurrency = product.currency ?? currency ?? "INR";
-  const effectiveLocale = locale ?? "en-IN";
+  const effectiveLocale   = locale ?? "en-IN";
 
   const discount =
     product.compareAtPrice && product.compareAtPrice > product.price
       ? discountPercent(product.price, product.compareAtPrice)
       : 0;
 
-  const stockState = normalizeStock(product.stockAvailability);
+  const stockState   = normalizeStock(product.stockAvailability);
   const isOutOfStock = stockState === "OutOfStock";
 
   const priceStr = formatPrice(product.price, effectiveCurrency, effectiveLocale);
@@ -59,116 +63,114 @@ export function FeaturedProductCard({
   };
 
   return (
-    <article
+    <motion.article
+      whileHover={{ y: -3, boxShadow: "0 16px 40px rgba(0,0,0,0.10)" }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "group relative flex flex-row items-stretch rounded-xl overflow-hidden border border-border bg-background",
-        "hover:border-border-strong hover:shadow-md transition-all duration-200",
+        // Design reference: bg-white rounded-2xl p-5 border shadow-sm
+        "group relative flex flex-col bg-white rounded-2xl p-4",
+        "border border-[#e1e2e4]/60 shadow-sm",
+        "transition-shadow duration-300",
         isOutOfStock && "opacity-70",
       )}
     >
-      {/* Badges */}
-      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 pointer-events-none">
-        {product.isFeatured && !discount && !isOutOfStock && (
-          <span className="rounded bg-foreground px-1.5 py-0.5 text-[9px] font-bold text-background leading-none">
-            New
-          </span>
-        )}
-        {discount > 0 && !isOutOfStock && (
-          <span className="rounded bg-danger px-1.5 py-0.5 text-[9px] font-bold text-white leading-none">
+      {/* ── Top row: badge left + wishlist right ────────────────────────── */}
+      <div className="flex items-center justify-between w-full mb-3">
+        {/* Discount badge — crimson pill */}
+        {discount > 0 && !isOutOfStock ? (
+          <span className="bg-[#E02E2E] text-white text-[10px] px-2.5 py-0.5 rounded-full font-extrabold tracking-wider uppercase shadow-sm">
             -{discount}%
           </span>
-        )}
-        {isOutOfStock && (
-          <span className="rounded bg-foreground/75 px-1.5 py-0.5 text-[9px] font-bold text-background leading-none">
+        ) : isOutOfStock ? (
+          <span className="bg-[#f3f4f6] text-[#5A6578] text-[10px] px-2.5 py-0.5 rounded-full font-semibold">
             Out of stock
           </span>
+        ) : (
+          <span />
         )}
+
+        {/* Wishlist button */}
+        <button
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          aria-pressed={isWishlisted}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsWishlisted((w) => !w); }}
+          className="w-8 h-8 rounded-full bg-[#f3f4f6] text-[#5A6578] hover:text-[#E02E2E] hover:bg-[#fff0f0] flex items-center justify-center transition-all duration-150"
+        >
+          <Heart className={cn("size-3.5", isWishlisted && "fill-[#E02E2E] text-[#E02E2E]")} />
+        </button>
       </div>
 
-      {/* Wishlist */}
-      <button
-        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        aria-pressed={isWishlisted}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsWishlisted((w) => !w);
-        }}
-        className={cn(
-          "absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full",
-          "bg-background/80 border border-border/60 transition-colors duration-150",
-        )}
-      >
-        <Heart
-          className={cn(
-            "size-3 transition-colors",
-            isWishlisted ? "fill-danger text-danger" : "text-foreground-muted",
-          )}
-        />
-      </button>
-
-      {/* Square image — fixed width */}
+      {/* ── Image — contained in a rounded bg area ───────────────────────── */}
       <Link
         href={`/products/${product.slug}`}
         aria-label={`View ${product.name}`}
-        className="relative shrink-0 w-[80px] bg-surface overflow-hidden"
+        className="block w-full rounded-xl bg-[#f8f9fb] overflow-hidden mb-4 group-hover:bg-[#f3f4f6] transition-colors"
+        style={{ aspectRatio: "1/1" }}
       >
         {product.primaryImageUrl && !imgError ? (
-          <Image
-            src={product.primaryImageUrl}
-            alt={product.name ?? "Product"}
-            fill
-            sizes="100px"
-            className="object-contain object-center transition-transform duration-300 group-hover:scale-105 p-2"
-            loading={eager ? "eager" : "lazy"}
-            onError={() => setImgError(true)}
-          />
+          <div className="relative w-full h-full p-3">
+            <Image
+              src={product.primaryImageUrl}
+              alt={product.name ?? "Product"}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+              className="object-contain transition-transform duration-300 group-hover:scale-105 p-1"
+              loading={eager ? "eager" : "lazy"}
+              onError={() => setImgError(true)}
+            />
+          </div>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <ShoppingBag className="size-6 text-foreground-muted/20" aria-hidden="true" />
+          <div className="w-full h-full flex items-center justify-center">
+            <ShoppingBag className="size-10 text-[#D1D5DB]" aria-hidden="true" />
           </div>
         )}
       </Link>
 
-      {/* Info — fills remaining width */}
-      <div className="flex flex-col flex-1 min-w-0 px-3 py-3 gap-1.5 justify-between">
-        {/* Name */}
+      {/* ── Product info ──────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-1 flex-1">
         <Link
           href={`/products/${product.slug}`}
-          className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 hover:text-foreground/70 transition-colors pr-5"
+          className="text-[13px] font-bold text-[#191c1e] line-clamp-1 hover:text-[#0D0D0D]/70 transition-colors leading-snug"
         >
           {product.name}
         </Link>
 
-        {/* Price */}
-        <div className="flex items-baseline gap-1.5 flex-wrap">
-          <span className="text-[13px] font-bold text-foreground">{priceStr}</span>
+        {/* Price row */}
+        <div className="flex items-baseline gap-2 mt-0.5">
+          <span className="text-[20px] font-black text-[#191c1e] leading-none tabular-nums">
+            {priceStr}
+          </span>
           {comparePriceStr && (
-            <span className="text-[11px] text-foreground-muted line-through">{comparePriceStr}</span>
+            <span className="text-[12px] text-[#5A6578] line-through tabular-nums">
+              {comparePriceStr}
+            </span>
           )}
         </div>
-
-        {/* Add to Cart */}
-        {!isOutOfStock && product.canPurchase && onAddToCart ? (
-          <button
-            onClick={handleAddToCart}
-            aria-label={`Add ${product.name} to cart`}
-            disabled={addingToCart}
-            className={cn(
-              "w-full flex items-center justify-center gap-1.5",
-              "h-8 rounded-md text-[11px] font-semibold",
-              "bg-foreground text-background",
-              "hover:bg-foreground/85 active:scale-[0.98] transition-all duration-150",
-              "disabled:opacity-60",
-            )}
-          >
-            <ShoppingBag className="size-3" aria-hidden="true" />
-            {addingToCart ? "Adding..." : "Add to Cart"}
-          </button>
-        ) : isOutOfStock ? (
-          <p className="text-[11px] text-center text-foreground-muted">Out of stock</p>
-        ) : null}
       </div>
-    </article>
+
+      {/* ── Add to Cart CTA ───────────────────────────────────────────────── */}
+      {!isOutOfStock && product.canPurchase && onAddToCart ? (
+        <button
+          onClick={handleAddToCart}
+          aria-label={`Add ${product.name} to cart`}
+          disabled={addingToCart}
+          className={cn(
+            "mt-4 w-full flex items-center justify-center gap-2",
+            "py-3 px-4 rounded-xl",
+            "bg-[#0D0D0D] text-white text-[13px] font-bold tracking-wide",
+            "hover:bg-[#262626] active:scale-[0.98] transition-all duration-150",
+            "shadow-md hover:shadow-lg",
+            "disabled:opacity-60",
+          )}
+        >
+          <ShoppingBag className="size-4" aria-hidden="true" />
+          {addingToCart ? "Adding…" : "Add to Cart"}
+        </button>
+      ) : isOutOfStock ? (
+        <p className="mt-4 text-[12px] text-center text-[#5A6578] py-2.5 rounded-xl bg-[#f3f4f6]">
+          Out of stock
+        </p>
+      ) : null}
+    </motion.article>
   );
 }

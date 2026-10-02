@@ -29,11 +29,12 @@ const BREADCRUMBS: Record<string, string> = {
   "/admin/settings/integrations/google": "Google OAuth",
   "/admin/settings/integrations/email": "Email",
   "/admin/settings/integrations/sms": "SMS",
+  "/admin/carousel": "Carousel",
 };
 
 export function AdminTopBar({ onMenuClick }: AdminTopBarProps) {
   const { admin, logout } = useAdminAuth();
-  const pathname = usePathname();
+  const pathname  = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const pageTitle = BREADCRUMBS[pathname] ?? "Admin";
@@ -42,11 +43,13 @@ export function AdminTopBar({ onMenuClick }: AdminTopBarProps) {
       ? `${admin.firstName}${admin.lastName ? ` ${admin.lastName}` : ""}`
       : admin?.email ?? "Admin";
 
+  const initials = (adminName[0] ?? "A").toUpperCase();
+
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/95 backdrop-blur-sm px-4">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-[#e1e2e4] bg-white/95 backdrop-blur-sm px-4">
       <SidebarToggle onClick={onMenuClick} />
 
-      <h1 className="text-h4 font-semibold text-foreground flex-1">{pageTitle}</h1>
+      <h1 className="text-[16px] font-bold text-[#191c1e] flex-1 tracking-tight">{pageTitle}</h1>
 
       {/* Admin profile menu */}
       <div className="relative">
@@ -55,36 +58,32 @@ export function AdminTopBar({ onMenuClick }: AdminTopBarProps) {
           aria-expanded={menuOpen}
           aria-label="Admin account menu"
           className={cn(
-            "flex items-center gap-2 rounded-md px-3 py-1.5",
-            "text-body-sm text-foreground-muted hover:bg-muted hover:text-foreground",
+            "flex items-center gap-2 rounded-xl px-2 py-1.5",
+            "text-[13px] text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e]",
             "transition-colors duration-150",
           )}
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-caption font-semibold">
-            <User className="size-3.5" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0D0D0D] text-white text-[11px] font-bold">
+            {initials}
           </div>
-          <span className="hidden sm:block max-w-32 truncate">{adminName}</span>
+          <span className="hidden sm:block max-w-32 truncate font-medium">{adminName}</span>
         </button>
 
         {menuOpen && (
           <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setMenuOpen(false)}
-              aria-hidden="true"
-            />
-            <div className="absolute right-0 top-full mt-1 z-20 w-48 rounded-lg border border-border bg-background shadow-md py-1">
-              <div className="px-3 py-2 border-b border-border">
-                <p className="text-body-sm font-medium text-foreground truncate">{adminName}</p>
+            <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+            <div className="absolute right-0 top-full mt-2 z-20 w-52 rounded-2xl border border-[#e1e2e4] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5">
+              <div className="px-4 py-3 border-b border-[#e1e2e4]">
+                <p className="text-[13px] font-bold text-[#191c1e] truncate">{adminName}</p>
                 {admin?.email && (
-                  <p className="text-caption text-foreground-muted truncate">{admin.email}</p>
+                  <p className="text-[11px] text-[#5A6578] truncate">{admin.email}</p>
                 )}
               </div>
               <button
                 onClick={() => { setMenuOpen(false); void logout(); }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-body-sm text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
+                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#444748] hover:bg-danger/5 hover:text-danger transition-colors"
               >
-                <LogOut className="size-3.5" />
+                <LogOut className="size-4" />
                 Sign out
               </button>
             </div>

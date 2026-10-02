@@ -38,26 +38,20 @@ export function AdminTable<T>({
   className,
 }: AdminTableProps<T>) {
   if (error) {
-    return (
-      <ErrorState
-        title="Failed to load data"
-        description={error}
-        onRetry={onRetry}
-      />
-    );
+    return <ErrorState title="Failed to load data" description={error} onRetry={onRetry} />;
   }
 
   return (
-    <div className={cn("rounded-lg border border-border overflow-hidden", className)}>
+    <div className={cn("rounded-2xl border border-[#e1e2e4] overflow-hidden bg-white", className)}>
       <div className="overflow-x-auto">
-        <table className="w-full text-body-sm">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="border-b border-border bg-surface">
+            <tr className="border-b border-[#e1e2e4] bg-[#f8f9fb]">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-4 py-3 text-left text-label font-semibold text-foreground-muted uppercase tracking-wide whitespace-nowrap",
+                    "px-4 py-3 text-left text-[11px] font-bold text-[#444748] uppercase tracking-wider whitespace-nowrap",
                     col.className,
                   )}
                 >
@@ -69,7 +63,7 @@ export function AdminTable<T>({
           <tbody>
             {loading ? (
               Array.from({ length: skeletonRows }).map((_, i) => (
-                <tr key={i} className="border-b border-border last:border-none">
+                <tr key={i} className="border-b border-[#e1e2e4] last:border-none">
                   {columns.map((col) => (
                     <td key={col.key} className="px-4 py-3">
                       <Skeleton className="h-4 w-full max-w-xs" />
@@ -80,23 +74,17 @@ export function AdminTable<T>({
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="py-12 text-center">
-                  <EmptyState
-                    title={emptyTitle}
-                    description={emptyDescription}
-                  />
+                  <EmptyState title={emptyTitle} description={emptyDescription} compact />
                 </td>
               </tr>
             ) : (
               rows.map((row) => (
                 <tr
                   key={rowKey(row)}
-                  className="border-b border-border last:border-none hover:bg-surface/50 transition-colors"
+                  className="border-b border-[#e1e2e4] last:border-none hover:bg-[#f8f9fb] transition-colors"
                 >
                   {columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className={cn("px-4 py-3 text-foreground", col.className)}
-                    >
+                    <td key={col.key} className={cn("px-4 py-3 text-[#191c1e]", col.className)}>
                       {col.render(row)}
                     </td>
                   ))}

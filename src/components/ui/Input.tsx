@@ -7,21 +7,20 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   hint?: string;
-  /** Icon shown on the left side */
   iconLeft?: React.ReactNode;
-  /** Icon or element shown on the right side */
   iconRight?: React.ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, hint, iconLeft, iconRight, className, id, type, step, onKeyDown, ...props }, ref) => {
+  (
+    { label, error, hint, iconLeft, iconRight, className, id, type, step, onKeyDown, ...props },
+    ref,
+  ) => {
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const hintId = `${inputId}-hint`;
     const errorId = `${inputId}-error`;
 
-    // Convert type="number" → type="text" with numeric key filtering.
-    // Removes browser spin arrows without CSS hacks; works globally for every <Input type="number">.
     const isNumeric = type === "number";
     const allowDecimal = isNumeric && step !== undefined && String(step) !== "1";
     const resolvedType = isNumeric ? "text" : type;
@@ -30,15 +29,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
       if (isNumeric) {
         const allowed = [
-          "Backspace", "Delete", "Tab", "Escape", "Enter",
-          "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End",
+          "Backspace","Delete","Tab","Escape","Enter",
+          "ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End",
         ];
         const isDigit = /^\d$/.test(e.key);
         const isMinus = e.key === "-" && e.currentTarget.selectionStart === 0;
-        const isDecimalPoint =
-          allowDecimal && e.key === "." && !e.currentTarget.value.includes(".");
-        const isCtrl = e.ctrlKey || e.metaKey; // allow Ctrl+A, Ctrl+C, Ctrl+V
-
+        const isDecimalPoint = allowDecimal && e.key === "." && !e.currentTarget.value.includes(".");
+        const isCtrl = e.ctrlKey || e.metaKey;
         if (!allowed.includes(e.key) && !isDigit && !isMinus && !isDecimalPoint && !isCtrl) {
           e.preventDefault();
         }
@@ -49,7 +46,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-label text-foreground">
+          <label htmlFor={inputId} className="text-[13px] font-semibold text-foreground">
             {label}
             {props.required && (
               <span className="ml-1 text-danger" aria-hidden="true">*</span>
@@ -75,32 +72,31 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             }
             aria-invalid={!!error}
             className={cn(
-              "w-full rounded-md border border-border bg-surface-elevated",
-              "px-3 py-2 text-body text-foreground",
-              "placeholder:text-foreground-muted",
+              // Base — matches design: rounded-md, surface-container fill, clean border
+              "w-full rounded-md border border-border bg-[#F4F5F7]",
+              "h-11 px-3 text-[14px] text-foreground",
+              "placeholder:text-[#5A6578]",
               "transition-colors duration-150",
-              "focus:outline-none focus:border-foreground",
+              "focus:outline-none focus:bg-white focus:border-[#0D0D0D]/40 focus:ring-1 focus:ring-[#0D0D0D]/10",
               "disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-muted",
-              error && "border-danger focus:border-danger",
-              iconLeft != null && "pl-9",
-              iconRight != null && "pr-9",
+              error && "border-danger focus:border-danger focus:ring-danger/10",
+              iconLeft != null && "pl-10",
+              iconRight != null && "pr-10",
               className,
             )}
             {...props}
           />
 
           {iconRight && (
-            <span className="absolute right-3 text-foreground-muted">
-              {iconRight}
-            </span>
+            <span className="absolute right-3 text-foreground-muted">{iconRight}</span>
           )}
         </div>
 
         {hint && !error && (
-          <p id={hintId} className="text-caption text-foreground-muted">{hint}</p>
+          <p id={hintId} className="text-[12px] text-foreground-muted">{hint}</p>
         )}
         {error && (
-          <p id={errorId} className="text-caption text-danger" role="alert">{error}</p>
+          <p id={errorId} className="text-[12px] text-danger" role="alert">{error}</p>
         )}
       </div>
     );

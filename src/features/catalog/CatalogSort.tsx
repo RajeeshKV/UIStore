@@ -1,43 +1,82 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { ChevronDown, Check } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { SORT_OPTIONS } from "@/types/catalog";
+import { useState } from "react";
 
 interface CatalogSortProps {
-  value: string; // e.g. "price:asc"
+  value: string;
   onChange: (value: string) => void;
   className?: string;
 }
 
 export function CatalogSort({ value, onChange, className }: CatalogSortProps) {
+  const [open, setOpen] = useState(false);
+  const selected = SORT_OPTIONS.find((o) => o.value === value) ?? SORT_OPTIONS[0];
+
   return (
-    <div className={cn("relative inline-flex items-center", className)}>
-      <label htmlFor="catalog-sort" className="sr-only">
-        Sort products
-      </label>
-      <select
-        id="catalog-sort"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={cn(
-          "appearance-none h-9 pl-3 pr-8 rounded-md",
-          "border border-border bg-surface-elevated",
-          "text-body-sm text-foreground",
-          "focus:outline-none focus:border-foreground",
-          "transition-colors duration-150 cursor-pointer",
+    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+      <DropdownMenu.Trigger asChild>
+        <button
+          className={cn(
+            "flex items-center gap-2 h-11 px-5 rounded-full",
+            "bg-white border border-[#e1e2e4] shadow-sm",
+            "text-[13px] font-medium text-[#191c1e]",
+            "hover:shadow-md transition-all duration-150",
+            "focus-visible:outline-2 focus-visible:outline-[#0D0D0D]",
+            className,
+          )}
+          aria-label="Sort products"
+        >
+          <span className="text-[#444748]">Sort:</span>
+          <span className="font-bold text-[#0D0D0D]">{selected.label}</span>
+          <ChevronDown
+            className={cn(
+              "size-4 text-[#444748] transition-transform duration-200",
+              open && "rotate-180",
+            )}
+            aria-hidden="true"
+          />
+        </button>
+      </DropdownMenu.Trigger>
+
+      <AnimatePresence>
+        {open && (
+          <DropdownMenu.Portal forceMount>
+            <DropdownMenu.Content asChild align="end" sideOffset={6}>
+              <motion.div
+                className="z-50 w-52 rounded-2xl bg-white border border-[#e1e2e4] shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5 overflow-hidden"
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <DropdownMenu.Item
+                    key={opt.value}
+                    onSelect={() => onChange(opt.value)}
+                    className={cn(
+                      "flex items-center justify-between px-4 py-2.5 cursor-pointer outline-none",
+                      "text-[13px] transition-colors",
+                      opt.value === value
+                        ? "text-[#0D0D0D] font-bold bg-[#f3f4f6]"
+                        : "text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e]",
+                    )}
+                  >
+                    {opt.label}
+                    {opt.value === value && (
+                      <Check className="size-3.5 text-[#0D0D0D] shrink-0" aria-hidden="true" />
+                    )}
+                  </DropdownMenu.Item>
+                ))}
+              </motion.div>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
         )}
-      >
-        {SORT_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted pointer-events-none"
-        aria-hidden="true"
-      />
-    </div>
+      </AnimatePresence>
+    </DropdownMenu.Root>
   );
 }

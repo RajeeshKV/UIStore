@@ -10,33 +10,24 @@ interface PaginationProps {
   className?: string;
 }
 
-export function Pagination({
-  page,
-  totalPages,
-  onPageChange,
-  className,
-}: PaginationProps) {
+export function Pagination({ page, totalPages, onPageChange, className }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const pages = buildPageNumbers(page, totalPages);
 
   return (
-    <nav
-      aria-label="Pagination"
-      className={cn("flex items-center justify-center gap-1", className)}
-    >
-      <button
+    <nav aria-label="Pagination" className={cn("flex items-center justify-center gap-1.5", className)}>
+      <PaginationArrow
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         aria-label="Previous page"
-        className={pageButtonBase}
       >
         <ChevronLeft className="size-4" />
-      </button>
+      </PaginationArrow>
 
       {pages.map((p, i) =>
         p === "…" ? (
-          <span key={`ellipsis-${i}`} className="px-2 text-foreground-muted select-none">
+          <span key={`ellipsis-${i}`} className="px-1.5 text-[13px] text-foreground-muted select-none">
             …
           </span>
         ) : (
@@ -46,10 +37,11 @@ export function Pagination({
             aria-label={`Page ${p}`}
             aria-current={p === page ? "page" : undefined}
             className={cn(
-              pageButtonBase,
+              "flex h-9 min-w-[36px] items-center justify-center rounded-lg",
+              "text-[13px] font-medium transition-colors duration-150 px-2",
               p === page
-                ? "bg-primary text-primary-foreground border-primary"
-                : "hover:bg-muted",
+                ? "bg-[#0D0D0D] text-white border border-[#0D0D0D]"
+                : "border border-border text-foreground hover:bg-surface-container",
             )}
           >
             {p}
@@ -57,36 +49,54 @@ export function Pagination({
         ),
       )}
 
-      <button
+      <PaginationArrow
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         aria-label="Next page"
-        className={pageButtonBase}
       >
         <ChevronRight className="size-4" />
-      </button>
+      </PaginationArrow>
     </nav>
   );
 }
 
-const pageButtonBase =
-  "flex h-8 min-w-8 items-center justify-center rounded-md border border-border " +
-  "text-body-sm text-foreground transition-colors duration-150 " +
-  "disabled:opacity-40 disabled:cursor-not-allowed px-2";
+function PaginationArrow({
+  children,
+  disabled,
+  onClick,
+  "aria-label": ariaLabel,
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+  onClick: () => void;
+  "aria-label": string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      className={cn(
+        "flex h-9 w-9 items-center justify-center rounded-lg",
+        "border border-border text-foreground",
+        "hover:bg-surface-container transition-colors duration-150",
+        "disabled:opacity-40 disabled:cursor-not-allowed",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
 
-function buildPageNumbers(
-  current: number,
-  total: number,
-): (number | "…")[] {
+function buildPageNumbers(current: number, total: number): (number | "…")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
 
   const pages: (number | "…")[] = [];
-
   pages.push(1);
   if (current > 3) pages.push("…");
 
   const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
+  const end   = Math.min(total - 1, current + 1);
   for (let i = start; i <= end; i++) pages.push(i);
 
   if (current < total - 2) pages.push("…");

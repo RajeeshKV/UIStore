@@ -1,3 +1,8 @@
+---
+name: frontend-ui-revamp
+description: Strictly revamp existing frontend screens using the project's Designs directory. Use the provided example HTML, design MD, and image references as visual sources of truth while preserving all existing functionality. Use Tailwind CSS, shadcn/ui, Radix UI, Lucide React, and Motion for React. Do not add functionality or change APIs.
+---
+
 # Frontend UI Revamp Skill
 
 ## PURPOSE

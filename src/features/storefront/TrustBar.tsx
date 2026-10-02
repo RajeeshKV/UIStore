@@ -2,7 +2,7 @@
 
 import { Truck, ShieldCheck, RotateCcw, HeadphonesIcon } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { staggerContainer, fadeUp } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 import type { PublicBusinessSettingsResponse } from "@/types/api";
 
 interface TrustBarProps {
@@ -18,30 +18,14 @@ interface Benefit {
 function buildBenefits(settings?: PublicBusinessSettingsResponse | null): Benefit[] {
   const threshold = settings?.delivery?.freeShippingThreshold;
   const freeShipLabel = threshold
-    ? `On orders above ₹${threshold.toLocaleString("en-IN")}`
+    ? `Above ₹${threshold.toLocaleString("en-IN")}`
     : "On qualifying orders";
 
   return [
-    {
-      icon: <Truck className="size-5" aria-hidden="true" />,
-      title: "Free Shipping",
-      description: freeShipLabel,
-    },
-    {
-      icon: <ShieldCheck className="size-5" aria-hidden="true" />,
-      title: "Secure Payments",
-      description: "Razorpay powered",
-    },
-    {
-      icon: <RotateCcw className="size-5" aria-hidden="true" />,
-      title: "Easy Returns",
-      description: "Hassle-free returns",
-    },
-    {
-      icon: <HeadphonesIcon className="size-5" aria-hidden="true" />,
-      title: "Dedicated Support",
-      description: "We're here to help",
-    },
+    { icon: <Truck className="size-4" />,           title: "Free Shipping",   description: freeShipLabel },
+    { icon: <ShieldCheck className="size-4" />,     title: "Secure Payments", description: "Razorpay powered" },
+    { icon: <RotateCcw className="size-4" />,       title: "Easy Returns",    description: "Hassle-free" },
+    { icon: <HeadphonesIcon className="size-4" />,  title: "Support 24/7",    description: "We're here to help" },
   ];
 }
 
@@ -50,33 +34,57 @@ export function TrustBar({ settings }: TrustBarProps) {
   const benefits = buildBenefits(settings);
 
   return (
-    <section aria-label="Service benefits" className="bg-surface">
-      <div className="container-x mx-auto py-2.5">
-        <motion.ul
-          role="list"
-          variants={shouldReduce ? undefined : staggerContainer(0.06, 0.05)}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-20px" }}
-          className="flex items-center justify-between gap-2 flex-wrap"
-        >
-          {benefits.map((b) => (
+    <section aria-label="Service benefits" className="w-full px-5 md:px-8 lg:px-10 py-3 md:py-4">
+      <motion.div
+        initial={shouldReduce ? undefined : { opacity: 0, y: 8 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-20px" }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="bg-white rounded-2xl border border-[#e1e2e4]/50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] px-3 py-3 md:px-5 md:py-4"
+      >
+        {/*
+          Mobile: 2×2 compact grid — each cell is single line via truncate.
+          The horizontal divider (border-b on first two items) only shows on mobile (<md).
+          Desktop (md+): 4-col single row, vertical dividers between items.
+        */}
+        <ul role="list" className="grid grid-cols-2 md:grid-cols-4 gap-0">
+          {benefits.map((b, i) => (
             <motion.li
               key={b.title}
-              variants={shouldReduce ? undefined : fadeUp}
-              className="flex items-center gap-2 text-foreground-muted"
+              initial={shouldReduce ? undefined : { opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.2, delay: i * 0.05 }}
+              className={cn(
+                "flex items-center gap-2.5 px-3 py-2.5",
+                // Mobile-only row divider — max-md: prefix so it ONLY applies below md breakpoint
+                i < 2 && "max-md:border-b max-md:border-[#f0f0f0]",
+                // Desktop vertical dividers between all items
+                "md:border-r md:border-[#e1e2e4]/60 last:md:border-r-0",
+                "first:md:pl-0 last:md:pr-0",
+              )}
             >
-              <span className="shrink-0 [&>svg]:size-3.5" aria-hidden="true">
+              {/* Icon — small circle */}
+              <div
+                className="w-8 h-8 rounded-xl shrink-0 bg-[#f3f4f6] border border-[#e1e2e4]/40 flex items-center justify-center text-[#191c1e]"
+                aria-hidden="true"
+              >
                 {b.icon}
-              </span>
-              <p className="text-[11px] font-medium text-foreground-muted whitespace-nowrap">
-                {b.title}
-                <span className="hidden sm:inline text-foreground-muted/60"> — {b.description}</span>
-              </p>
+              </div>
+
+              {/* Text — forced single line via truncate */}
+              <div className="min-w-0 overflow-hidden">
+                <p className="text-[11px] md:text-[12px] font-bold text-[#191c1e] truncate leading-tight">
+                  {b.title}
+                </p>
+                <p className="text-[10px] md:text-[11px] text-[#5A6578] truncate leading-tight mt-0.5">
+                  {b.description}
+                </p>
+              </div>
             </motion.li>
           ))}
-        </motion.ul>
-      </div>
+        </ul>
+      </motion.div>
     </section>
   );
 }

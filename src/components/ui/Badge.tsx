@@ -1,45 +1,47 @@
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-type BadgeVariant =
-  | "default"
-  | "secondary"
-  | "outline"
-  | "success"
-  | "warning"
-  | "danger"
-  | "muted";
+const badgeVariants = cva(
+  "inline-flex items-center gap-1 font-semibold leading-none",
+  {
+    variants: {
+      variant: {
+        /** Default — obsidian pill */
+        default:   "bg-[#0D0D0D] text-white rounded-full px-2.5 py-1 text-[11px]",
+        /** Crimson — discount/sale badge matches design secondary */
+        discount:  "bg-[#E02E2E] text-white rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide",
+        /** Neutral surface */
+        secondary: "bg-surface-container text-foreground-muted rounded-full px-2.5 py-1 text-[11px] border border-border",
+        /** Outline only */
+        outline:   "bg-transparent text-foreground border border-border rounded-full px-2.5 py-1 text-[11px]",
+        /** Success */
+        success:   "bg-success/10 text-success border border-success/20 rounded-full px-2.5 py-1 text-[11px]",
+        /** Warning */
+        warning:   "bg-warning/10 text-warning border border-warning/20 rounded-full px-2.5 py-1 text-[11px]",
+        /** Danger */
+        danger:    "bg-danger/10 text-danger border border-danger/20 rounded-full px-2.5 py-1 text-[11px]",
+        /** Muted */
+        muted:     "bg-muted text-foreground-muted rounded-full px-2.5 py-1 text-[11px]",
+        /** Status dot — caps style */
+        caps:      "bg-surface-container text-foreground-muted rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest border border-border",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  },
+);
 
-interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: BadgeVariant;
-}
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof badgeVariants> {}
 
-const variantClasses: Record<BadgeVariant, string> = {
-  default:   "bg-primary text-primary-foreground",
-  secondary: "bg-secondary text-secondary-foreground border border-border",
-  outline:   "bg-transparent text-foreground border border-border",
-  success:   "bg-success/10 text-success border border-success/20",
-  warning:   "bg-warning/10 text-warning border border-warning/20",
-  danger:    "bg-danger/10 text-danger border border-danger/20",
-  muted:     "bg-muted text-muted-foreground",
-};
-
-export function Badge({
-  variant = "default",
-  className,
-  children,
-  ...props
-}: BadgeProps) {
+export function Badge({ variant, className, children, ...props }: BadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded px-2 py-0.5",
-        "text-caption font-medium leading-none",
-        variantClasses[variant],
-        className,
-      )}
-      {...props}
-    >
+    <span className={cn(badgeVariants({ variant }), className)} {...props}>
       {children}
     </span>
   );
 }
+
+export { badgeVariants };

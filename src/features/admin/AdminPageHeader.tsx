@@ -7,18 +7,13 @@ interface AdminPageHeaderProps {
   className?: string;
 }
 
-export function AdminPageHeader({
-  title,
-  description,
-  action,
-  className,
-}: AdminPageHeaderProps) {
+export function AdminPageHeader({ title, description, action, className }: AdminPageHeaderProps) {
   return (
     <div className={cn("flex items-start justify-between gap-4 mb-6", className)}>
       <div>
-        <h2 className="text-h3 font-bold text-foreground">{title}</h2>
+        <h2 className="text-[20px] font-extrabold text-[#191c1e] tracking-tight">{title}</h2>
         {description && (
-          <p className="mt-1 text-body-sm text-foreground-muted">{description}</p>
+          <p className="mt-1 text-[13px] text-[#444748]">{description}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}

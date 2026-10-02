@@ -13,7 +13,7 @@ function AdminShellInner({ children }: AdminShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface">
+    <div className="flex h-screen overflow-hidden bg-[#f8f9fb]">
       <AdminSidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -22,7 +22,7 @@ function AdminShellInner({ children }: AdminShellProps) {
         <AdminTopBar onMenuClick={() => setSidebarOpen(true)} />
         <main
           id="admin-main"
-          className="flex-1 overflow-y-auto p-4 md:p-6"
+          className="flex-1 overflow-y-auto p-5 md:p-7"
         >
           {children}
         </main>

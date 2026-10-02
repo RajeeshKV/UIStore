@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, ShoppingBag } from "lucide-react";
 import { useState } from "react";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { formatPrice, discountPercent } from "@/lib/utils";
 import type { StorefrontProductSummaryResponse } from "@/types/api";
@@ -31,15 +32,16 @@ export function ProductCard({
   const [addingToCart, setAddingToCart] = useState(false);
 
   const effectiveCurrency = product.currency ?? currency ?? "INR";
-  const effectiveLocale = locale ?? "en-IN";
+  const effectiveLocale   = locale ?? "en-IN";
 
   const discount =
     product.compareAtPrice && product.compareAtPrice > product.price
       ? discountPercent(product.price, product.compareAtPrice)
       : 0;
 
-  const stockState = normalizeStock(product.stockAvailability);
+  const stockState   = normalizeStock(product.stockAvailability);
   const isOutOfStock = stockState === "OutOfStock";
+  const isLowStock   = stockState === "LowStock";
 
   const priceStr = formatPrice(product.price, effectiveCurrency, effectiveLocale);
   const comparePriceStr =
@@ -50,150 +52,132 @@ export function ProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!onAddToCart || addingToCart) return;
+    if (!onAddToCart || addingToCart || isOutOfStock) return;
     setAddingToCart(true);
     onAddToCart(product);
     setTimeout(() => setAddingToCart(false), 800);
   };
 
   return (
-    <article
+    <motion.article
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "group relative flex flex-col rounded-xl overflow-hidden border border-border bg-background",
-        "hover:border-border-strong hover:shadow-md transition-all duration-200",
+        // Design reference: white card, 1px border #E5E7EB, 0px shadow default
+        "group relative flex flex-col rounded-2xl overflow-hidden border border-[#E5E7EB] bg-white",
+        // Hover: soft shadow elevation
+        "hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.06)] transition-shadow duration-200",
         isOutOfStock && "opacity-70",
         className,
       )}
     >
-      {/* Wishlist — always visible top-right */}
-      <button
-        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        aria-pressed={isWishlisted}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsWishlisted((w) => !w);
-        }}
-        className={cn(
-          "absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full",
-          "bg-background/80 border border-border/60",
-          "transition-colors duration-150",
-        )}
-      >
-        <Heart
-          className={cn(
-            "size-3.5 transition-colors",
-            isWishlisted ? "fill-danger text-danger" : "text-foreground-muted",
-          )}
-        />
-      </button>
-
-      {/* Badges — top left */}
-      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 pointer-events-none">
-        {product.isFeatured && !discount && !isOutOfStock && (
-          <span className="rounded bg-foreground px-1.5 py-0.5 text-[9px] font-bold text-background leading-none">
-            New
-          </span>
-        )}
+      {/* ── Image area ───────────────────────────────────────────────────── */}
+      <div className="relative aspect-square w-full bg-[#F4F5F7] overflow-hidden">
+        {/* Discount badge — top-left crimson pill */}
         {discount > 0 && !isOutOfStock && (
-          <span className="rounded bg-danger px-1.5 py-0.5 text-[9px] font-bold text-white leading-none">
+          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-[#E02E2E] px-1.5 py-0.5 text-[9px] font-bold text-white leading-none uppercase tracking-wide pointer-events-none">
             -{discount}%
           </span>
         )}
+        {/* Out of stock badge */}
         {isOutOfStock && (
-          <span className="rounded bg-foreground/75 px-1.5 py-0.5 text-[9px] font-bold text-background leading-none">
+          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-[#0D0D0D]/70 px-1.5 py-0.5 text-[9px] font-bold text-white leading-none pointer-events-none">
             Out of stock
           </span>
         )}
-        {!isOutOfStock && stockState === "LowStock" && !discount && (
-          <span className="rounded bg-warning px-1.5 py-0.5 text-[9px] font-bold text-white leading-none">
+        {/* Low stock */}
+        {!isOutOfStock && isLowStock && (
+          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-warning px-1.5 py-0.5 text-[9px] font-bold text-white leading-none pointer-events-none">
             Low stock
           </span>
         )}
-      </div>
 
-      {/* Image */}
-      <div className="aspect-square w-full bg-surface">
-        <Link
-          href={`/products/${product.slug}`}
-          aria-label={`View ${product.name}`}
-          className="relative block w-full h-full overflow-hidden"
+        {/* Wishlist — top-right circle */}
+        <button
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          aria-pressed={isWishlisted}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsWishlisted((w) => !w);
+          }}
+          className={cn(
+            "absolute top-2.5 right-2.5 z-10",
+            "flex h-8 w-8 items-center justify-center rounded-full",
+            "bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
+            "hover:border-[#D1D5DB] transition-all duration-150",
+          )}
         >
+          <Heart
+            className={cn(
+              "size-3.5 transition-colors",
+              isWishlisted ? "fill-[#E02E2E] text-[#E02E2E]" : "text-[#5A6578]",
+            )}
+          />
+        </button>
+
+        {/* Product image */}
+        <Link href={`/products/${product.slug}`} aria-label={`View ${product.name}`} className="block w-full h-full">
           {product.primaryImageUrl && !imgError ? (
             <Image
               src={product.primaryImageUrl}
               alt={product.name ?? "Product"}
               fill
-              sizes="(max-width: 640px) 45vw, (max-width: 1024px) 22vw, 18vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
               className="object-contain object-center transition-transform duration-300 group-hover:scale-105 p-3"
               loading={eager ? "eager" : "lazy"}
               onError={() => setImgError(true)}
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-surface">
-              <ShoppingBag className="size-8 text-foreground-muted/30" aria-hidden="true" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <ShoppingBag className="size-8 text-[#D1D5DB]" aria-hidden="true" />
             </div>
           )}
         </Link>
       </div>
 
-      {/* Info */}
-      <div className="flex flex-col flex-1 px-3 pt-2.5 pb-3 gap-1.5">
-        {/* Name */}
+      {/* ── Info area ────────────────────────────────────────────────────── */}
+      <div className="flex flex-col flex-1 px-3 pt-3 pb-3 gap-2">
+        {/* Name — 2-line clamp */}
         <Link
           href={`/products/${product.slug}`}
-          className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 hover:text-foreground/70 transition-colors"
+          className="text-[13px] font-semibold text-[#191c1e] leading-snug line-clamp-2 hover:text-[#0D0D0D]/70 transition-colors"
         >
           {product.name}
         </Link>
 
-        {/* Price */}
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-[14px] font-bold text-foreground">{priceStr}</span>
+        {/* Price row */}
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <span className="text-[15px] font-extrabold text-[#0D0D0D] leading-none">{priceStr}</span>
           {comparePriceStr && (
-            <span className="text-[11px] text-foreground-muted line-through">{comparePriceStr}</span>
+            <span className="text-[12px] text-[#5A6578] line-through">{comparePriceStr}</span>
           )}
         </div>
 
-        {/* Colour swatches */}
-        <ColorSwatches product={product} />
+        {/* Spacer to push button to bottom */}
+        <div className="flex-1" />
 
-        {/* Add to Cart button */}
+        {/* Add to Cart */}
         {!isOutOfStock && product.canPurchase && onAddToCart ? (
           <button
             onClick={handleAddToCart}
             aria-label={`Add ${product.name} to cart`}
             disabled={addingToCart}
             className={cn(
-              "mt-1 w-full flex items-center justify-center gap-1.5",
-              "h-9 rounded-md text-[12px] font-semibold",
-              "bg-foreground text-background",
-              "hover:bg-foreground/85 active:scale-[0.98] transition-all duration-150",
+              "mt-0.5 w-full flex items-center justify-center gap-1.5",
+              "h-9 rounded-lg text-[12px] font-bold",
+              "bg-[#0D0D0D] text-white",
+              "hover:bg-[#262626] active:scale-[0.98] transition-all duration-150",
               "disabled:opacity-60",
             )}
           >
             <ShoppingBag className="size-3.5" aria-hidden="true" />
-            {addingToCart ? "Adding..." : "Add to Cart"}
+            {addingToCart ? "Adding…" : "Add to Cart"}
           </button>
         ) : isOutOfStock ? (
-          <p className="mt-1 text-[11px] text-center text-foreground-muted">Out of stock</p>
+          <p className="mt-0.5 text-[11px] text-center text-[#5A6578] py-1">Out of stock</p>
         ) : null}
       </div>
-    </article>
-  );
-}
-
-function ColorSwatches({ product }: { product: StorefrontProductSummaryResponse }) {
-  if (!product.brandName && !product.categoryName) return null;
-  const swatches = ["bg-[#1a1a1a]", "bg-[#d4d4d4]"];
-  return (
-    <div className="flex items-center gap-1" aria-hidden="true">
-      {swatches.map((cls, i) => (
-        <span
-          key={i}
-          className={cn("w-3 h-3 rounded-full border border-border/60", cls)}
-        />
-      ))}
-    </div>
+    </motion.article>
   );
 }

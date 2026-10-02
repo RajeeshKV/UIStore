@@ -11,28 +11,30 @@ interface EmptyStateProps {
     href?: string;
   };
   className?: string;
+  /** Compact version with reduced padding */
+  compact?: boolean;
 }
 
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  className,
-}: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action, className, compact = false }: EmptyStateProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center py-16 px-6 text-center",
+        "flex flex-col items-center justify-center text-center",
+        compact ? "py-10 px-4" : "py-20 px-6",
         className,
       )}
     >
       {icon && (
-        <div className="mb-4 text-foreground-muted">{icon}</div>
+        <div className={cn(
+          "mb-4 flex items-center justify-center rounded-2xl bg-surface-container text-foreground-muted",
+          compact ? "w-12 h-12" : "w-16 h-16",
+        )}>
+          {icon}
+        </div>
       )}
-      <h3 className="text-h4 text-foreground">{title}</h3>
+      <h3 className="text-[16px] font-bold text-foreground tracking-tight">{title}</h3>
       {description && (
-        <p className="mt-2 text-body-sm text-foreground-muted max-w-sm">
+        <p className="mt-2 text-[13px] text-foreground-muted max-w-xs leading-relaxed">
           {description}
         </p>
       )}

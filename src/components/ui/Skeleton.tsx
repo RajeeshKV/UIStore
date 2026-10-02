@@ -1,25 +1,18 @@
 import { cn } from "@/lib/utils";
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Rounded pill shape */
   rounded?: boolean;
-  /** Make it circular */
   circle?: boolean;
 }
 
 /** Base skeleton block — animate-skeleton is defined in globals.css */
-export function Skeleton({
-  rounded = false,
-  circle = false,
-  className,
-  ...props
-}: SkeletonProps) {
+export function Skeleton({ rounded = false, circle = false, className, ...props }: SkeletonProps) {
   return (
     <div
       aria-hidden="true"
       className={cn(
-        "animate-skeleton bg-muted",
-        circle ? "rounded-full" : rounded ? "rounded-full" : "rounded-md",
+        "animate-skeleton bg-[#edeef0]",
+        circle ? "rounded-full" : rounded ? "rounded-full" : "rounded-lg",
         className,
       )}
       {...props}
@@ -27,28 +20,22 @@ export function Skeleton({
   );
 }
 
-// ── Compound skeletons that mirror final layout shapes ─────────────────────────
+// ── Compound skeletons ────────────────────────────────────────────────────────
 
-/** Skeleton for a product card */
+/** Product card skeleton — vertical layout */
 export function ProductCardSkeleton() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-3">
-      {/* Image */}
-      <Skeleton className="aspect-square w-full rounded-lg" />
-      {/* Category label */}
-      <Skeleton className="h-3 w-20" />
-      {/* Title */}
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-3/4" />
-      {/* Price */}
+    <div aria-hidden="true" className="flex flex-col gap-2">
+      <Skeleton className="aspect-square w-full rounded-xl" />
+      <Skeleton className="h-3.5 w-3/4" />
+      <Skeleton className="h-3.5 w-full" />
       <Skeleton className="h-5 w-24" />
-      {/* Button */}
-      <Skeleton className="h-10 w-full rounded-md" />
+      <Skeleton className="h-9 w-full rounded-lg" />
     </div>
   );
 }
 
-/** Skeleton for a product grid */
+/** Product grid skeleton */
 export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   return (
     <div className="grid-product-cards">
@@ -59,18 +46,20 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   );
 }
 
-/** Skeleton for a category card */
+/** Category card skeleton */
 export function CategoryCardSkeleton() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-2">
-      <Skeleton className="aspect-[4/3] w-full rounded-lg" />
-      <Skeleton className="h-4 w-32 mx-auto" />
-      <Skeleton className="h-3 w-20 mx-auto" />
+    <div aria-hidden="true" className="flex items-center gap-0 rounded-2xl overflow-hidden border border-border bg-white">
+      <Skeleton className="shrink-0 w-[90px] h-[90px] rounded-none" />
+      <div className="flex-1 px-4 py-3 space-y-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+      </div>
     </div>
   );
 }
 
-/** Skeleton for admin table row */
+/** Admin table row skeleton */
 export function TableRowSkeleton({ cols = 5 }: { cols?: number }) {
   return (
     <tr aria-hidden="true">
@@ -83,11 +72,11 @@ export function TableRowSkeleton({ cols = 5 }: { cols?: number }) {
   );
 }
 
-/** Skeleton for a page hero */
+/** Page hero skeleton */
 export function HeroSkeleton() {
   return (
-    <div aria-hidden="true" className="relative w-full aspect-[16/7] md:aspect-[16/6]">
-      <Skeleton className="absolute inset-0 rounded-none" />
+    <div aria-hidden="true" className="w-full" style={{ height: "clamp(200px, 28vh, 320px)" }}>
+      <Skeleton className="w-full h-full rounded-2xl" />
     </div>
   );
 }
@@ -97,21 +86,16 @@ export function TextBlockSkeleton({ lines = 3 }: { lines?: number }) {
   return (
     <div aria-hidden="true" className="flex flex-col gap-2">
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton
-          key={i}
-          className="h-4"
-          style={{ width: i === lines - 1 ? "60%" : "100%" }}
-        />
+        <Skeleton key={i} className="h-4" style={{ width: i === lines - 1 ? "60%" : "100%" }} />
       ))}
     </div>
   );
 }
 
-/** Skeleton for the full product detail page */
+/** Product detail page skeleton */
 export function ProductDetailSkeleton() {
   return (
     <div aria-hidden="true" className="container-x mx-auto py-8">
-      {/* Breadcrumb */}
       <div className="flex gap-2 mb-6">
         <Skeleton className="h-3 w-10" />
         <Skeleton className="h-3 w-3" />
@@ -119,50 +103,37 @@ export function ProductDetailSkeleton() {
         <Skeleton className="h-3 w-3" />
         <Skeleton className="h-3 w-28" />
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-        {/* Gallery */}
         <div className="flex flex-col gap-3">
-          <Skeleton className="aspect-square w-full rounded-xl" />
+          <Skeleton className="aspect-square w-full rounded-2xl" />
           <div className="flex gap-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-square w-16 rounded-lg shrink-0" />
+              <Skeleton key={i} className="aspect-square w-16 rounded-xl shrink-0" />
             ))}
           </div>
         </div>
-
-        {/* Info panel */}
         <div className="flex flex-col gap-4 pt-2">
           <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-3/4" />
           <div className="flex gap-3 mt-1">
-            <Skeleton className="h-7 w-28" />
-            <Skeleton className="h-5 w-20 mt-1" />
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-5 w-20 mt-1.5" />
           </div>
           <Skeleton className="h-4 w-20 mt-1" />
-          {/* Variants */}
           <div className="flex flex-col gap-2 mt-2">
             <Skeleton className="h-4 w-16" />
             <div className="flex gap-2">
               {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-9 w-16 rounded-md" />
+                <Skeleton key={i} className="h-10 w-16 rounded-lg" />
               ))}
             </div>
           </div>
-          {/* CTA */}
           <div className="flex gap-3 mt-3">
-            <Skeleton className="h-12 flex-1 rounded-md" />
-            <Skeleton className="h-12 w-12 rounded-md" />
+            <Skeleton className="h-12 flex-1 rounded-lg" />
+            <Skeleton className="h-12 w-12 rounded-lg" />
           </div>
-          {/* Delivery */}
-          <Skeleton className="h-12 w-full rounded-lg mt-2" />
-          {/* Description lines */}
-          <div className="flex flex-col gap-2 mt-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-4" style={{ width: i === 3 ? "60%" : "100%" }} />
-            ))}
-          </div>
+          <Skeleton className="h-14 w-full rounded-xl mt-2" />
         </div>
       </div>
     </div>

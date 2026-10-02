@@ -15,33 +15,31 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ currency, locale }: CartDrawerProps) {
-  const { cart, isLoading, isMutating, drawerOpen, closeDrawer, updateItem, removeItem } =
-    useCart();
+  const { cart, isLoading, isMutating, drawerOpen, closeDrawer, updateItem, removeItem } = useCart();
 
-  const items = cart?.items ?? [];
-  const subtotal = cart?.subtotal ?? 0;
+  const items             = cart?.items ?? [];
+  const subtotal          = cart?.subtotal ?? 0;
   const effectiveCurrency = cart?.currency ?? currency;
 
   const footer = (
     <div className="flex flex-col gap-3">
       {/* Subtotal */}
-      <div className="flex items-center justify-between py-2 border-t border-border">
-        <span className="text-body-sm text-foreground-muted">Subtotal</span>
-        <span className="text-body font-semibold text-foreground tabular-nums">
+      <div className="flex items-center justify-between py-2 border-t border-[#e1e2e4]">
+        <span className="text-[13px] text-[#444748]">Subtotal</span>
+        <span className="text-[16px] font-extrabold text-[#0D0D0D] tabular-nums">
           {formatPrice(subtotal, effectiveCurrency, locale)}
         </span>
       </div>
-      <p className="text-caption text-foreground-muted">
+      <p className="text-[11px] text-[#5A6578] leading-relaxed">
         Shipping, taxes and discounts calculated at checkout.
       </p>
       <Link href="/cart" onClick={closeDrawer}>
-        <Button variant="outline" fullWidth size="lg">
+        <Button variant="secondary" fullWidth size="lg" className="rounded-xl">
           View Cart
         </Button>
       </Link>
-      {/* Checkout */}
       <Link href="/checkout" onClick={closeDrawer}>
-        <Button variant="primary" fullWidth size="lg">
+        <Button variant="primary" fullWidth size="lg" className="rounded-xl">
           Checkout
         </Button>
       </Link>
@@ -88,17 +86,17 @@ export function CartDrawer({ currency, locale }: CartDrawerProps) {
 function EmptyCartDrawer({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
-      <div className="rounded-full bg-muted p-5">
-        <ShoppingBag className="size-8 text-foreground-muted" aria-hidden="true" />
+      <div className="rounded-2xl bg-[#f3f4f6] border border-[#e1e2e4] p-5">
+        <ShoppingBag className="size-8 text-[#5A6578]" aria-hidden="true" />
       </div>
       <div>
-        <p className="text-body font-medium text-foreground">Your cart is empty</p>
-        <p className="text-body-sm text-foreground-muted mt-1">
+        <p className="text-[14px] font-bold text-[#191c1e]">Your cart is empty</p>
+        <p className="text-[13px] text-[#444748] mt-1 leading-relaxed">
           Add some products to get started.
         </p>
       </div>
       <Link href="/shop" onClick={onClose}>
-        <Button variant="outline" size="md">
+        <Button variant="secondary" size="md" className="rounded-full">
           Continue Shopping
         </Button>
       </Link>
@@ -108,16 +106,16 @@ function EmptyCartDrawer({ onClose }: { onClose: () => void }) {
 
 function CartDrawerSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="flex gap-3 py-3 border-b border-border">
-          <Skeleton className="h-16 w-16 rounded-lg shrink-0" />
+        <div key={i} className="flex gap-3.5 py-3.5 border-b border-[#e1e2e4]">
+          <Skeleton className="h-16 w-16 rounded-xl shrink-0" />
           <div className="flex-1 flex flex-col gap-2">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-3 w-2/3" />
             <div className="flex justify-between mt-1">
-              <Skeleton className="h-7 w-20 rounded-md" />
-              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-8 w-24 rounded-lg" />
+              <Skeleton className="h-4 w-14" />
             </div>
           </div>
         </div>

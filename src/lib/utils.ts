@@ -1,10 +1,12 @@
-/**
- * Utility helpers
- */
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-/** Merge class names (replaces clsx/cn for simple use). */
-export function cn(...classes: (string | undefined | null | false)[]): string {
-  return classes.filter(Boolean).join(" ");
+/**
+ * Merge Tailwind class names safely — clsx handles conditionals, twMerge
+ * resolves conflicting Tailwind utilities (e.g. p-2 overriding px-3).
+ */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
 }
 
 /** Format a price number to locale currency string. */
@@ -34,11 +36,6 @@ export function truncate(text: string, max: number): string {
 
 /**
  * Extract a human-readable error message from any ApiResult error.
- * Falls back to a generic support message if nothing meaningful is available.
- *
- * Usage:
- *   const msg = extractApiError(result.error);
- *   toastError("Action failed", msg);
  */
 export function extractApiError(
   error: { message?: string } | null | undefined,
@@ -51,13 +48,6 @@ export function extractApiError(
 
 /**
  * Safe extractor for Promise.allSettled results.
- * Returns the data if the promise fulfilled and the API call succeeded,
- * otherwise returns the provided fallback.
- *
- * Handles the Vercel build-time case where the backend is unreachable:
- * - If rejected: returns fallback
- * - If fulfilled but API error: returns fallback
- * - If fulfilled and API ok but data is null/undefined: returns fallback
  */
 export function safeData<T>(
   result: PromiseSettledResult<{ ok: true; data: T } | { ok: false; error: unknown }>,

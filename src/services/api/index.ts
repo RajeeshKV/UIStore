@@ -1,5 +1,5 @@
 /**
- * Kromic Store – API Service barrel
+ * Shopey – API Service barrel
  * Import feature APIs from here.
  */
 export { apiClient, tokenStore, ApiError, NetworkError } from "./client";

@@ -2,159 +2,174 @@
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Kromic Store – Global Design System
-   Theme tokens defined here as CSS custom properties.
-   Components consume via Tailwind semantic utilities (bg-background, text-foreground, etc.)
-   To switch customer themes: update the :root block below and the @theme block.
-   Never hardcode hex values inside component files.
+   Design reference: Shopey Luxury Tech design files
+   Font: Plus Jakarta Sans — loaded via <link> in layout.tsx
+   Primary palette: monochrome obsidian + crimson accent
 ───────────────────────────────────────────────────────────────────────────── */
 
 /* ── 1. Raw palette (private) ─────────────────────────────────────────────── */
 :root {
-  /* Grays */
-  --gray-0:   #ffffff;
-  --gray-50:  #fafafa;
-  --gray-100: #f5f5f5;
-  --gray-150: #efefef;
-  --gray-200: #e5e5e5;
-  --gray-300: #d4d4d4;
-  --gray-400: #a3a3a3;
-  --gray-500: #737373;
-  --gray-600: #525252;
-  --gray-700: #404040;
-  --gray-800: #262626;
-  --gray-900: #171717;
-  --gray-950: #0a0a0a;
+  /* Design-reference surfaces */
+  --ds-surface-lowest:        #ffffff;
+  --ds-surface-low:           #f3f4f6;
+  --ds-surface:               #f8f9fb;
+  --ds-surface-container:     #edeef0;
+  --ds-surface-high:          #e7e8ea;
+  --ds-surface-highest:       #e1e2e4;
 
-  /* Semantic accent — minimal, used for interactive states only */
-  --color-accent-raw: #18181b;
+  /* Design-reference foreground */
+  --ds-on-surface:            #191c1e;
+  --ds-on-surface-muted:      #444748;
+
+  /* Design-reference borders */
+  --ds-outline:               #747878;
+  --ds-outline-variant:       #c4c7c7;
+
+  /* Design-reference primary (obsidian black) */
+  --ds-primary:               #000000;
+  --ds-on-primary:            #ffffff;
+  --ds-primary-container:     #1c1b1b;
+
+  /* Design-reference secondary (crimson — discount badges, sale) */
+  --ds-secondary:             #ba0918;
+  --ds-on-secondary:          #ffffff;
+  --ds-secondary-container:   #de2d2d;
 
   /* Status */
-  --color-success-raw:  #16a34a;
-  --color-warning-raw:  #d97706;
-  --color-danger-raw:   #dc2626;
+  --color-success-raw:        #16a34a;
+  --color-warning-raw:        #d97706;
+  --color-danger-raw:         #dc2626;
 }
 
 /* ── 2. Semantic tokens – Light (default) ──────────────────────────────────── */
 :root {
-  --color-background:        var(--gray-0);
-  --color-surface:           var(--gray-50);
-  --color-surface-elevated:  var(--gray-0);
+  /* Canvas */
+  --color-background:           var(--ds-surface);
+  --color-surface:              var(--ds-surface-low);
+  --color-surface-elevated:     var(--ds-surface-lowest);
+  --color-surface-container:    var(--ds-surface-container);
 
-  --color-foreground:        var(--gray-950);
-  --color-foreground-muted:  var(--gray-500);
+  /* Text */
+  --color-foreground:           var(--ds-on-surface);
+  --color-foreground-muted:     var(--ds-on-surface-muted);
 
-  --color-border:            var(--gray-200);
-  --color-border-strong:     var(--gray-300);
+  /* Borders */
+  --color-border:               var(--ds-outline-variant);
+  --color-border-strong:        var(--ds-outline);
 
-  --color-primary:           var(--gray-950);
-  --color-primary-foreground: var(--gray-0);
+  /* Primary — obsidian */
+  --color-primary:              var(--ds-primary);
+  --color-primary-foreground:   var(--ds-on-primary);
 
-  --color-secondary:         var(--gray-100);
-  --color-secondary-foreground: var(--gray-900);
+  /* Secondary — crimson (sale/discount only) */
+  --color-secondary:            var(--ds-secondary);
+  --color-secondary-foreground: var(--ds-on-secondary);
 
-  --color-accent:            var(--gray-950);
-  --color-accent-foreground: var(--gray-0);
+  /* Accent mirrors primary */
+  --color-accent:               var(--ds-primary);
+  --color-accent-foreground:    var(--ds-on-primary);
 
-  --color-muted:             var(--gray-100);
-  --color-muted-foreground:  var(--gray-500);
+  /* Muted surfaces */
+  --color-muted:                var(--ds-surface-container);
+  --color-muted-foreground:     var(--ds-on-surface-muted);
 
-  --color-success:           var(--color-success-raw);
-  --color-success-foreground: var(--gray-0);
+  /* Status */
+  --color-success:              var(--color-success-raw);
+  --color-success-foreground:   #ffffff;
+  --color-warning:              var(--color-warning-raw);
+  --color-warning-foreground:   #ffffff;
+  --color-danger:               var(--color-danger-raw);
+  --color-danger-foreground:    #ffffff;
 
-  --color-warning:           var(--color-warning-raw);
-  --color-warning-foreground: var(--gray-0);
-
-  --color-danger:            var(--color-danger-raw);
-  --color-danger-foreground: var(--gray-0);
-
-  --color-focus:             var(--gray-950);
+  --color-focus:                var(--ds-primary);
 }
 
 /* ── 3. Register tokens with Tailwind 4 ────────────────────────────────────── */
 @theme inline {
   /* Colors */
-  --color-background:        var(--color-background);
-  --color-surface:           var(--color-surface);
-  --color-surface-elevated:  var(--color-surface-elevated);
+  --color-background:           var(--color-background);
+  --color-surface:              var(--color-surface);
+  --color-surface-elevated:     var(--color-surface-elevated);
+  --color-surface-container:    var(--color-surface-container);
 
-  --color-foreground:        var(--color-foreground);
-  --color-foreground-muted:  var(--color-foreground-muted);
+  --color-foreground:           var(--color-foreground);
+  --color-foreground-muted:     var(--color-foreground-muted);
 
-  --color-border:            var(--color-border);
-  --color-border-strong:     var(--color-border-strong);
+  --color-border:               var(--color-border);
+  --color-border-strong:        var(--color-border-strong);
 
-  --color-primary:           var(--color-primary);
-  --color-primary-foreground: var(--color-primary-foreground);
+  --color-primary:              var(--color-primary);
+  --color-primary-foreground:   var(--color-primary-foreground);
 
-  --color-secondary:         var(--color-secondary);
+  --color-secondary:            var(--color-secondary);
   --color-secondary-foreground: var(--color-secondary-foreground);
 
-  --color-accent:            var(--color-accent);
-  --color-accent-foreground: var(--color-accent-foreground);
+  --color-accent:               var(--color-accent);
+  --color-accent-foreground:    var(--color-accent-foreground);
 
-  --color-muted:             var(--color-muted);
-  --color-muted-foreground:  var(--color-muted-foreground);
+  --color-muted:                var(--color-muted);
+  --color-muted-foreground:     var(--color-muted-foreground);
 
-  --color-success:           var(--color-success);
-  --color-success-foreground: var(--color-success-foreground);
+  --color-success:              var(--color-success);
+  --color-success-foreground:   var(--color-success-foreground);
 
-  --color-warning:           var(--color-warning);
-  --color-warning-foreground: var(--color-warning-foreground);
+  --color-warning:              var(--color-warning);
+  --color-warning-foreground:   var(--color-warning-foreground);
 
-  --color-danger:            var(--color-danger);
-  --color-danger-foreground: var(--color-danger-foreground);
+  --color-danger:               var(--color-danger);
+  --color-danger-foreground:    var(--color-danger-foreground);
 
-  --color-focus:             var(--color-focus);
+  --color-focus:                var(--color-focus);
 
-  /* Typography scale */
-  --font-sans:    var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
-  --font-mono:    var(--font-geist-mono, ui-monospace, monospace);
+  /* ── Typography — Plus Jakarta Sans ──────────────────────────────────────── */
+  --font-sans:    'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    ui-monospace, monospace;
 
-  /* Font sizes – editorial hierarchy */
-  --text-display:  clamp(2.5rem, 5vw, 4.5rem);
-  --text-h1:       clamp(2rem, 4vw, 3rem);
-  --text-h2:       clamp(1.5rem, 3vw, 2.25rem);
-  --text-h3:       clamp(1.25rem, 2vw, 1.75rem);
-  --text-h4:       1.125rem;
-  --text-body-lg:  1.125rem;
-  --text-body:     1rem;
-  --text-body-sm:  0.875rem;
-  --text-caption:  0.75rem;
-  --text-label:    0.875rem;
+  /* Font sizes — editorial hierarchy from DESIGN.md */
+  --text-display:   clamp(2rem, 4.5vw, 3.5rem);   /* display-hero desktop */
+  --text-h1:        clamp(1.75rem, 3.5vw, 2.625rem);
+  --text-h2:        clamp(1.375rem, 2.5vw, 1.625rem); /* headline-lg 26px */
+  --text-h3:        1.25rem;                           /* headline-md 20px */
+  --text-h4:        1rem;                              /* headline-sm 16px */
+  --text-body-lg:   1rem;                              /* body-lg 16px */
+  --text-body:      0.875rem;                          /* body-md 14px */
+  --text-body-sm:   0.8125rem;                         /* body-sm 13px */
+  --text-caption:   0.75rem;                           /* label-sm 12px */
+  --text-label:     0.875rem;                          /* label-md 14px */
+  --text-price:     1.375rem;                          /* price-hero 22px */
+  --text-caps:      0.6875rem;                         /* caption-caps 11px */
 
-  /* Spacing (extend Tailwind's scale with semantic names) */
-  --spacing-section: 5rem;
+  /* Spacing */
+  --spacing-section:     2.5rem;   /* space-xl from DESIGN.md */
   --spacing-container-x: 1.5rem;
 
-  /* Radius */
-  --radius-xs:  0.125rem;
-  --radius-sm:  0.25rem;
-  --radius-md:  0.375rem;
-  --radius-lg:  0.5rem;
-  --radius-xl:  0.75rem;
-  --radius-2xl: 1rem;
+  /* Radius — from DESIGN.md */
+  --radius-xs:   0.25rem;    /* rounded-sm */
+  --radius-sm:   0.5rem;     /* DEFAULT */
+  --radius-md:   0.75rem;    /* rounded-md */
+  --radius-lg:   1rem;       /* rounded-lg (cards) */
+  --radius-xl:   1.5rem;     /* rounded-xl */
+  --radius-2xl:  1.875rem;   /* rounded-3xl (hero) */
   --radius-full: 9999px;
 
-  /* Shadows – restrained */
-  --shadow-xs:  0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm:  0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
-  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.08);
-  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.06);
-  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+  /* Shadows — restrained flat+surface aesthetic */
+  --shadow-xs:    0 1px 2px 0 rgba(0,0,0,0.04);
+  --shadow-sm:    0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md:    0 8px 24px -4px rgba(0,0,0,0.06);  /* hover elevation */
+  --shadow-lg:    0 12px 36px rgba(0,0,0,0.06);      /* hero */
+  --shadow-xl:    0 20px 40px -8px rgba(0,0,0,0.08);
 
-  /* Motion durations */
-  --duration-fast:   150ms;
-  --duration-base:   200ms;
-  --duration-slow:   300ms;
-  --duration-slower: 500ms;
-
-  /* Motion easings */
+  /* Motion */
+  --duration-fast:    150ms;
+  --duration-base:    200ms;
+  --duration-slow:    300ms;
+  --duration-slower:  500ms;
   --ease-out-smooth:  cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-smooth:   cubic-bezier(0.7, 0, 0.84, 0);
   --ease-in-out:      cubic-bezier(0.45, 0, 0.55, 1);
 }
 
-/* ── 4. Base styles ─────────────────────────────────────────────────────────── */
+/* ── 5. Base styles ─────────────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -169,12 +184,8 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -191,58 +202,51 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── 5. Focus styles – accessible, consistent ──────────────────────────────── */
+/* ── 6. Focus styles ─────────────────────────────────────────────────────────── */
 :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
-/* ── 6. Selection ─────────────────────────────────────────────────────────── */
+/* ── 7. Selection ─────────────────────────────────────────────────────────── */
 ::selection {
   background-color: var(--color-primary);
   color: var(--color-primary-foreground);
 }
 
-/* ── 7. Scrollbar (webkit) – minimal ──────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* ── 8. Scrollbar (webkit) ─────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
+  background: var(--color-border);
   border-radius: var(--radius-full);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-foreground-muted);
-}
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-strong); }
 
-/* ── 8. Typography utilities ────────────────────────────────────────────────── */
+/* ── 9. Typography utilities ─────────────────────────────────────────────────── */
 .text-display {
   font-size: var(--text-display);
   line-height: 1.05;
-  letter-spacing: -0.03em;
-  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-weight: 800;
 }
 .text-h1 {
   font-size: var(--text-h1);
-  line-height: 1.1;
-  letter-spacing: -0.025em;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
   font-weight: 700;
 }
 .text-h2 {
   font-size: var(--text-h2);
   line-height: 1.2;
   letter-spacing: -0.02em;
-  font-weight: 600;
+  font-weight: 700;
 }
 .text-h3 {
   font-size: var(--text-h3);
   line-height: 1.3;
   letter-spacing: -0.015em;
-  font-weight: 600;
+  font-weight: 700;
 }
 .text-h4 {
   font-size: var(--text-h4);
@@ -250,56 +254,45 @@ body {
   letter-spacing: -0.01em;
   font-weight: 600;
 }
-.text-body-lg {
-  font-size: var(--text-body-lg);
-  line-height: 1.7;
+.text-body-lg { font-size: var(--text-body-lg); line-height: 1.65; }
+.text-body-sm { font-size: var(--text-body-sm); line-height: 1.5; }
+.text-caption  { font-size: var(--text-caption); line-height: 1.4; letter-spacing: 0.01em; }
+.text-label    { font-size: var(--text-label); line-height: 1; font-weight: 600; letter-spacing: 0.01em; }
+.text-caps     {
+  font-size: var(--text-caps);
+  line-height: 1.27;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-.text-body-sm {
-  font-size: var(--text-body-sm);
-  line-height: 1.5;
-}
-.text-caption {
-  font-size: var(--text-caption);
-  line-height: 1.4;
-  letter-spacing: 0.01em;
-}
-.text-label {
-  font-size: var(--text-label);
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+.text-price {
+  font-size: var(--text-price);
+  font-weight: 800;
+  line-height: 1.27;
 }
 
-/* ── 9. Layout utilities ────────────────────────────────────────────────────── */
+/* ── 10. Layout utilities ─────────────────────────────────────────────────────── */
 .container-x {
   padding-left: var(--spacing-container-x);
   padding-right: var(--spacing-container-x);
 }
 
-@media (min-width: 640px) {
-  :root { --spacing-container-x: 2rem; }
-}
-@media (min-width: 1024px) {
-  :root { --spacing-container-x: 3rem; }
-}
-@media (min-width: 1280px) {
-  :root { --spacing-container-x: 4rem; }
-}
-@media (min-width: 1536px) {
-  :root { --spacing-container-x: 5rem; }
-}
+@media (min-width: 640px)  { :root { --spacing-container-x: 2rem; } }
+@media (min-width: 1024px) { :root { --spacing-container-x: 3rem; } }
+@media (min-width: 1280px) { :root { --spacing-container-x: 4rem; } }
+@media (min-width: 1536px) { :root { --spacing-container-x: 5rem; } }
 
-/* ── 10. Animation utilities ────────────────────────────────────────────────── */
+/* ── 11. Animation utilities ─────────────────────────────────────────────────── */
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fade-down {
-  from { opacity: 0; transform: translateY(-12px); }
+  from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes slide-in-right {
@@ -320,53 +313,70 @@ body {
 }
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
+  50%       { opacity: 0.45; }
 }
 
-.animate-fade-in    { animation: fade-in var(--duration-base) var(--ease-out-smooth) both; }
-.animate-fade-up    { animation: fade-up var(--duration-slow) var(--ease-out-smooth) both; }
-.animate-fade-down  { animation: fade-down var(--duration-slow) var(--ease-out-smooth) both; }
-.animate-scale-in   { animation: scale-in var(--duration-base) var(--ease-out-smooth) both; }
-.animate-slide-in-right { animation: slide-in-right var(--duration-slow) var(--ease-out-smooth) both; }
+.animate-fade-in         { animation: fade-in var(--duration-base) var(--ease-out-smooth) both; }
+.animate-fade-up         { animation: fade-up var(--duration-slow) var(--ease-out-smooth) both; }
+.animate-fade-down       { animation: fade-down var(--duration-slow) var(--ease-out-smooth) both; }
+.animate-scale-in        { animation: scale-in var(--duration-base) var(--ease-out-smooth) both; }
+.animate-slide-in-right  { animation: slide-in-right var(--duration-slow) var(--ease-out-smooth) both; }
 .animate-slide-out-right { animation: slide-out-right var(--duration-slow) var(--ease-in-smooth) both; }
-.animate-skeleton   { animation: skeleton-pulse 1.8s ease-in-out infinite; }
+.animate-skeleton        { animation: skeleton-pulse 1.8s ease-in-out infinite; }
 
-/* ── Responsive catalog grids ─────────────────────────────────────────────────
-   Using CSS classes (not inline styles) so @media breakpoints can apply.
-   Inline styles always win specificity battles and block responsive overrides.
-──────────────────────────────────────────────────────────────────────────── */
+/* ── 12. Catalog grids ─────────────────────────────────────────────────────────
+   CSS grid classes — responsive breakpoints require class-level @media, not inline styles.
+───────────────────────────────────────────────────────────────────────────── */
 
-/* Category & Brand pages — 2 equal columns on mobile, fixed 300px auto-fill on ≥640px */
+/* Category & Brand pages — 2 cols mobile, auto-fill ≥640 */
 .grid-catalog-cards {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 640px) {
+  .grid-catalog-cards {
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .grid-catalog-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Product grid — 2 cols mobile, 3–5 cols desktop */
+.grid-product-cards {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(2, 1fr);
 }
 @media (min-width: 640px) {
-  .grid-catalog-cards {
-    gap: 16px;
-    grid-template-columns: repeat(auto-fill, 300px);
-  }
-}
-
-/* Product grid — 2 equal columns on mobile, fixed 170px auto-fill on ≥640px */
-.grid-product-cards {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(2, 1fr);
-}
-@media (min-width: 640px) {
   .grid-product-cards {
-    gap: 12px;
-    grid-template-columns: repeat(auto-fill, 170px);
+    gap: 16px;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .grid-product-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (min-width: 1280px) {
+  .grid-product-cards {
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 
-
-/* Globally suppress number-input spin arrows */
+/* Suppress number-input spin arrows */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 input[type="number"] { -moz-appearance: textfield; }
+
+/* ── 13. Radix / shadcn reset helpers ──────────────────────────────────────── */
+/* Ensure Radix portals sit above everything */
+[data-radix-popper-content-wrapper] { z-index: 50 !important; }

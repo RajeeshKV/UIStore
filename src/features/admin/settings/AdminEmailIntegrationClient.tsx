@@ -169,7 +169,7 @@ export function AdminEmailIntegrationClient() {
               className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
             >
               <option value="">— Select mode —</option>
-              <option value="KromicManaged">KromicManaged — Kromic handles delivery</option>
+              <option value="KromicManaged">KromicManaged — Shopey handles delivery</option>
               <option value="CustomerBrevo">CustomerBrevo — Your own Brevo account</option>
             </select>
           </div>
@@ -177,7 +177,7 @@ export function AdminEmailIntegrationClient() {
             label="Sender name"
             value={emailSettings.senderName ?? ""}
             onChange={(e) => setEmailSettings((f) => ({ ...f, senderName: e.target.value }))}
-            placeholder="e.g. Kromic Store"
+            placeholder="e.g. Shopey"
           />
           {/* §1.9: senderEmail hidden and omitted in KromicManaged mode */}
           {emailSettings.mode !== "KromicManaged" && (
@@ -192,7 +192,7 @@ export function AdminEmailIntegrationClient() {
           )}
           {emailSettings.mode === "KromicManaged" && (
             <p className="text-caption text-foreground-muted">
-              Sender address is managed by Kromic in this mode.
+              Sender address is managed by Shopey in this mode.
             </p>
           )}
           <Button type="submit" variant="primary" size="sm" loading={settingsSaving} className="self-start">

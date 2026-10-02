@@ -1,5 +1,5 @@
 /**
- * Kromic Store – Centralized API Client
+ * Shopey – Centralized API Client
  *
  * All network requests go through this client.
  * Handles: base URL, JSON serialization, authorization headers,

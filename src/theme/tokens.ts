@@ -1,5 +1,5 @@
 /**
- * Kromic Store – Design Tokens
+ * Shopey – Design Tokens
  *
  * Semantic token names. Values live in globals.css as CSS variables.
  * Components consume these string keys via Tailwind utilities (e.g. `bg-background`).

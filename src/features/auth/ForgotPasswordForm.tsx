@@ -30,16 +30,16 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="flex flex-col items-center gap-4 text-center py-8">
-        <div className="rounded-full bg-success/10 p-4">
+        <div className="rounded-2xl bg-success/10 border border-success/20 p-5">
           <CheckCircle className="size-8 text-success" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-body font-semibold text-foreground">Check your email</p>
-          <p className="mt-2 text-body-sm text-foreground-muted max-w-sm">
+          <p className="text-[15px] font-bold text-[#191c1e]">Check your email</p>
+          <p className="mt-2 text-[13px] text-[#444748] max-w-sm leading-relaxed">
             If an account exists for <strong>{email}</strong>, we&apos;ve sent password reset instructions.
           </p>
         </div>
-        <Link href="/auth/login" className="text-body-sm text-foreground-muted hover:text-foreground transition-colors">
+        <Link href="/auth/login" className="text-[13px] text-[#444748] hover:text-[#191c1e] transition-colors">
           Back to Sign In
         </Link>
       </div>
@@ -60,7 +60,7 @@ export function ForgotPasswordForm() {
       <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}>
         Send Reset Link
       </Button>
-      <Link href="/auth/login" className="text-body-sm text-center text-foreground-muted hover:text-foreground transition-colors">
+      <Link href="/auth/login" className="text-[13px] text-center text-[#444748] hover:text-[#191c1e] transition-colors">
         Back to Sign In
       </Link>
     </form>

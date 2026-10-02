@@ -1,5 +1,5 @@
 /**
- * Kromic Store – Shared API Types
+ * Shopey – Shared API Types
  *
  * Mirrors the actual backend API schemas.
  * Last audited: Phase 9 — all fields verified against api-documentation.json.

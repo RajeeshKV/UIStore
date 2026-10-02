@@ -3,13 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  LayoutDashboard,
-  User,
-  MapPin,
-  ShoppingBag,
-  LogOut,
-} from "lucide-react";
+import { LayoutDashboard, User, MapPin, ShoppingBag, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -27,7 +21,7 @@ const NAV_ITEMS = [
 
 export function AccountLayout({ children }: AccountLayoutProps) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -37,37 +31,45 @@ export function AccountLayout({ children }: AccountLayoutProps) {
   }, [isLoading, isAuthenticated, router, pathname]);
 
   if (isLoading) return <AccountLayoutSkeleton />;
-  if (!isAuthenticated) return null; // redirect in flight
+  if (!isAuthenticated) return null;
 
   const displayName =
     user?.firstName && user?.lastName
       ? `${user.firstName} ${user.lastName}`
       : user?.email ?? "My Account";
 
+  const initials = (displayName[0] ?? "A").toUpperCase();
+
   return (
-    <div className="container-x mx-auto py-8 md:py-12 min-h-[70vh]">
+    <div className="px-5 md:px-8 lg:px-10 py-8 md:py-12 min-h-[70vh]">
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+
         {/* Sidebar — desktop */}
-        <aside className="hidden lg:flex flex-col gap-1 w-52 shrink-0">
-          {/* User identity */}
-          <div className="px-3 pb-4 mb-2 border-b border-border">
-            <p className="text-label font-semibold text-foreground truncate">{displayName}</p>
-            {user?.email && (
-              <p className="text-caption text-foreground-muted truncate">{user.email}</p>
-            )}
+        <aside className="hidden lg:flex flex-col w-56 shrink-0">
+          {/* Avatar + identity */}
+          <div className="flex items-center gap-3 px-3 pb-5 mb-3 border-b border-[#e1e2e4]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0D0D0D] text-white text-[14px] font-bold shrink-0">
+              {initials}
+            </span>
+            <div className="min-w-0">
+              <p className="text-[13px] font-bold text-[#191c1e] truncate">{displayName}</p>
+              {user?.email && (
+                <p className="text-[11px] text-[#5A6578] truncate">{user.email}</p>
+              )}
+            </div>
           </div>
 
-          <nav aria-label="Account navigation">
+          <nav aria-label="Account navigation" className="flex flex-col gap-0.5">
             {NAV_ITEMS.map(({ label, href, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
                 aria-current={pathname === href ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-2.5 px-3 py-2.5 rounded-md text-body-sm transition-colors",
+                  "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150",
                   pathname === href
-                    ? "bg-muted font-medium text-foreground"
-                    : "text-foreground-muted hover:text-foreground hover:bg-muted",
+                    ? "bg-[#0D0D0D] text-white"
+                    : "text-[#444748] hover:text-[#191c1e] hover:bg-[#f3f4f6]",
                 )}
               >
                 <Icon className="size-4 shrink-0" aria-hidden="true" />
@@ -77,7 +79,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
 
             <button
               onClick={async () => { await logout(); router.push("/"); }}
-              className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-md text-body-sm text-foreground-muted hover:text-danger hover:bg-danger/5 transition-colors mt-2"
+              className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-[#5A6578] hover:text-danger hover:bg-danger/5 transition-all mt-2"
             >
               <LogOut className="size-4 shrink-0" aria-hidden="true" />
               Sign Out
@@ -85,10 +87,10 @@ export function AccountLayout({ children }: AccountLayoutProps) {
           </nav>
         </aside>
 
-        {/* Mobile nav */}
+        {/* Mobile nav — horizontal scroll */}
         <nav
           aria-label="Account navigation"
-          className="lg:hidden flex gap-1 overflow-x-auto pb-1 w-full"
+          className="lg:hidden flex gap-1.5 overflow-x-auto pb-1 w-full"
         >
           {NAV_ITEMS.map(({ label, href, icon: Icon }) => (
             <Link
@@ -96,10 +98,10 @@ export function AccountLayout({ children }: AccountLayoutProps) {
               href={href}
               aria-current={pathname === href ? "page" : undefined}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-2 rounded-md text-body-sm whitespace-nowrap transition-colors shrink-0",
+                "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all shrink-0",
                 pathname === href
-                  ? "bg-muted font-medium text-foreground"
-                  : "text-foreground-muted hover:text-foreground hover:bg-muted",
+                  ? "bg-[#0D0D0D] text-white"
+                  : "border border-[#e1e2e4] text-[#444748] hover:border-[#0D0D0D] hover:text-[#191c1e]",
               )}
             >
               <Icon className="size-3.5 shrink-0" aria-hidden="true" />
@@ -108,7 +110,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
           ))}
           <button
             onClick={async () => { await logout(); router.push("/"); }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-body-sm whitespace-nowrap text-foreground-muted hover:text-danger hover:bg-danger/5 transition-colors shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap border border-[#e1e2e4] text-[#5A6578] hover:text-danger hover:border-danger/30 transition-all shrink-0"
           >
             <LogOut className="size-3.5 shrink-0" aria-hidden="true" />
             Sign Out
@@ -116,9 +118,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
         </nav>
 
         {/* Main content */}
-        <main className="flex-1 min-w-0">
-          {children}
-        </main>
+        <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
   );
@@ -126,17 +126,17 @@ export function AccountLayout({ children }: AccountLayoutProps) {
 
 function AccountLayoutSkeleton() {
   return (
-    <div className="container-x mx-auto py-8 md:py-12" aria-hidden="true">
+    <div className="px-5 md:px-8 lg:px-10 py-8 md:py-12" aria-hidden="true">
       <div className="flex flex-col lg:flex-row gap-8">
-        <div className="hidden lg:flex flex-col gap-2 w-52 shrink-0">
-          <Skeleton className="h-10 w-full rounded-md" />
+        <div className="hidden lg:flex flex-col gap-2 w-56 shrink-0">
+          <Skeleton className="h-16 w-full rounded-2xl" />
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-full rounded-md" />
+            <Skeleton key={i} className="h-10 w-full rounded-xl" />
           ))}
         </div>
         <div className="flex-1">
           <Skeleton className="h-8 w-40 mb-6" />
-          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
         </div>
       </div>
     </div>

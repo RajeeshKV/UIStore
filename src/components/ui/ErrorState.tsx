@@ -9,7 +9,6 @@ interface ErrorStateProps {
   description?: string;
   onRetry?: () => void;
   className?: string;
-  /** Show compact inline version */
   inline?: boolean;
 }
 
@@ -25,17 +24,17 @@ export function ErrorState({
       <div
         role="alert"
         className={cn(
-          "flex items-center gap-3 rounded-lg border border-danger/30 bg-danger/5 px-4 py-3",
+          "flex items-center gap-3 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3",
           className,
         )}
       >
         <AlertTriangle className="size-4 text-danger shrink-0" />
-        <p className="text-body-sm text-foreground flex-1">{title}</p>
+        <p className="text-[13px] text-foreground flex-1">{title}</p>
         {onRetry && (
           <button
             onClick={onRetry}
             aria-label="Retry"
-            className="text-foreground-muted hover:text-foreground"
+            className="text-foreground-muted hover:text-foreground transition-colors"
           >
             <RefreshCw className="size-4" />
           </button>
@@ -48,24 +47,20 @@ export function ErrorState({
     <div
       role="alert"
       className={cn(
-        "flex flex-col items-center justify-center py-16 px-6 text-center",
+        "flex flex-col items-center justify-center py-20 px-6 text-center",
         className,
       )}
     >
-      <div className="mb-4 rounded-full bg-danger/10 p-4">
+      <div className="mb-4 flex items-center justify-center w-16 h-16 rounded-2xl bg-danger/10">
         <AlertTriangle className="size-8 text-danger" />
       </div>
-      <h3 className="text-h4 text-foreground">{title}</h3>
-      <p className="mt-2 text-body-sm text-foreground-muted max-w-sm">
+      <h3 className="text-[16px] font-bold text-foreground tracking-tight">{title}</h3>
+      <p className="mt-2 text-[13px] text-foreground-muted max-w-xs leading-relaxed">
         {description}
       </p>
       {onRetry && (
         <div className="mt-6">
-          <Button
-            variant="outline"
-            iconLeft={<RefreshCw className="size-4" />}
-            onClick={onRetry}
-          >
+          <Button variant="outline" iconLeft={<RefreshCw className="size-4" />} onClick={onRetry}>
             Try again
           </Button>
         </div>

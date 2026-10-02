@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, User, ShoppingBag, Heart, Menu, X, ChevronDown, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -12,16 +12,17 @@ import { useAuth } from "@/features/auth/AuthContext";
 interface NavItem {
   label: string;
   href: string;
+  isSale?: boolean;
   children?: { label: string; href: string }[];
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Home", href: "/" },
-  { label: "Shop", href: "/shop" },
-  { label: "Categories", href: "/categories" },
-  { label: "Brands", href: "/brands" },
+  { label: "Home",         href: "/" },
+  { label: "Shop",         href: "/shop" },
+  { label: "Categories",   href: "/categories" },
+  { label: "Brands",       href: "/brands" },
   { label: "New Arrivals", href: "/shop?sort=newest" },
-  { label: "Sale", href: "/shop?sale=true" },
+  { label: "Sale",         href: "/shop?sale=true", isSale: true },
 ];
 
 interface HeaderProps {
@@ -34,16 +35,19 @@ interface HeaderProps {
 
 export function Header({
   cartCount = 0,
-  storeName = "Shopey Store",
+  storeName = "Shopey",
   logoUrl,
   onCartClick,
   hasBrands = true,
 }: HeaderProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen]   = useState(false);
+  const [scrolled,   setScrolled]     = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const searchRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
+  const router      = useRouter();
+  const pathname    = usePathname();
+  const searchParams = useSearchParams();
+  // Convert search params to query string for active-nav matching
+  const search = searchParams.toString() ? `?${searchParams.toString()}` : "";
 
   const navItems = NAV_ITEMS.filter(
     (item) => !(item.label === "Brands" && !hasBrands),
@@ -55,34 +59,41 @@ export function Header({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const closeMobile = () => setMobileOpen(false);
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
+      setMobileOpen(false);
     }
   };
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full bg-background/98 backdrop-blur-sm",
-        "border-b border-border transition-shadow duration-200",
-        scrolled && "shadow-sm",
+        "sticky top-0 z-40 w-full",
+        "bg-white/95 backdrop-blur-xl border-b border-[#e1e2e4]/60",
+        "transition-shadow duration-300",
+        scrolled && "shadow-[0_2px_12px_rgba(0,0,0,0.06)]",
       )}
     >
-      <div className="container-x mx-auto">
-        {/* ── Main row ─────────────────────────────────────────── */}
-        <div className="flex h-14 md:h-16 items-center gap-3 md:gap-4">
+      {/*
+        Full-width header — no max-w constraint on the outer shell.
+        Inner content uses px padding to keep items away from edges.
+        Layout: [Logo | flex-1 gap | Nav + Search | divider | Actions]
+      */}
+      <div className="w-full px-5 md:px-8 lg:px-10">
+        <div className="flex h-14 md:h-16 items-center gap-0">
 
-          {/* Logo */}
+          {/* ── ZONE 1: Logo — hard left ────────────────────────────────── */}
           <Link
             href="/"
-            className="shrink-0 flex items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded"
+            className="shrink-0 flex items-center mr-8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D] rounded"
             aria-label={`${storeName} — home`}
           >
+            {/* Both mobile and desktop use logo-large — icon+text always */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={logoUrl ?? "/logo-large.png"}
@@ -91,148 +102,20 @@ export function Header({
             />
           </Link>
 
-          {/* Desktop nav */}
-          <nav
-            aria-label="Main navigation"
-            className="hidden md:flex items-center gap-0 ml-2"
-          >
-            {navItems.map((item) => (
-              <DesktopNavItem key={item.label} item={item} />
-            ))}
-          </nav>
+          {/* ── ZONE 2: Nav + Search — fills middle ─────────────────────── */}
+          <div className="hidden md:flex flex-1 items-center gap-5">
+            {/* Nav */}
+            <nav aria-label="Main navigation" className="hidden xl:flex items-center gap-6 shrink-0">
+              {navItems.map((item) => (
+                <DesktopNavItem key={item.label} item={item} pathname={pathname} search={search} />
+              ))}
+            </nav>
 
-          {/* Search bar — expands in the center/right */}
-          <form
-            role="search"
-            onSubmit={handleSearch}
-            className="hidden md:flex flex-1 max-w-md ml-auto items-center"
-          >
-            <div className="relative w-full">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted pointer-events-none"
-                aria-hidden="true"
-              />
-              <input
-                ref={searchRef}
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for products, brands and more..."
-                aria-label="Search"
-                className={cn(
-                  "w-full h-9 rounded-md border border-border bg-surface",
-                  "pl-8 pr-3 text-body-sm text-foreground",
-                  "placeholder:text-foreground-muted text-[13px]",
-                  "focus:outline-none focus:border-foreground/40 transition-colors",
-                )}
-              />
-            </div>
-          </form>
-
-          {/* Right actions */}
-          <div className="ml-auto md:ml-4 flex items-center gap-1">
-            {/* Account — with text label on desktop */}
-            <AccountButton />
-
-            {/* Wishlist — with text label on desktop */}
-            <Link
-              href="/account"
-              aria-label="Wishlist"
-              className={cn(
-                "hidden md:flex items-center gap-1.5 h-8 px-2 rounded-md",
-                "text-[13px] font-medium text-foreground hover:bg-muted transition-colors",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-              )}
-            >
-              <Heart className="size-[16px]" aria-hidden="true" />
-              Wishlist
-            </Link>
-            {/* Wishlist icon-only on mobile */}
-            <Link
-              href="/account"
-              aria-label="Wishlist"
-              className={cn(
-                "md:hidden flex h-8 w-8 items-center justify-center rounded-md",
-                "text-foreground hover:bg-muted transition-colors",
-              )}
-            >
-              <Heart className="size-[18px]" />
-            </Link>
-
-            {/* Cart — icon + badge + text on desktop */}
-            <CartButton cartCount={cartCount} onCartClick={onCartClick} />
-
-            {/* Mobile search */}
-            <MobileSearchButton />
-
-            {/* Mobile cart icon */}
-            {onCartClick ? (
-              <button
-                type="button"
-                aria-label={`Cart${cartCount > 0 ? ` (${cartCount} items)` : ""}`}
-                onClick={onCartClick}
-                className="md:hidden relative flex h-8 w-8 items-center justify-center rounded-md text-foreground hover:bg-muted transition-colors"
-              >
-                <ShoppingBag className="size-[18px]" />
-                {cartCount > 0 && (
-                  <span aria-hidden="true" className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground leading-none">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
-              </button>
-            ) : (
-              <Link
-                href="/cart"
-                aria-label={`Cart${cartCount > 0 ? ` (${cartCount} items)` : ""}`}
-                className="md:hidden relative flex h-8 w-8 items-center justify-center rounded-md text-foreground hover:bg-muted transition-colors"
-              >
-                <ShoppingBag className="size-[18px]" />
-                {cartCount > 0 && (
-                  <span aria-hidden="true" className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground leading-none">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
-              </Link>
-            )}
-
-            {/* Mobile menu toggle */}
-            <button
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
-              aria-expanded={mobileOpen}
-              aria-controls="mobile-nav"
-              onClick={() => setMobileOpen((o) => !o)}
-              className={cn(
-                "md:hidden flex h-8 w-8 items-center justify-center rounded-md",
-                "text-foreground hover:bg-muted transition-colors duration-150",
-              )}
-            >
-              {mobileOpen ? <X className="size-4.5" /> : <Menu className="size-4.5" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile nav */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.nav
-            id="mobile-nav"
-            aria-label="Mobile navigation"
-            variants={fadeDown}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            className="md:hidden border-t border-border bg-background"
-          >
-            {/* Mobile search */}
-            <div className="container-x mx-auto pt-3 pb-1">
-              <form
-                role="search"
-                onSubmit={handleSearch}
-                className="relative"
-              >
+            {/* Search */}
+            <form role="search" onSubmit={handleSearch} className="flex-1 max-w-[380px]">
+              <div className="relative group">
                 <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted pointer-events-none"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[15px] text-[#747878] group-focus-within:text-[#191c1e] transition-colors pointer-events-none"
                   aria-hidden="true"
                 />
                 <input
@@ -242,24 +125,97 @@ export function Header({
                   placeholder="Search products, brands..."
                   aria-label="Search"
                   className={cn(
-                    "w-full h-9 rounded-md border border-border bg-surface",
-                    "pl-8 pr-3 text-body-sm text-foreground text-[13px]",
-                    "placeholder:text-foreground-muted",
-                    "focus:outline-none focus:border-foreground/40 transition-colors",
+                    "w-full h-9 pl-9 pr-4 rounded-full",
+                    "bg-[#f3f4f6] border border-transparent",
+                    "text-[#191c1e] text-[13px] placeholder:text-[#747878]",
+                    "focus:outline-none focus:bg-white focus:border-[#c4c7c7]",
+                    "transition-all duration-200",
+                  )}
+                />
+              </div>
+            </form>
+          </div>
+
+          {/* ── ZONE 3: Account / Wishlist / Cart — hard right ──────────── */}
+          {/* Left border creates clear visual separation from nav+search */}
+          <div className="flex items-center gap-0.5 pl-4 ml-auto border-l border-[#e1e2e4]">
+            {/* Account — visible on all sizes */}
+            <AccountButton />
+
+            {/* Wishlist — visible on all sizes */}
+            <Link
+              href="/account"
+              aria-label="Wishlist"
+              className="flex items-center justify-center h-9 w-9 rounded-full text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e] transition-all duration-150"
+            >
+              <Heart className="size-[18px]" aria-hidden="true" />
+            </Link>
+
+            {/* Cart — visible on all sizes */}
+            <CartButton cartCount={cartCount} onCartClick={onCartClick} />
+
+            {/* Mobile search icon */}
+            <MobileSearchButton />
+
+            {/* Mobile hamburger — xl:hidden */}
+            <button
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
+              onClick={() => setMobileOpen((o) => !o)}
+              className="xl:hidden flex h-9 w-9 items-center justify-center rounded-full text-[#191c1e] hover:bg-[#f3f4f6] transition-colors"
+            >
+              {mobileOpen ? <X className="size-4.5" /> : <Menu className="size-4.5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Mobile nav ──────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.nav
+            id="mobile-nav"
+            aria-label="Mobile navigation"
+            variants={fadeDown}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            className="xl:hidden border-t border-[#e1e2e4]/60 bg-white/95 backdrop-blur-xl"
+          >
+            {/* Mobile search */}
+            <div className="px-5 md:px-8 lg:px-10 pt-4 pb-2">
+              <form role="search" onSubmit={handleSearch} className="relative">
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 size-[15px] text-[#444748] pointer-events-none"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products, brands..."
+                  aria-label="Search"
+                  className={cn(
+                    "w-full h-11 pl-10 pr-4 rounded-full",
+                    "bg-[#edeef0] border border-transparent",
+                    "text-[#191c1e] text-[14px] placeholder:text-[#444748]",
+                    "focus:outline-none focus:bg-white focus:border-[#c4c7c7]/60",
+                    "transition-all duration-200",
                   )}
                 />
               </form>
             </div>
-            <ul className="container-x mx-auto py-2 flex flex-col">
+            <ul className="px-5 md:px-8 lg:px-10 py-2 flex flex-col">
               {navItems.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    onClick={closeMobile}
                     className={cn(
-                      "flex items-center py-2.5 text-body-sm font-medium text-foreground",
-                      "border-b border-border last:border-none",
-                      "hover:text-foreground-muted transition-colors",
+                      "flex items-center py-3 text-[14px] font-semibold",
+                      "border-b border-[#e1e2e4]/50 last:border-none",
+                      item.isSale ? "text-[#ba0918]" : "text-[#191c1e]",
+                      "hover:text-[#444748] transition-colors",
                     )}
                   >
                     {item.label}
@@ -274,66 +230,82 @@ export function Header({
   );
 }
 
-// ── Cart button with text label ───────────────────────────────────────────────
+// ── Cart pill button ──────────────────────────────────────────────────────────
 
-interface CartButtonProps {
-  cartCount: number;
-  onCartClick?: () => void;
-}
-
-function CartButton({ cartCount, onCartClick }: CartButtonProps) {
+function CartButton({ cartCount, onCartClick }: { cartCount: number; onCartClick?: () => void }) {
   const label = `Cart${cartCount > 0 ? ` (${cartCount})` : ""}`;
+
   const cls = cn(
-    "hidden md:flex items-center gap-1.5 h-8 px-2 rounded-md relative",
-    "text-[13px] font-medium text-foreground hover:bg-muted transition-colors",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+    "relative flex items-center gap-2 py-2 px-4 rounded-full",
+    "bg-[#0D0D0D] text-white text-[13px] font-bold tracking-wide uppercase",
+    "hover:bg-[#1c1b1b] hover:shadow-md transition-all duration-150",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D]",
+    "hidden sm:flex",
   );
 
   const inner = (
     <>
-      <div className="relative">
-        <ShoppingBag className="size-[16px]" aria-hidden="true" />
-        {cartCount > 0 && (
-          <span
-            aria-hidden="true"
-            className="absolute -top-1 -right-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-bold text-primary-foreground leading-none"
-          >
-            {cartCount > 99 ? "99+" : cartCount}
-          </span>
-        )}
-      </div>
-      Cart
+      <ShoppingBag className="size-[18px]" aria-hidden="true" />
+      <span className="hidden sm:inline">Cart</span>
+      {cartCount > 0 && (
+        <span
+          aria-hidden="true"
+          className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ba0918] text-white text-[10px] font-extrabold leading-none shadow-sm"
+        >
+          {cartCount > 99 ? "99+" : cartCount}
+        </span>
+      )}
     </>
   );
 
   if (onCartClick) {
-    return (
-      <button type="button" aria-label={label} onClick={onCartClick} className={cls}>
-        {inner}
-      </button>
-    );
+    return <button type="button" aria-label={label} onClick={onCartClick} className={cls}>{inner}</button>;
   }
-
-  return (
-    <Link href="/cart" aria-label={label} className={cls}>
-      {inner}
-    </Link>
-  );
+  return <Link href="/cart" aria-label={label} className={cls}>{inner}</Link>;
 }
 
 // ── Desktop nav item ──────────────────────────────────────────────────────────
 
-function DesktopNavItem({ item }: { item: NavItem }) {
+function DesktopNavItem({
+  item,
+  pathname,
+  search,
+}: {
+  item: NavItem;
+  pathname: string;
+  search: string;
+}) {
   const [open, setOpen] = useState(false);
+
+  // Full current URL path+search for matching
+  const fullUrl = search ? `${pathname}${search}` : pathname;
+
+  const isActive = item.href === "/"
+    ? pathname === "/"
+    : item.href.includes("?")
+    ? fullUrl === item.href
+    : item.href === "/shop"
+    ? pathname === "/shop" && !search.includes("sort=") && !search.includes("sale=")
+    : pathname.startsWith(item.href);
+
+  // Sale is always crimson; still gets underline when active
+  const isSaleActive = item.isSale ? fullUrl === item.href : false;
 
   if (!item.children?.length) {
     return (
       <Link
         href={item.href}
         className={cn(
-          "px-2.5 py-1.5 text-[13px] font-medium text-foreground",
-          "hover:text-foreground/60 rounded transition-colors duration-150",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+          "relative py-1 text-[14px] transition-colors duration-150",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D] rounded",
+          item.isSale
+            ? cn(
+                "font-semibold text-[#ba0918] hover:opacity-80",
+                isSaleActive && "after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#ba0918] after:rounded-full",
+              )
+            : isActive
+            ? "font-bold text-[#191c1e] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0D0D0D] after:rounded-full"
+            : "font-medium text-[#444748] hover:text-[#191c1e]",
         )}
       >
         {item.label}
@@ -350,18 +322,10 @@ function DesktopNavItem({ item }: { item: NavItem }) {
       <button
         aria-expanded={open}
         aria-haspopup="true"
-        className={cn(
-          "flex items-center gap-1 px-2.5 py-1.5 text-[13px] font-medium text-foreground",
-          "hover:text-foreground/60 rounded transition-colors duration-150",
-        )}
+        className="flex items-center gap-1 py-1 text-[14px] font-medium text-[#444748] hover:text-[#191c1e] transition-colors"
       >
         {item.label}
-        <ChevronDown
-          className={cn(
-            "size-3 transition-transform duration-150",
-            open && "rotate-180",
-          )}
-        />
+        <ChevronDown className={cn("size-3.5 transition-transform duration-150", open && "rotate-180")} />
       </button>
       <AnimatePresence>
         {open && (
@@ -370,16 +334,13 @@ function DesktopNavItem({ item }: { item: NavItem }) {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className={cn(
-              "absolute top-full left-0 mt-1 w-44 rounded-lg",
-              "border border-border bg-background shadow-md py-1",
-            )}
+            className="absolute top-full left-0 mt-2 w-48 rounded-2xl border border-[#e1e2e4] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5 z-50"
           >
             {item.children.map((child) => (
               <Link
                 key={child.label}
                 href={child.href}
-                className="block px-3 py-2 text-[13px] text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
+                className="block px-4 py-2.5 text-[13px] font-medium text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e] transition-colors"
               >
                 {child.label}
               </Link>
@@ -391,53 +352,113 @@ function DesktopNavItem({ item }: { item: NavItem }) {
   );
 }
 
-// ── Header icon button ────────────────────────────────────────────────────────
+// ── Account button ────────────────────────────────────────────────────────────
 
-interface HeaderIconButtonProps {
-  label: string;
-  href?: string;
-  onClick?: () => void;
-  badge?: number;
-  children: React.ReactNode;
-}
+function AccountButton() {
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setMounted]   = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const router  = useRouter();
 
-function HeaderIconButton({ label, href, onClick, badge, children }: HeaderIconButtonProps) {
-  const cls = cn(
-    "relative flex h-8 w-8 items-center justify-center rounded-md",
-    "text-foreground hover:bg-muted transition-colors duration-150",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  const baseCls = cn(
+    "flex items-center gap-1.5 px-2.5 py-2 rounded-full",
+    "text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e]",
+    "text-[13px] font-semibold transition-all duration-150",
   );
 
-  const inner = (
-    <>
-      {children}
-      {badge != null && badge > 0 && (
-        <span
-          aria-hidden="true"
-          className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground leading-none"
-        >
-          {badge > 99 ? "99+" : badge}
-        </span>
-      )}
-    </>
-  );
-
-  if (href) {
+  if (!mounted || isLoading) {
     return (
-      <Link href={href} aria-label={label} className={cls}>
-        {inner}
+      <Link href="/auth/login" className={baseCls}>
+        <User className="size-[18px]" aria-hidden="true" />
+        <span className="hidden md:inline">Account</span>
       </Link>
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <Link href="/auth/login" className={baseCls}>
+        <User className="size-[18px]" aria-hidden="true" />
+        <span className="hidden md:inline">Account</span>
+      </Link>
+    );
+  }
+
+  const initials = user?.firstName
+    ? user.firstName[0].toUpperCase()
+    : user?.email
+    ? user.email[0].toUpperCase()
+    : "A";
+
+  const displayName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user?.email ?? "Account";
+
   return (
-    <button type="button" aria-label={label} onClick={onClick} className={cls}>
-      {inner}
-    </button>
+    <div className="relative" ref={menuRef}>
+      <button
+        aria-label="Account menu"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((o) => !o)}
+        className="flex items-center gap-2 px-2 py-1.5 rounded-full text-[#444748] hover:bg-[#edeef0] hover:text-[#191c1e] transition-all duration-150"
+      >
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0D0D0D] text-white text-[11px] font-bold shadow-sm">
+          {initials}
+        </span>
+        <span className="hidden md:inline text-[13px] font-semibold">Account</span>
+      </button>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            variants={fadeDown}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            className="absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl border border-[#e1e2e4] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5"
+          >
+            <div className="px-4 py-3 border-b border-[#e1e2e4]">
+              <p className="text-[13px] font-bold text-[#191c1e] truncate">{displayName}</p>
+              {user?.email && (
+                <p className="text-[11px] text-[#444748] truncate mt-0.5">{user.email}</p>
+              )}
+            </div>
+            <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e] transition-colors">
+              <User className="size-4" /> My Account
+            </Link>
+            <Link href="/account/orders" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e] transition-colors">
+              <ShoppingBag className="size-4" /> My Orders
+            </Link>
+            <div className="border-t border-[#e1e2e4] my-1" />
+            <button
+              onClick={async () => { setMenuOpen(false); await logout(); router.push("/"); }}
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#444748] hover:bg-danger/5 hover:text-danger transition-colors"
+            >
+              <LogOut className="size-4" /> Sign Out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
-// ── Mobile search button (opens inline search) ───────────────────────────────
+// ── Mobile search overlay ─────────────────────────────────────────────────────
 
 function MobileSearchButton() {
   const [open, setOpen] = useState(false);
@@ -458,12 +479,9 @@ function MobileSearchButton() {
       <button
         aria-label="Search"
         onClick={() => setOpen((o) => !o)}
-        className={cn(
-          "md:hidden flex h-8 w-8 items-center justify-center rounded-md",
-          "text-foreground hover:bg-muted transition-colors duration-150",
-        )}
+        className="md:hidden flex h-9 w-9 items-center justify-center rounded-full text-[#444748] hover:bg-[#edeef0] transition-colors"
       >
-        <Search className="size-[18px]" />
+        <Search className="size-[20px]" />
       </button>
       <AnimatePresence>
         {open && (
@@ -472,14 +490,11 @@ function MobileSearchButton() {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="md:hidden fixed inset-x-0 top-14 z-50 bg-background border-b border-border px-4 py-3 shadow-md"
+            className="md:hidden fixed inset-x-0 top-16 z-50 bg-white/95 backdrop-blur-xl border-b border-[#e1e2e4]/60 px-5 py-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
           >
             <form role="search" onSubmit={handleSubmit} className="flex gap-2">
               <div className="relative flex-1">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted pointer-events-none"
-                  aria-hidden="true"
-                />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-[15px] text-[#444748] pointer-events-none" aria-hidden="true" />
                 <input
                   autoFocus
                   type="search"
@@ -488,18 +503,15 @@ function MobileSearchButton() {
                   placeholder="Search products, brands..."
                   aria-label="Search"
                   className={cn(
-                    "w-full h-9 rounded-md border border-border bg-surface",
-                    "pl-8 pr-3 text-body-sm text-foreground text-[13px]",
-                    "placeholder:text-foreground-muted",
-                    "focus:outline-none focus:border-foreground/40 transition-colors",
+                    "w-full h-11 pl-10 pr-4 rounded-full",
+                    "bg-[#edeef0] border border-transparent",
+                    "text-[#191c1e] text-[14px] placeholder:text-[#444748]",
+                    "focus:outline-none focus:bg-white focus:border-[#c4c7c7]/60",
+                    "transition-all duration-200",
                   )}
                 />
               </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="text-[13px] text-foreground-muted hover:text-foreground px-2"
-              >
+              <button type="button" onClick={() => setOpen(false)} className="text-[13px] font-medium text-[#444748] hover:text-[#191c1e] px-2 transition-colors">
                 Cancel
               </button>
             </form>
@@ -507,140 +519,5 @@ function MobileSearchButton() {
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-// ── Account button ────────────────────────────────────────────────────────────
-
-function AccountButton() {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => { setMounted(true); }, []);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handler = () => setMenuOpen(false);
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
-
-  if (!mounted || isLoading) {
-    return (
-      <HeaderIconButton label="Sign in" href="/auth/login">
-        <User className="size-[18px]" />
-      </HeaderIconButton>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <>
-        {/* Desktop: icon + text */}
-        <Link
-          href="/auth/login"
-          aria-label="Account"
-          className={cn(
-            "hidden md:flex items-center gap-1.5 h-8 px-2 rounded-md",
-            "text-[13px] font-medium text-foreground hover:bg-muted transition-colors",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-          )}
-        >
-          <User className="size-[16px]" aria-hidden="true" />
-          Account
-        </Link>
-        {/* Mobile: icon only */}
-        <Link
-          href="/auth/login"
-          aria-label="Sign in"
-          className={cn(
-            "md:hidden flex h-8 w-8 items-center justify-center rounded-md",
-            "text-foreground hover:bg-muted transition-colors",
-          )}
-        >
-          <User className="size-[18px]" />
-        </Link>
-      </>
-    );
-  }
-
-  const initials = user?.firstName
-    ? user.firstName[0].toUpperCase()
-    : user?.email
-    ? user.email[0].toUpperCase()
-    : "A";
-
-  const displayName =
-    user?.firstName && user?.lastName
-      ? `${user.firstName} ${user.lastName}`
-      : user?.email ?? "Account";
-
-  return (
-    <div className="relative">
-      <button
-        aria-label="Account menu"
-        aria-expanded={menuOpen}
-        onClick={() => setMenuOpen((o) => !o)}
-        className={cn(
-          "relative flex items-center gap-1.5 h-8 px-2 rounded-md",
-          "text-[13px] font-medium text-foreground hover:bg-muted transition-colors duration-150",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-        )}
-      >
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
-          {initials}
-        </span>
-        <span className="hidden md:inline">Account</span>
-      </button>
-
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            variants={fadeDown}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-border bg-background shadow-md py-1"
-          >
-            <div className="px-4 py-2.5 border-b border-border">
-              <p className="text-[13px] font-medium text-foreground truncate">{displayName}</p>
-              {user?.email && (
-                <p className="text-[11px] text-foreground-muted truncate">{user.email}</p>
-              )}
-            </div>
-            <Link
-              href="/account"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-[13px] text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
-            >
-              <User className="size-3.5" />
-              My Account
-            </Link>
-            <Link
-              href="/account/orders"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-[13px] text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
-            >
-              <ShoppingBag className="size-3.5" />
-              My Orders
-            </Link>
-            <div className="border-t border-border my-1" />
-            <button
-              onClick={async () => {
-                setMenuOpen(false);
-                await logout();
-                router.push("/");
-              }}
-              className="flex w-full items-center gap-2 px-4 py-2 text-[13px] text-foreground-muted hover:bg-danger/5 hover:text-danger transition-colors"
-            >
-              <LogOut className="size-3.5" />
-              Sign Out
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
   );
 }

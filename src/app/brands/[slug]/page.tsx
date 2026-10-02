@@ -37,7 +37,7 @@ export async function generateMetadata({
 
   if (!brand) return { title: "Brand Not Found" };
 
-  const storeName = settings?.businessName ?? "Kromic Store";
+  const storeName = settings?.businessName ?? "Shopey";
   const title = `${brand.name} — ${storeName}`;
   const description =
     brand.description ??

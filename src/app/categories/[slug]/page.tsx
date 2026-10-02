@@ -38,7 +38,7 @@ export async function generateMetadata({
     return { title: "Category Not Found" };
   }
 
-  const storeName = settings?.businessName ?? "Kromic Store";
+  const storeName = settings?.businessName ?? "Shopey";
   const title = `${cat.name} — ${storeName}`;
   const description =
     cat.description ??

@@ -590,17 +590,17 @@ export function CheckoutClient({
   // ── Auth guard ───────────────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
-      <div className="container-x mx-auto py-16 max-w-lg text-center min-h-[60vh]">
-        <p className="text-h4 font-semibold text-foreground">Sign in to checkout</p>
-        <p className="mt-2 text-body-sm text-foreground-muted">
+      <div className="px-5 md:px-8 lg:px-10 py-16 max-w-lg text-center min-h-[60vh]">
+        <p className="text-[18px] font-bold text-[#191c1e]">Sign in to checkout</p>
+        <p className="mt-2 text-[13px] text-[#444748]">
           You need an account to complete your purchase.
         </p>
         <div className="mt-6 flex gap-3 justify-center">
           <Link href="/auth/login?redirect=/checkout">
-            <Button variant="primary" size="lg">Sign In</Button>
+            <Button variant="primary" size="lg" className="rounded-full px-8">Sign In</Button>
           </Link>
           <Link href="/auth/register?redirect=/checkout">
-            <Button variant="outline" size="lg">Create Account</Button>
+            <Button variant="secondary" size="lg" className="rounded-full px-8">Create Account</Button>
           </Link>
         </div>
       </div>
@@ -611,15 +611,17 @@ export function CheckoutClient({
   const cartItems = cart?.items ?? [];
   if (cartItems.length === 0) {
     return (
-      <div className="container-x mx-auto py-16 max-w-lg text-center min-h-[60vh]">
-        <ShoppingBag className="size-12 text-foreground-muted mx-auto mb-4" />
-        <p className="text-h4 font-semibold text-foreground">Your cart is empty</p>
-        <p className="mt-2 text-body-sm text-foreground-muted">
+      <div className="px-5 md:px-8 lg:px-10 py-16 max-w-lg text-center min-h-[60vh]">
+        <div className="rounded-2xl bg-[#f3f4f6] border border-[#e1e2e4] p-6 w-fit mx-auto mb-4">
+          <ShoppingBag className="size-10 text-[#5A6578]" aria-hidden="true" />
+        </div>
+        <p className="text-[18px] font-bold text-[#191c1e]">Your cart is empty</p>
+        <p className="mt-2 text-[13px] text-[#444748] leading-relaxed">
           Add some products before checking out.
         </p>
         <div className="mt-6">
           <Link href="/shop">
-            <Button variant="primary" size="lg">Continue Shopping</Button>
+            <Button variant="primary" size="lg" className="rounded-full px-8">Continue Shopping</Button>
           </Link>
         </div>
       </div>
@@ -669,8 +671,8 @@ export function CheckoutClient({
   const codUnavailableReason = codMethod?.isAvailable === false ? codMethod.unavailableReason : null;
 
   return (
-    <div className="container-x mx-auto py-8 md:py-12">
-      <h1 className="text-h2 font-bold text-foreground mb-8">Checkout</h1>
+    <div className="px-5 md:px-8 lg:px-10 py-8 md:py-12">
+      <h1 className="text-[28px] md:text-[36px] font-extrabold text-[#191c1e] tracking-tight mb-8">Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
 
@@ -681,20 +683,20 @@ export function CheckoutClient({
           <section aria-labelledby="addr-heading">
             <h2
               id="addr-heading"
-              className="text-h4 font-semibold text-foreground mb-4 flex items-center gap-2"
+              className="text-[16px] font-bold text-[#191c1e] mb-4 flex items-center gap-2"
             >
-              <Truck className="size-4" aria-hidden="true" /> Delivery Address
+              <Truck className="size-4 text-[#444748]" aria-hidden="true" /> Delivery Address
             </h2>
 
             {addressesLoading ? (
               <div className="flex flex-col gap-3">
-                <Skeleton className="h-24 w-full rounded-xl" />
-                <Skeleton className="h-24 w-full rounded-xl" />
+                <Skeleton className="h-24 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full rounded-2xl" />
               </div>
             ) : addresses.length === 0 ? (
               /* ── No saved addresses: inline form ─── */
-              <div className="rounded-xl border border-border p-5 flex flex-col gap-3">
-                <p className="text-caption text-foreground-muted -mt-1 mb-1">
+              <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 flex flex-col gap-3">
+                <p className="text-[12px] text-[#5A6578] -mt-1 mb-1">
                   Enter your delivery address. It will be saved to your account.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -726,10 +728,10 @@ export function CheckoutClient({
                       key={addr.id}
                       htmlFor={`addr-${addr.id}`}
                       className={cn(
-                        "relative flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors",
+                        "relative flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
                         selectedAddressId === addr.id
-                          ? "border-foreground bg-muted/30"
-                          : "border-border hover:border-border-strong",
+                          ? "border-[#0D0D0D] bg-[#f3f4f6]"
+                          : "border-[#E5E7EB] bg-white hover:border-[#c4c7c7]",
                       )}
                     >
                       <input
@@ -742,16 +744,16 @@ export function CheckoutClient({
                         className="mt-0.5 accent-foreground shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-body-sm font-medium text-foreground truncate">
+                        <p className="text-[13px] font-bold text-[#191c1e] truncate">
                           {[addr.firstName, addr.lastName].filter(Boolean).join(" ") || addr.label || "Address"}
                           {addr.isDefault && (
-                            <span className="ml-2 inline-flex items-center gap-0.5 text-caption text-foreground-muted">
+                            <span className="ml-2 inline-flex items-center gap-0.5 text-[11px] text-[#5A6578]">
                               <Star className="size-3 fill-foreground-muted" aria-hidden="true" />
                               Default
                             </span>
                           )}
                         </p>
-                        <address className="not-italic text-caption text-foreground-muted mt-0.5 leading-relaxed">
+                        <address className="not-italic text-[12px] text-[#5A6578] mt-0.5 leading-relaxed">
                           {addr.addressLine1 && <span>{addr.addressLine1}, </span>}
                           {addr.city && <span>{addr.city}, </span>}
                           {addr.state && <span>{addr.state} </span>}
@@ -780,9 +782,9 @@ export function CheckoutClient({
             <section aria-labelledby="pay-heading">
               <h2
                 id="pay-heading"
-                className="text-h4 font-semibold text-foreground mb-4 flex items-center gap-2"
+                className="text-[16px] font-bold text-[#191c1e] mb-4 flex items-center gap-2"
               >
-                <CreditCard className="size-4" aria-hidden="true" /> Payment Method
+                <CreditCard className="size-4 text-[#444748]" aria-hidden="true" /> Payment Method
               </h2>
               <div className="flex flex-col gap-3" role="radiogroup" aria-label="Select payment method">
                 {/* §3.3: render from paymentMethods[]; fall back to props while loading */}
@@ -828,9 +830,9 @@ export function CheckoutClient({
           <section aria-labelledby="coupon-heading">
             <h2
               id="coupon-heading"
-              className="text-h4 font-semibold text-foreground mb-4 flex items-center gap-2"
+              className="text-[16px] font-bold text-[#191c1e] mb-4 flex items-center gap-2"
             >
-              <Tag className="size-4" aria-hidden="true" /> Coupon / Promo
+              <Tag className="size-4 text-[#444748]" aria-hidden="true" /> Coupon / Promo
             </h2>
             {/* §3.2: couponActive = couponErrorCode === null && appliedCouponCode !== null */}
             {couponActive && summary?.appliedCouponCode ? (
@@ -878,8 +880,8 @@ export function CheckoutClient({
 
         {/* ── RIGHT: summary ── */}
         <div className="lg:sticky lg:top-24">
-          <div className="rounded-xl border border-border bg-surface-elevated p-6 flex flex-col gap-4">
-            <h2 className="text-h4 font-semibold text-foreground">Order Summary</h2>
+          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 flex flex-col gap-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+            <h2 className="text-[16px] font-bold text-[#191c1e] tracking-tight">Order Summary</h2>
 
             {/* Line items from summary or cart */}
             <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto">
@@ -907,7 +909,7 @@ export function CheckoutClient({
             )}
 
             {!summaryLoading && summary && (
-              <div className="flex flex-col gap-2 text-body-sm border-t border-border pt-3">
+              <div className="flex flex-col gap-2 text-[13px] border-t border-[#e1e2e4] pt-3">
                 <SummaryRow label="Subtotal" value={formatPrice(summary.subtotal, effectiveCurrency, locale)} />
                 <SummaryRow
                   label={summary.isFreeShipping ? "Shipping (Free)" : "Shipping"}
@@ -946,10 +948,10 @@ export function CheckoutClient({
             )}
 
             {!summaryLoading && summary && (
-              <div className="flex justify-between py-3 border-t border-border text-body font-semibold">
-                <span className="text-foreground">Total</span>
+              <div className="flex justify-between py-3 border-t border-[#e1e2e4]">
+                <span className="text-[14px] font-bold text-[#191c1e]">Total</span>
                 {/* §1.2: grandTotal is what gets charged — display directly */}
-                <span className="text-foreground tabular-nums">
+                <span className="text-[16px] font-extrabold text-[#0D0D0D] tabular-nums">
                   {formatPrice(summary.grandTotal, effectiveCurrency, locale)}
                 </span>
               </div>
@@ -1100,9 +1102,7 @@ export function CheckoutClient({
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function PaymentOption({
-  id, value, selected, onSelect, icon, label, description,
-}: {
+function PaymentOption({ id, value, selected, onSelect, icon, label, description }: {
   id: string; value: string; selected: boolean;
   onSelect: () => void; icon: React.ReactNode;
   label: string; description: string;
@@ -1111,27 +1111,25 @@ function PaymentOption({
     <label
       htmlFor={id}
       className={cn(
-        "flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors",
-        selected ? "border-foreground bg-muted/30" : "border-border hover:border-border-strong",
+        "flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
+        selected ? "border-[#0D0D0D] bg-[#f3f4f6]" : "border-[#E5E7EB] bg-white hover:border-[#c4c7c7]",
       )}
     >
-      <input id={id} type="radio" name="paymentMethod" value={value} checked={selected} onChange={onSelect} className="mt-0.5 accent-foreground" />
-      <span className="mt-0.5 text-foreground-muted">{icon}</span>
+      <input id={id} type="radio" name="paymentMethod" value={value} checked={selected} onChange={onSelect} className="mt-0.5 accent-[#0D0D0D]" />
+      <span className="mt-0.5 text-[#444748]">{icon}</span>
       <div>
-        <p className="text-body-sm font-medium text-foreground">{label}</p>
-        <p className="text-caption text-foreground-muted">{description}</p>
+        <p className="text-[13px] font-bold text-[#191c1e]">{label}</p>
+        <p className="text-[12px] text-[#5A6578]">{description}</p>
       </div>
     </label>
   );
 }
 
-function SummaryRow({
-  label, value, highlight, muted,
-}: { label: string; value: string; highlight?: boolean; muted?: boolean }) {
+function SummaryRow({ label, value, highlight, muted }: { label: string; value: string; highlight?: boolean; muted?: boolean }) {
   return (
     <div className="flex justify-between">
-      <span className={cn("text-foreground-muted", highlight && "text-success")}>{label}</span>
-      <span className={cn("font-medium tabular-nums", highlight ? "text-success" : muted ? "text-foreground-muted" : "text-foreground")}>
+      <span className={cn("text-[#5A6578]", highlight && "text-success")}>{label}</span>
+      <span className={cn("font-semibold tabular-nums", highlight ? "text-success" : muted ? "text-[#5A6578]" : "text-[#191c1e]")}>
         {value}
       </span>
     </div>
@@ -1140,15 +1138,15 @@ function SummaryRow({
 
 function CheckoutSkeleton() {
   return (
-    <div className="container-x mx-auto py-8 md:py-12" aria-hidden="true">
-      <Skeleton className="h-8 w-36 mb-8" />
+    <div className="px-5 md:px-8 lg:px-10 py-8 md:py-12" aria-hidden="true">
+      <Skeleton className="h-9 w-36 mb-8" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <Skeleton className="h-48 w-full rounded-lg" />
-          <Skeleton className="h-32 w-full rounded-lg" />
-          <Skeleton className="h-20 w-full rounded-lg" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-20 w-full rounded-2xl" />
         </div>
-        <Skeleton className="h-80 w-full rounded-xl" />
+        <Skeleton className="h-80 w-full rounded-2xl" />
       </div>
     </div>
   );

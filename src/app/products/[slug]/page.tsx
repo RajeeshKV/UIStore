@@ -38,7 +38,7 @@ export async function generateMetadata({
 
   if (!product) return { title: "Product Not Found" };
 
-  const storeName = settings?.businessName ?? "Kromic Store";
+  const storeName = settings?.businessName ?? "Shopey";
   const title = product.metaTitle ?? `${product.name} — ${storeName}`;
   const description =
     product.metaDescription ??
@@ -109,14 +109,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>
-      <div className="bg-background">
+      <div className="bg-white">
         {/* Breadcrumb */}
-        <div className="container-x mx-auto pt-6 pb-0">
+        <div className="px-5 md:px-8 lg:px-10 pt-6 pb-0">
           <CatalogBreadcrumb items={breadcrumbs} />
         </div>
 
         {/* Main product section */}
-        <div className="container-x mx-auto py-8 md:py-10">
+        <div className="px-5 md:px-8 lg:px-10 py-8 md:py-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
             {/* Gallery */}
             <div className="lg:sticky lg:top-24">
