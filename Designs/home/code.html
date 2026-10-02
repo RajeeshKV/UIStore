@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_standard" name="shell-type"/>
+<title>Shopey - Premium Gadgets &amp; Modern Tech</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-lowest": "#ffffff",
+            "inverse-primary": "#c9c6c5",
+            "on-primary": "#ffffff",
+            "primary-fixed": "#e5e2e1",
+            "primary-fixed-dim": "#c9c6c5",
+            "tertiary-container": "#111c2c",
+            "on-primary-container": "#858383",
+            "inverse-on-surface": "#f0f1f3",
+            "primary": "#000000",
+            "secondary-fixed": "#ffdad6",
+            "on-tertiary-fixed-variant": "#3c4759",
+            "outline-variant": "#c4c7c7",
+            "tertiary-fixed-dim": "#bcc7dd",
+            "on-error": "#ffffff",
+            "on-primary-fixed": "#1c1b1b",
+            "surface-container-low": "#f3f4f6",
+            "on-surface-variant": "#444748",
+            "on-secondary-container": "#fffbff",
+            "on-secondary-fixed-variant": "#93000e",
+            "on-secondary-fixed": "#410003",
+            "error": "#ba1a1a",
+            "on-tertiary-container": "#798498",
+            "secondary-container": "#de2d2d",
+            "inverse-surface": "#2e3132",
+            "secondary": "#ba0918",
+            "surface-dim": "#d9dadc",
+            "surface-variant": "#e1e2e4",
+            "surface-tint": "#5f5e5e",
+            "surface-container": "#edeef0",
+            "primary-container": "#1c1b1b",
+            "surface": "#f8f9fb",
+            "surface-container-highest": "#e1e2e4",
+            "tertiary": "#000000",
+            "outline": "#747878",
+            "on-secondary": "#ffffff",
+            "tertiary-fixed": "#d8e3f9",
+            "secondary-fixed-dim": "#ffb4ac",
+            "on-tertiary-fixed": "#111c2c",
+            "on-background": "#191c1e",
+            "on-primary-fixed-variant": "#474646",
+            "on-error-container": "#93000a",
+            "on-surface": "#191c1e",
+            "surface-bright": "#f8f9fb",
+            "error-container": "#ffdad6",
+            "background": "#f8f9fb",
+            "surface-container-high": "#e7e8ea",
+            "on-tertiary": "#ffffff"
+          },
+          fontFamily: {
+            "display-hero": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "label-md": ["Plus Jakarta Sans"],
+            "label-sm": ["Plus Jakarta Sans"],
+            "caption-caps": ["Plus Jakarta Sans"],
+            "price-hero": ["Plus Jakarta Sans"],
+            "price-original": ["Plus Jakarta Sans"]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased selection:bg-primary selection:text-on-primary">
+<!-- Header / Navigation Bar -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/85 backdrop-blur-xl border-b border-surface-variant/40 transition-all duration-300">
+<div class="max-w-[1440px] mx-auto px-6 lg:px-10 h-20 flex items-center justify-between gap-6">
+<!-- Brand & Primary Nav -->
+<div class="flex items-center gap-10">
+<a class="flex items-center gap-1 group tracking-tight" data-path="home" href="#">
+<span class="font-extrabold text-2xl tracking-tighter text-on-surface uppercase">Shopey</span>
+<span class="w-2 h-2 rounded-full bg-secondary inline-block mb-1 group-hover:scale-125 transition-transform duration-300"></span>
+</a>
+<nav class="hidden xl:flex items-center gap-8" data-active-classes="text-on-surface font-bold">
+<a class="text-sm font-bold text-on-surface transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-primary after:rounded-full" data-path="home" href="#">Home</a>
+<a class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors" data-path="shop" href="#">Shop</a>
+<a class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors" data-path="categories" href="#">Categories</a>
+<a class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors" data-path="brands" href="#">Brands</a>
+<a class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors" data-path="new-arrivals" href="#">New Arrivals</a>
+<a class="text-sm font-semibold text-secondary hover:opacity-80 transition-opacity" data-path="sale" href="#">Sale</a>
+</nav>
+</div>
+<!-- Centered Modern Search Bar -->
+<div class="flex-1 max-w-lg hidden md:block">
+<div class="relative flex items-center w-full group">
+<span class="material-symbols-outlined absolute left-4 text-on-surface-variant group-focus-within:text-primary text-[20px] transition-colors pointer-events-none">search</span>
+<input class="w-full h-11 pl-11 pr-4 bg-surface-container/70 border border-transparent rounded-full text-on-surface placeholder:text-on-surface-variant text-sm focus:outline-none focus:bg-surface-container-lowest focus:border-outline-variant/60 focus:ring-2 focus:ring-primary/10 transition-all shadow-inner" placeholder="Search for products, brands and more..." type="search"/>
+</div>
+</div>
+<!-- User Action Icons -->
+<div class="flex items-center gap-3">
+<a class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-all font-semibold text-sm" data-path="my-account" href="#">
+<span class="material-symbols-outlined text-[22px]">account_circle</span>
+<span>Account</span>
+</a>
+<a aria-label="Wishlist" class="relative p-2.5 rounded-full hover:bg-surface-container text-on-surface-variant hover:text-secondary transition-all" data-path="wishlist" href="#">
+<span class="material-symbols-outlined text-[22px]">favorite</span>
+</a>
+<a aria-label="Shopping Cart" class="relative flex items-center gap-2 py-2 px-4 bg-primary text-on-primary rounded-full hover:bg-primary-container hover:shadow-md transition-all group" data-path="cart" href="#">
+<span class="material-symbols-outlined text-[19px]">shopping_bag</span>
+<span class="text-xs font-bold tracking-wide uppercase hidden sm:inline">Cart</span>
+<span class="w-5 h-5 rounded-full bg-secondary text-on-secondary text-[10px] flex items-center justify-center font-extrabold shadow-sm">3</span>
+</a>
+<div class="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 transition-all">
+<span class="material-symbols-outlined text-[19px]">person</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="w-full pt-20 bg-surface min-h-[calc(100vh-80px)]">
+<div class="max-w-[1440px] w-full mx-auto px-6 lg:px-10 py-6 flex flex-col gap-10">
+<!-- Hero Carousel Banner -->
+<div class="relative w-full rounded-3xl overflow-hidden shadow-[0_12px_36px_rgba(0,0,0,0.06)] bg-surface-container border border-surface-variant/30">
+<div class="relative w-full h-[440px] lg:h-[490px] overflow-hidden select-none" id="hero-slider">
+<!-- Slide 1 (Active) with IMAGE_23 -->
+<div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-100 z-10 flex items-center">
+<img class="absolute inset-0 w-full h-full object-cover object-center transform scale-[1.01]" data-alt="High-fidelity panoramic aesthetic composition of sleek modern gadgets on a clean surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHMuUcZ9EolrDuRfomTErUitemE_xi78tr618JrtZIAskZEShXTLKcFo1X5uHXj9h5blLEo6hEx1rZUBDucTu7T2Ngmm7614UzMLWGjne7RQFWju61gfw6gwSdgxWP2auXjg5MIYTFZw6DpsdCeTXs_NMVIt0wV-uILVA7-OjSpd_3fskYmg6gRVW3y3APJrv9M41A1bmHzD8WoIjMGrkYI-F7oSwspmrLivNh-Ms4o4QEsF0DLlxcBdRvPG9YASNgsg"/>
+<div class="absolute inset-0 bg-gradient-to-r from-surface-bright/95 via-surface-bright/70 md:via-surface-bright/40 to-transparent"></div>
+<div class="relative z-20 max-w-xl pl-8 sm:pl-14 lg:pl-16 flex flex-col items-start">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md border border-white/60 shadow-sm text-xs font-bold tracking-widest text-on-surface uppercase mb-3">
+<span class="text-secondary text-sm">✦</span> NEW ARRIVALS
+              </span>
+<h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-on-surface tracking-tight leading-[1.1] mb-3">
+                Premium Gadgets<br/>for Modern Living
+              </h1>
+<p class="text-base sm:text-lg text-on-surface-variant font-normal max-w-md mb-6 leading-relaxed">
+                Discover top tech brands and elevate your everyday experience.
+              </p>
+<a class="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-primary text-on-primary text-sm font-bold tracking-wide hover:bg-neutral-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 group" href="#">
+<span>Shop Now</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Slide 2 -->
+<div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0 z-0 flex items-center">
+<img class="absolute inset-0 w-full h-full object-cover object-center" data-alt="Editorial desk setup with space gray aluminum laptop open" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBj1OAjxYRM__Hk8LNnmkBcnoKUx9fIIXIc1PZgZDrdRowE-4Z4AFsszi987wE0iOIZZqRGDheDETDRVM4X3n8vxTOtolPKdbcHxXWKFzXHI3JDWqcs8o5cb0IHJLm8sxCMfw-AX1vfUqVjn1OKfqD0Rirx04wbIKuEOAGLkwCEI6bFRdYfgDHksVCeul3CagKFWLyqYQf55vQLq-87Jzrg1vWYndvej-D0bnvLw7XmjSzxdiFP9Iav"/>
+<div class="absolute inset-0 bg-gradient-to-r from-surface-bright/95 via-surface-bright/60 to-transparent"></div>
+<div class="relative z-20 max-w-xl pl-8 sm:pl-14 lg:pl-16 flex flex-col items-start">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md border border-white/60 shadow-sm text-xs font-bold tracking-widest text-on-surface uppercase mb-3">
+<span class="text-secondary text-sm">✦</span> NEXT GEN TECH
+              </span>
+<h2 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-on-surface tracking-tight leading-[1.1] mb-3">
+                Smarter Shopping<br/>for a Better Tomorrow
+              </h2>
+<p class="text-base sm:text-lg text-on-surface-variant font-normal max-w-md mb-6 leading-relaxed">
+                Curated gear engineered for precision, speed, and supreme clarity.
+              </p>
+<a class="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-primary text-on-primary text-sm font-bold tracking-wide hover:bg-neutral-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 group" href="#">
+<span>Explore Collection</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Navigation Arrows -->
+<button aria-label="Previous Slide" class="absolute left-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-surface-container-lowest/80 backdrop-blur-md text-on-surface border border-white/80 hover:bg-surface-container-lowest shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95" id="prev-slide">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button aria-label="Next Slide" class="absolute right-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-surface-container-lowest/80 backdrop-blur-md text-on-surface border border-white/80 hover:bg-surface-container-lowest shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95" id="next-slide">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+<!-- Dots Indicators -->
+<div class="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-surface-container-lowest/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/60 shadow-sm">
+<button aria-label="Slide 1" class="slide-dot w-6 h-2 rounded-full bg-primary transition-all duration-300" data-index="0"></button>
+<button aria-label="Slide 2" class="slide-dot w-2 h-2 rounded-full bg-on-surface-variant/40 hover:bg-primary transition-all duration-300" data-index="1"></button>
+</div>
+</div>
+<!-- Value Propositions Bar -->
+<div class="w-full bg-surface-container-lowest border border-surface-variant/50 rounded-2xl p-4 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 divide-y sm:divide-y-0 lg:divide-x divide-surface-variant/60">
+<div class="flex items-center gap-4 px-2 pt-2 sm:pt-0">
+<div class="w-12 h-12 rounded-2xl bg-surface-container-low border border-surface-variant/40 flex items-center justify-center text-on-surface shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm text-on-surface">Free Shipping</span>
+<span class="text-xs text-on-surface-variant">On orders above ₹499</span>
+</div>
+</div>
+<div class="flex items-center gap-4 px-2 lg:pl-6 pt-4 sm:pt-0">
+<div class="w-12 h-12 rounded-2xl bg-surface-container-low border border-surface-variant/40 flex items-center justify-center text-on-surface shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm text-on-surface">Secure Payments</span>
+<span class="text-xs text-on-surface-variant">Razorpay powered</span>
+</div>
+</div>
+<div class="flex items-center gap-4 px-2 lg:pl-6 pt-4 sm:pt-0">
+<div class="w-12 h-12 rounded-2xl bg-surface-container-low border border-surface-variant/40 flex items-center justify-center text-on-surface shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">sync</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm text-on-surface">Easy Returns</span>
+<span class="text-xs text-on-surface-variant">Hassle-free returns</span>
+</div>
+</div>
+<div class="flex items-center gap-4 px-2 lg:pl-6 pt-4 sm:pt-0">
+<div class="w-12 h-12 rounded-2xl bg-surface-container-low border border-surface-variant/40 flex items-center justify-center text-on-surface shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">support_agent</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm text-on-surface">Dedicated Support</span>
+<span class="text-xs text-on-surface-variant">We're here to help</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Shop by Category Section -->
+<section class="w-full flex flex-col gap-5">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-2xl font-bold tracking-tight text-on-surface">Shop by Category</h2>
+<p class="text-xs text-on-surface-variant mt-0.5">Explore our most popular hardware collections</p>
+</div>
+<a class="group inline-flex items-center gap-1 text-sm font-bold text-on-surface hover:text-secondary transition-colors" href="#">
+<span>View All</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+<!-- Category 1: Phones -->
+<a class="group relative flex flex-col justify-between h-56 rounded-2xl overflow-hidden bg-surface-container-lowest border border-surface-variant/40 shadow-sm hover:shadow-xl transition-all duration-300" href="#">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Dual luxury smartphones angled back side view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrWEllH8O2_kIBhx5mblcMCBxaSzUdR5u7QoQjxQgyBLkTwOz4x6LW97BHRvozphqsD6ya-st2KQdPt4pDbvEagKjIrqwz22yXhC1KDqFvSuQ_E2Z0SfvPODqT1ksF1e7oDxKJ5FczX3lX0lTWY45l_pIeyJRGrPzmkrSF1Pau3dMDWkLoSHrOvDiplGoh3PGrcFPU2X2mADc_y-FuFXjoHqcDSF9oj220ZfKrEj0Apv56SYgzVcs6"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/50 to-transparent"></div>
+<div class="relative z-10 p-4 flex justify-end">
+<span class="px-2.5 py-1 rounded-full bg-surface-container-lowest/85 backdrop-blur-md border border-white/60 text-[11px] font-bold text-on-surface tracking-wider uppercase shadow-xs">
+                2 products
+              </span>
+</div>
+<div class="relative z-10 p-5 flex items-center justify-between">
+<div>
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors">Phones</h3>
+<span class="text-xs text-on-surface-variant font-medium">Explore flagship devices</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-md shadow-sm border border-white/60 flex items-center justify-center text-on-surface group-hover:bg-primary group-hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</div>
+</a>
+<!-- Category 2: Laptops -->
+<a class="group relative flex flex-col justify-between h-56 rounded-2xl overflow-hidden bg-surface-container-lowest border border-surface-variant/40 shadow-sm hover:shadow-xl transition-all duration-300" href="#">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Modern ultra-slim metallic laptop tilted perspective" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8lYTX15CcKQkeEbT6OKT28_Z30N6vR6AkDkGMTSvI76Q7KTyHXbl-fB1GebaRHbGVcDgkHs9ZF4r5VoxijVtC8ivoQaPMDhel3V-X6Y0cPcyKialN4prCIaAlmmoVXQsDqvZb7B5L331W1Z3I0Wo9WPc01xEduPyQ-QbX-2vifLQDf1d6Y4SqzCvHGzDuVb5eac9RFDerVpfT2Kmwn7ZLvSspaFFEqCQ7ZpwvdMbeTP33wbLePDTB"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/50 to-transparent"></div>
+<div class="relative z-10 p-4 flex justify-end">
+<span class="px-2.5 py-1 rounded-full bg-surface-container-lowest/85 backdrop-blur-md border border-white/60 text-[11px] font-bold text-on-surface tracking-wider uppercase shadow-xs">
+                0 products
+              </span>
+</div>
+<div class="relative z-10 p-5 flex items-center justify-between">
+<div>
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors">Laptops</h3>
+<span class="text-xs text-on-surface-variant font-medium">Ultra-thin powerhouses</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-md shadow-sm border border-white/60 flex items-center justify-center text-on-surface group-hover:bg-primary group-hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</div>
+</a>
+<!-- Category 3: DSLR -->
+<a class="group relative flex flex-col justify-between h-56 rounded-2xl overflow-hidden bg-surface-container-lowest border border-surface-variant/40 shadow-sm hover:shadow-xl transition-all duration-300" href="#">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Professional black DSLR mirrorless camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2vA1w8moaZEEpzxp1zQUXx0VLXqFXyiEDSjaxRu-8BmtiGxBFTN5yGPArKwSmWPMrPiEfSPHAcBULcpwzdHcJS9-NkyGV9Q_sGaGPUQ1M5btY20njRHhoBUmek3aZ3RPZuNvT8VVAOFFUKSAaEpU0YqO0Q06LaiMGL22oO8pEjozwjUmYvp7hnRwWngycM7qhryvi642RAYRPZCk5mbdwrXRlqgXGrFt0ajSQqlob0da4aXOt9I9S"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/50 to-transparent"></div>
+<div class="relative z-10 p-4 flex justify-end">
+<span class="px-2.5 py-1 rounded-full bg-surface-container-lowest/85 backdrop-blur-md border border-white/60 text-[11px] font-bold text-on-surface tracking-wider uppercase shadow-xs">
+                1 products
+              </span>
+</div>
+<div class="relative z-10 p-5 flex items-center justify-between">
+<div>
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors">DSLR</h3>
+<span class="text-xs text-on-surface-variant font-medium">Studio-grade optics</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-md shadow-sm border border-white/60 flex items-center justify-center text-on-surface group-hover:bg-primary group-hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</div>
+</a>
+<!-- Category 4: Earphones -->
+<a class="group relative flex flex-col justify-between h-56 rounded-2xl overflow-hidden bg-surface-container-lowest border border-surface-variant/40 shadow-sm hover:shadow-xl transition-all duration-300" href="#">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Pure white wireless noise cancelling earbuds in case" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5bKPgrmbhFJwz1h5y0nS1TZ00h8aMKuzi-gRemSA1wrBUKiYlU_e1oGvy6Mql1FAqfzEPIIRPq3pobr27RTZgSCTvU-d1JIc3JaHllE9JbEJSBQFVSsMzXfw6KZbRlfIK8NWcKKEL9ydG69UkBtcpGaf-eM9rNzn8q8NWh5-cj1Vr18GZS9aDAHYsOWjIJl3gBisSjCvE4Hz-sohc24oEYuzIiYoT2xhnBF1dpulkRdijTgq9AgPb"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/50 to-transparent"></div>
+<div class="relative z-10 p-4 flex justify-end">
+<span class="px-2.5 py-1 rounded-full bg-surface-container-lowest/85 backdrop-blur-md border border-white/60 text-[11px] font-bold text-on-surface tracking-wider uppercase shadow-xs">
+                1 products
+              </span>
+</div>
+<div class="relative z-10 p-5 flex items-center justify-between">
+<div>
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors">Earphones</h3>
+<span class="text-xs text-on-surface-variant font-medium">Immersive spatial audio</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-md shadow-sm border border-white/60 flex items-center justify-center text-on-surface group-hover:bg-primary group-hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</div>
+</a>
+</div>
+</section>
+<!-- Featured Products Section -->
+<section class="w-full flex flex-col gap-5 pb-10">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-2xl font-bold tracking-tight text-on-surface">Featured Products</h2>
+<p class="text-xs text-on-surface-variant mt-0.5">Top-tier flagship electronics selected for you</p>
+</div>
+<a class="group inline-flex items-center gap-1 text-sm font-bold text-on-surface hover:text-secondary transition-colors" href="#">
+<span>View All</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+<!-- Featured Product Card: Iphone 17 Pro -->
+<div class="group relative bg-surface-container-lowest rounded-2xl p-5 border border-surface-variant/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+<div>
+<!-- Header Badges & Actions -->
+<div class="flex items-center justify-between w-full mb-3">
+<span class="bg-secondary text-on-secondary text-xs px-2.5 py-0.5 rounded-full font-extrabold tracking-wider uppercase shadow-xs">
+                  -100%
+                </span>
+<button aria-label="Save to Wishlist" class="wishlist-btn w-9 h-9 rounded-full bg-surface-container-low text-on-surface-variant hover:text-secondary hover:bg-surface-container flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<!-- Product Image Preview -->
+<div class="w-full h-52 rounded-xl bg-surface-container-low/60 flex items-center justify-center overflow-hidden mb-4 p-4 relative group-hover:bg-surface-container-low transition-colors">
+<img class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300 ease-out" data-alt="Flagship smartphone in desert titanium bronze gold colorway shown from both rear and front angles" id="main-product-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy1pUGEJvpNNqWCwKtEmjuAFRIUxIKPzkYzLYqyZ9oD6IyRu_97pKiMZNAG2SyyO6JI-VNV4sX0F3VnNG-P6UUWVx7z7K6XLdeAU3LH1JnmGjFiytjsvcv1x2cIRp7MI51Y5bUQ8FaqIAMhzpQgosRJnEvgSiVle3DNnhQgVX1p3Xt7TspQkJu0Gsg7ds74XIbeMHpyLtFvcJpx75meO_SqBeGZDnY6yNhTY5FwzN2kUmKZvmP9Uc5"/>
+</div>
+<!-- Product Details -->
+<div class="flex flex-col gap-1">
+<h3 class="font-bold text-base text-on-surface group-hover:text-primary transition-colors line-clamp-1">Iphone 17 Pro</h3>
+<div class="flex items-baseline gap-2.5 mt-1">
+<span class="text-2xl font-black text-on-surface">₹1</span>
+<span class="text-sm text-on-surface-variant/70 line-through">₹1,34,560</span>
+</div>
+</div>
+<!-- Color Swatches -->
+<div class="flex items-center gap-2 mt-3 mb-5">
+<button aria-label="Desert Titanium color" class="swatch-btn w-5 h-5 rounded-full bg-[#B87D4B] ring-2 ring-primary ring-offset-2 transition-all shadow-xs" title="Desert Titanium"></button>
+<button aria-label="Space Black color" class="swatch-btn w-5 h-5 rounded-full bg-[#1F2022] hover:opacity-80 transition-all shadow-xs" title="Space Black"></button>
+<button aria-label="Natural Titanium color" class="swatch-btn w-5 h-5 rounded-full bg-[#D4D7DB] hover:opacity-80 transition-all shadow-xs" title="Natural Titanium"></button>
+</div>
+</div>
+<!-- Add to Cart CTA -->
+<button class="w-full py-3 px-4 rounded-xl bg-primary text-on-primary text-sm font-bold tracking-wide flex items-center justify-center gap-2 hover:bg-neutral-800 active:scale-[0.98] transition-all shadow-md hover:shadow-lg" id="add-cart-btn">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+<span>Add to Cart</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Enhanced Comprehensive Footer -->
+<footer class="w-full bg-surface-container-low text-on-surface border-t border-surface-variant/60 pt-16 pb-12">
+<div class="max-w-[1440px] mx-auto px-6 lg:px-10">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-surface-variant/60">
+<!-- Brand Bio & Contact info -->
+<div class="lg:col-span-4 flex flex-col gap-4">
+<a class="flex items-center gap-1 group w-fit" data-path="home" href="#">
+<span class="font-extrabold text-2xl tracking-tighter text-on-surface uppercase">Shopey</span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary inline-block mb-1 group-hover:scale-125 transition-transform duration-300"></span>
+</a>
+<p class="text-sm text-on-surface-variant max-w-sm leading-relaxed">
+            Premium products for a smarter, better tomorrow. Direct authorized partner distribution of next-generation gadgets and luxury electronics.
+          </p>
+<div class="flex flex-col gap-1.5 text-xs text-on-surface-variant mt-1">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+              404 Tech Horizon Boulevard, Bengaluru, Karnataka, India
+            </span>
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">call</span>
+              +91 (800) 123-4567
+            </span>
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+              support@shopey.store
+            </span>
+</div>
+<!-- Social Icons -->
+<div class="flex items-center flex-wrap gap-2 pt-2">
+<a aria-label="Social Channel" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">share</span></a>
+<a aria-label="Social Media" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">public</span></a>
+<a aria-label="Video Streaming" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">smart_display</span></a>
+<a aria-label="Community Updates" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">tag</span></a>
+<a aria-label="Professional Network" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">hub</span></a>
+<a aria-label="Chat" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">chat</span></a>
+<a aria-label="Email Us" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">mail</span></a>
+<a aria-label="Call Support" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">call</span></a>
+</div>
+</div>
+<!-- Shop Sitemap -->
+<div class="lg:col-span-2 flex flex-col gap-3">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface">Shop</span>
+<div class="flex flex-col gap-2 mt-1">
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="all-products" href="#">All Products</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="categories" href="#">Categories</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="brands" href="#">Brands</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="new-arrivals" href="#">New Arrivals</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="sale" href="#">Sale</a>
+</div>
+</div>
+<!-- Support Sitemap -->
+<div class="lg:col-span-2 flex flex-col gap-3">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface">Support</span>
+<div class="flex flex-col gap-2 mt-1">
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="track-order" href="#">Track Order</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="shipping-policy" href="#">Shipping Policy</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="returns-refunds" href="#">Returns &amp; Refunds</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="faqs" href="#">FAQs</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="contact-us" href="#">Contact Us</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="privacy-policy" href="#">Privacy Policy</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="terms-conditions" href="#">Terms &amp; Conditions</a>
+</div>
+</div>
+<!-- Account & Newsletter -->
+<div class="lg:col-span-4 flex flex-col gap-5">
+<div class="flex flex-col gap-2">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface">Account</span>
+<div class="flex flex-wrap gap-x-4 gap-y-1.5">
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="my-account" href="#">My Account</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="my-orders" href="#">My Orders</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="wishlist" href="#">Wishlist</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="addresses" href="#">Addresses</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="help" href="#">Help</a>
+</div>
+</div>
+<!-- Polished Newsletter Card -->
+<div class="flex flex-col gap-2 bg-surface-container-lowest border border-surface-variant/60 p-5 rounded-2xl shadow-xs">
+<span class="font-bold text-sm text-on-surface">Subscribe to our newsletter</span>
+<p class="text-xs text-on-surface-variant">Get updates on new products and exclusive offers.</p>
+<form class="flex items-center gap-2 mt-2" onsubmit="return false;">
+<input class="w-full h-10 px-3.5 bg-surface-container-low border border-surface-variant/40 rounded-xl text-on-surface placeholder:text-on-surface-variant text-xs focus:outline-none focus:border-primary focus:bg-white transition-all" placeholder="Enter your email address" type="email"/>
+<button class="h-10 px-4 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-neutral-800 transition-all flex items-center justify-center shrink-0 shadow-sm" type="button">Subscribe</button>
+</form>
+</div>
+</div>
+</div>
+<!-- Footer Bottom -->
+<div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant">
+<p>© 2026 Kromic Store / Shopey. All rights reserved.</p>
+<div class="flex items-center gap-6">
+<a class="hover:text-on-surface transition-colors" data-path="privacy-policy" href="#">Privacy Policy</a>
+<span class="w-1 h-1 rounded-full bg-surface-variant"></span>
+<a class="hover:text-on-surface transition-colors" data-path="terms-conditions" href="#">Terms &amp; Conditions</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+    (function() {
+      // Hero Carousel Logic
+      const slides = document.querySelectorAll('.hero-slide');
+      const dots = document.querySelectorAll('.slide-dot');
+      const prevBtn = document.getElementById('prev-slide');
+      const nextBtn = document.getElementById('next-slide');
+      let currentSlide = 0;
+      let autoplayTimer;
+
+      function goToSlide(index) {
+        slides.forEach((slide, i) => {
+          if (i === index) {
+            slide.classList.remove('opacity-0', 'z-0');
+            slide.classList.add('opacity-100', 'z-10');
+          } else {
+            slide.classList.remove('opacity-100', 'z-10');
+            slide.classList.add('opacity-0', 'z-0');
+          }
+        });
+
+        dots.forEach((dot, i) => {
+          if (i === index) {
+            dot.classList.remove('w-2', 'bg-on-surface-variant/40');
+            dot.classList.add('w-6', 'bg-primary');
+          } else {
+            dot.classList.remove('w-6', 'bg-primary');
+            dot.classList.add('w-2', 'bg-on-surface-variant/40');
+          }
+        });
+
+        currentSlide = index;
+      }
+
+      function nextSlide() {
+        const next = (currentSlide + 1) % slides.length;
+        goToSlide(next);
+      }
+
+      function prevSlide() {
+        const prev = (currentSlide - 1 + slides.length) % slides.length;
+        goToSlide(prev);
+      }
+
+      if (nextBtn && prevBtn) {
+        nextBtn.addEventListener('click', () => {
+          nextSlide();
+          resetTimer();
+        });
+        prevBtn.addEventListener('click', () => {
+          prevSlide();
+          resetTimer();
+        });
+      }
+
+      dots.forEach((dot, idx) => {
+        dot.addEventListener('click', () => {
+          goToSlide(idx);
+          resetTimer();
+        });
+      });
+
+      function resetTimer() {
+        clearInterval(autoplayTimer);
+        autoplayTimer = setInterval(nextSlide, 6500);
+      }
+
+      resetTimer();
+
+      // Wishlist toggle interaction
+      document.querySelectorAll('.wishlist-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const icon = btn.querySelector('.material-symbols-outlined');
+          const isFilled = icon.style.fontVariationSettings && icon.style.fontVariationSettings.includes("'FILL' 1");
+          if (isFilled) {
+            icon.style.fontVariationSettings = "'FILL' 0";
+            btn.classList.remove('text-secondary');
+          } else {
+            icon.style.fontVariationSettings = "'FILL' 1";
+            btn.classList.add('text-secondary');
+          }
+        });
+      });
+
+      // Swatch selection interaction
+      const swatches = document.querySelectorAll('.swatch-btn');
+      swatches.forEach(swatch => {
+        swatch.addEventListener('click', () => {
+          swatches.forEach(s => s.classList.remove('ring-2', 'ring-primary', 'ring-offset-2'));
+          swatch.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+        });
+      });
+
+      // Cart Button feedback
+      const addCartBtn = document.getElementById('add-cart-btn');
+      if (addCartBtn) {
+        addCartBtn.addEventListener('click', function() {
+          const originalHTML = this.innerHTML;
+          this.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span><span>Added to Cart</span>';
+          this.classList.add('bg-secondary');
+          setTimeout(() => {
+            this.innerHTML = originalHTML;
+            this.classList.remove('bg-secondary');
+          }, 1600);
+        });
+      }
+    })();
+  </script>
+</body></html>

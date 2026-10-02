@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_standard" name="shell-type"/>
+<title>Shopey - Premium Gadgets &amp; Modern Tech</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-lowest": "#ffffff",
+            "inverse-primary": "#c9c6c5",
+            "on-primary": "#ffffff",
+            "primary-fixed": "#e5e2e1",
+            "primary-fixed-dim": "#c9c6c5",
+            "tertiary-container": "#111c2c",
+            "on-primary-container": "#858383",
+            "inverse-on-surface": "#f0f1f3",
+            "primary": "#000000",
+            "secondary-fixed": "#ffdad6",
+            "on-tertiary-fixed-variant": "#3c4759",
+            "outline-variant": "#c4c7c7",
+            "tertiary-fixed-dim": "#bcc7dd",
+            "on-error": "#ffffff",
+            "on-primary-fixed": "#1c1b1b",
+            "surface-container-low": "#f3f4f6",
+            "on-surface-variant": "#444748",
+            "on-secondary-container": "#fffbff",
+            "on-secondary-fixed-variant": "#93000e",
+            "on-secondary-fixed": "#410003",
+            "error": "#ba1a1a",
+            "on-tertiary-container": "#798498",
+            "secondary-container": "#de2d2d",
+            "inverse-surface": "#2e3132",
+            "secondary": "#ba0918",
+            "surface-dim": "#d9dadc",
+            "surface-variant": "#e1e2e4",
+            "surface-tint": "#5f5e5e",
+            "surface-container": "#edeef0",
+            "primary-container": "#1c1b1b",
+            "surface": "#f8f9fb",
+            "surface-container-highest": "#e1e2e4",
+            "tertiary": "#000000",
+            "outline": "#747878",
+            "on-secondary": "#ffffff",
+            "tertiary-fixed": "#d8e3f9",
+            "secondary-fixed-dim": "#ffb4ac",
+            "on-tertiary-fixed": "#111c2c",
+            "on-background": "#191c1e",
+            "on-primary-fixed-variant": "#474646",
+            "on-error-container": "#93000a",
+            "on-surface": "#191c1e",
+            "surface-bright": "#f8f9fb",
+            "error-container": "#ffdad6",
+            "background": "#f8f9fb",
+            "surface-container-high": "#e7e8ea",
+            "on-tertiary": "#ffffff"
+          },
+          fontFamily: {
+            "display-hero": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "label-md": ["Plus Jakarta Sans"],
+            "label-sm": ["Plus Jakarta Sans"],
+            "caption-caps": ["Plus Jakarta Sans"],
+            "price-hero": ["Plus Jakarta Sans"],
+            "price-original": ["Plus Jakarta Sans"]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased selection:bg-primary selection:text-on-primary">
+<!-- Header / Navigation Bar -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/85 backdrop-blur-xl border-b border-surface-variant/40 transition-all duration-300">
+<div class="max-w-[1440px] mx-auto px-6 lg:px-10 h-20 flex items-center justify-between gap-6">
+<!-- Brand & Primary Nav -->
+<div class="flex items-center gap-10">
+<a class="flex items-center gap-1 group tracking-tight" data-path="home" href="#">
+<span class="font-extrabold text-2xl tracking-tighter text-on-surface uppercase">Shopey</span>
+<span class="w-2 h-2 rounded-full bg-secondary inline-block mb-1 group-hover:scale-125 transition-transform duration-300"></span>
+</a>
+<nav class="hidden xl:flex items-center gap-8" data-active-classes="text-on-surface font-bold">
+<a class="text-sm font-bold text-on-surface transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-primary after:rounded-full" data-path="home" href="#">Home</a>
+<a class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors" data-path="shop" href="#">Shop</a>
+<a class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors" data-path="categories" href="#">Categories</a>
+<a class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors" data-path="brands" href="#">Brands</a>
+<a class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors" data-path="new-arrivals" href="#">New Arrivals</a>
+<a class="text-sm font-semibold text-secondary hover:opacity-80 transition-opacity" data-path="sale" href="#">Sale</a>
+</nav>
+</div>
+<!-- Centered Modern Search Bar -->
+<div class="flex-1 max-w-lg hidden md:block">
+<div class="relative flex items-center w-full group">
+<span class="material-symbols-outlined absolute left-4 text-on-surface-variant group-focus-within:text-primary text-[20px] transition-colors pointer-events-none">search</span>
+<input class="w-full h-11 pl-11 pr-4 bg-surface-container/70 border border-transparent rounded-full text-on-surface placeholder:text-on-surface-variant text-sm focus:outline-none focus:bg-surface-container-lowest focus:border-outline-variant/60 focus:ring-2 focus:ring-primary/10 transition-all shadow-inner" placeholder="Search for products, brands and more..." type="search"/>
+</div>
+</div>
+<!-- User Action Icons -->
+<div class="flex items-center gap-3">
+<a class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-all font-semibold text-sm" data-path="my-account" href="#">
+<span class="material-symbols-outlined text-[22px]">account_circle</span>
+<span>Account</span>
+</a>
+<a aria-label="Wishlist" class="relative p-2.5 rounded-full hover:bg-surface-container text-on-surface-variant hover:text-secondary transition-all" data-path="wishlist" href="#">
+<span class="material-symbols-outlined text-[22px]">favorite</span>
+</a>
+<a aria-label="Shopping Cart" class="relative flex items-center gap-2 py-2 px-4 bg-primary text-on-primary rounded-full hover:bg-primary-container hover:shadow-md transition-all group" data-path="cart" href="#">
+<span class="material-symbols-outlined text-[19px]">shopping_bag</span>
+<span class="text-xs font-bold tracking-wide uppercase hidden sm:inline">Cart</span>
+<span class="w-5 h-5 rounded-full bg-secondary text-on-secondary text-[10px] flex items-center justify-center font-extrabold shadow-sm">3</span>
+</a>
+<div class="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 transition-all">
+<span class="material-symbols-outlined text-[19px]">person</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="w-full pt-20 bg-surface min-h-[calc(100vh-80px)]"><div class="flex flex-col w-full">
+<!-- Minimal Ambient Backing & Page Sub-Bar -->
+<section class="w-full bg-surface-bright py-8">
+<div class="max-w-[1440px] mx-auto px-6 lg:px-10">
+<!-- Top Breadcrumb & Status Marker -->
+<div class="flex items-center justify-between pb-6">
+<nav aria-label="Breadcrumb" class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+<a class="hover:text-primary transition-colors" data-path="home" href="#">Home</a>
+<span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span>
+<span class="text-on-surface font-headline-sm text-headline-sm">Shop</span>
+</nav>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-caption-caps text-caption-caps uppercase tracking-wider text-on-surface-variant">Live Inventory Sync</span>
+</div>
+</div>
+<!-- Hero Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4">
+<div>
+<span class="font-caption-caps text-caption-caps uppercase tracking-[0.2em] text-on-surface-variant block mb-1">Catalog Index • Curated Hardware</span>
+<div class="flex items-baseline gap-4">
+<h1 class="font-display-hero text-display-hero tracking-tight text-on-surface">All Products</h1>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant">/ 4 items</span>
+</div>
+</div>
+<!-- Utility Sorting & View Bar -->
+<div class="flex items-center gap-3">
+<div class="relative inline-block text-left" id="sort-dropdown-wrapper">
+<button class="h-11 px-5 rounded-full bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:shadow-md transition-all flex items-center gap-3" id="sort-menu-button" type="button">
+<span class="text-on-surface-variant">Sort:</span>
+<span class="font-bold text-primary" id="selected-sort-label">Featured</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform duration-200" id="sort-chevron">expand_more</span>
+</button>
+<div class="hidden absolute right-0 mt-2 w-48 rounded-xl bg-surface-container-lowest shadow-xl py-2 z-30" id="sort-menu-panel">
+<button class="w-full text-left px-4 py-2 font-label-sm text-label-sm hover:bg-surface-container-low transition-colors text-primary font-bold">Featured</button>
+<button class="w-full text-left px-4 py-2 font-label-sm text-label-sm hover:bg-surface-container-low transition-colors text-on-surface-variant">Price: Low to High</button>
+<button class="w-full text-left px-4 py-2 font-label-sm text-label-sm hover:bg-surface-container-low transition-colors text-on-surface-variant">Price: High to Low</button>
+<button class="w-full text-left px-4 py-2 font-label-sm text-label-sm hover:bg-surface-container-low transition-colors text-on-surface-variant">Newest Arrivals</button>
+</div>
+</div>
+<div class="hidden sm:flex items-center bg-surface-container-low rounded-full p-1 shadow-inner">
+<button class="p-2 rounded-full bg-surface-container-lowest text-primary shadow-xs" title="Grid View">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+<button class="p-2 rounded-full text-on-surface-variant hover:text-primary transition-colors" title="List View">
+<span class="material-symbols-outlined text-[18px]">view_agenda</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Catalog Space (Sticky Sidebar + Product Grid) -->
+<section class="w-full py-10 bg-surface">
+<div class="max-w-[1440px] mx-auto px-6 lg:px-10">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Left Filter Sidebar (Sticky) -->
+<aside class="lg:col-span-3 sticky top-28 space-y-6">
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm">
+<!-- Filter Header -->
+<div class="flex items-center justify-between pb-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">tune</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Filters</h2>
+</div>
+<button class="font-caption-caps text-caption-caps uppercase tracking-wider text-secondary hover:opacity-80 transition-opacity" id="reset-all-filters">
+                Reset All
+              </button>
+</div>
+<!-- Filter Section 1: Categories -->
+<div class="pt-5">
+<div class="flex items-center justify-between cursor-pointer group" id="toggle-cat-section">
+<span class="font-label-md text-label-md text-on-surface group-hover:text-primary transition-colors">Category</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform duration-200" id="cat-chevron">keyboard_arrow_up</span>
+</div>
+<div class="mt-4 space-y-2.5" id="cat-content">
+<label class="flex items-center justify-between group cursor-pointer select-none">
+<div class="flex items-center gap-3">
+<input checked="" class="w-4 h-4 rounded bg-surface-container text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Phones</span>
+</div>
+<span class="font-caption-caps text-caption-caps px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant">2</span>
+</label>
+<label class="flex items-center justify-between group cursor-pointer select-none">
+<div class="flex items-center gap-3">
+<input class="w-4 h-4 rounded bg-surface-container text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-primary transition-colors">Laptops</span>
+</div>
+<span class="font-caption-caps text-caption-caps px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant opacity-60">0</span>
+</label>
+<label class="flex items-center justify-between group cursor-pointer select-none">
+<div class="flex items-center gap-3">
+<input checked="" class="w-4 h-4 rounded bg-surface-container text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">DSLR</span>
+</div>
+<span class="font-caption-caps text-caption-caps px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant">1</span>
+</label>
+<label class="flex items-center justify-between group cursor-pointer select-none">
+<div class="flex items-center gap-3">
+<input checked="" class="w-4 h-4 rounded bg-surface-container text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Earphones</span>
+</div>
+<span class="font-caption-caps text-caption-caps px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant">1</span>
+</label>
+</div>
+</div>
+<!-- Filter Section 2: Brands -->
+<div class="pt-6">
+<span class="font-label-md text-label-md text-on-surface block mb-3">Brand</span>
+<div class="space-y-2.5">
+<label class="flex items-center justify-between group cursor-pointer select-none">
+<div class="flex items-center gap-3">
+<input checked="" class="w-4 h-4 rounded bg-surface-container text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Apple Inc.</span>
+</div>
+<span class="font-caption-caps text-caption-caps px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant">2</span>
+</label>
+<label class="flex items-center justify-between group cursor-pointer select-none">
+<div class="flex items-center gap-3">
+<input checked="" class="w-4 h-4 rounded bg-surface-container text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Samsung</span>
+</div>
+<span class="font-caption-caps text-caption-caps px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant">1</span>
+</label>
+<label class="flex items-center justify-between group cursor-pointer select-none">
+<div class="flex items-center gap-3">
+<input checked="" class="w-4 h-4 rounded bg-surface-container text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Sony</span>
+</div>
+<span class="font-caption-caps text-caption-caps px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant">1</span>
+</label>
+</div>
+</div>
+<!-- Filter Section 3: Price Range -->
+<div class="pt-6">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-md text-label-md text-on-surface">Price Range</span>
+<span class="font-caption-caps text-caption-caps text-secondary font-bold">INR (₹)</span>
+</div>
+<div class="space-y-3">
+<input class="w-full accent-primary h-1.5 bg-surface-container rounded-lg cursor-pointer appearance-none" id="price-slider" max="200000" min="1" type="range" value="182490"/>
+<div class="flex items-center justify-between gap-2">
+<div class="bg-surface-container-low rounded-xl px-3 py-1.5 flex-1">
+<span class="font-caption-caps text-caption-caps text-on-surface-variant block">Min</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">₹1</span>
+</div>
+<span class="text-on-surface-variant text-body-sm font-body-sm">—</span>
+<div class="bg-surface-container-low rounded-xl px-3 py-1.5 flex-1 text-right">
+<span class="font-caption-caps text-caption-caps text-on-surface-variant block">Max</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface" id="max-price-display">₹1,82,490</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Filter Section 4: Stock Status -->
+<div class="pt-6">
+<label class="flex items-center gap-3 cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded bg-surface-container text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="font-label-md text-label-md text-on-surface">In Stock Only</span>
+</label>
+</div>
+</div>
+<!-- Promotional Micro-Banner in Sidebar -->
+<div class="relative overflow-hidden bg-primary-container text-on-primary rounded-2xl p-6 shadow-md">
+<div class="relative z-10 space-y-2">
+<span class="font-caption-caps text-caption-caps uppercase tracking-widest text-secondary-fixed">White Glove Delivery</span>
+<p class="font-headline-sm text-headline-sm text-surface-container-lowest leading-snug">Precision Tech Authenticated &amp; Insured</p>
+<p class="font-body-sm text-body-sm text-primary-fixed-dim">Every optical unit and flagship device passes a 36-point diagnostic inspection.</p>
+</div>
+<div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-secondary-container/20 blur-xl"></div>
+</div>
+</aside>
+<!-- Right Product Grid Area -->
+<main class="lg:col-span-9 space-y-8">
+<!-- Active Filter Pill Chips -->
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-caption-caps text-caption-caps uppercase tracking-wider text-on-surface-variant mr-2">Applied:</span>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest shadow-xs text-on-surface font-label-sm text-label-sm">
+<span>DSLR &amp; Audio &amp; Phones</span>
+<span class="material-symbols-outlined text-[14px] cursor-pointer text-on-surface-variant hover:text-secondary">close</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest shadow-xs text-on-surface font-label-sm text-label-sm">
+<span>All Brands (3)</span>
+<span class="material-symbols-outlined text-[14px] cursor-pointer text-on-surface-variant hover:text-secondary">close</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest shadow-xs text-on-surface font-label-sm text-label-sm">
+<span>₹1 – ₹1,82,490</span>
+<span class="material-symbols-outlined text-[14px] cursor-pointer text-on-surface-variant hover:text-secondary">close</span>
+</div>
+<button class="font-caption-caps text-caption-caps text-secondary uppercase hover:underline ml-2">Clear all</button>
+</div>
+<!-- Product Grid (Exact 4 Products) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- PRODUCT 1: Sony Alpha ILCE-7M3K -->
+<article class="group bg-surface-container-lowest rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="relative bg-surface-container-low p-6 flex items-center justify-center aspect-square overflow-hidden">
+<!-- Badges & Wishlist -->
+<div class="absolute top-4 left-4 z-10">
+<span class="inline-block px-2.5 py-1 rounded-full bg-secondary text-on-secondary font-caption-caps text-caption-caps tracking-wider uppercase shadow-sm">
+                    -25%
+                  </span>
+</div>
+<button aria-label="Add Sony Alpha to Wishlist" class="wishlist-btn absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-on-surface-variant hover:text-secondary hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<!-- Product Cutout Imagery -->
+<img alt="Sony Alpha ILCE-7M3K Full-Frame 24.2MP" class="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500" data-alt="Studio photograph of Sony Alpha ILCE-7M3K full frame mirrorless camera with zoom lens attached, clean studio light on neutral grey background, crisp reflections, luxury tech e-commerce product aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcsqpeN9NwreWHKF_kUzx0sHHTv0jKFNgwh2u186bRLgRIZWYNZEIoVzCVFkEYPCprrpb9CT_9vtfuj11Ux5YnXou5G2fPQAZXoWoP0khGNxxuWE-X4eBm-sdMqRkGegGZT-Egw8h4djimSoVhZ2AbGMKJX-qVbooGzE1-2BmFkDGvoYA1vJf-Pi3CgTpRXdVgXePDqaa0wtC7npte6STzylVjGOiCBoj6gPdISjkP8Kd_Rf4zIbVx"/>
+</div>
+<!-- Product Info Body -->
+<div class="p-6 flex flex-col flex-1 justify-between gap-4">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps uppercase tracking-wider text-on-surface-variant">Sony • Optics</span>
+<!-- Color Swatches -->
+<div class="flex items-center gap-1.5">
+<button class="swatch-btn w-3.5 h-3.5 rounded-full bg-primary ring-2 ring-primary ring-offset-2 transition-all" title="Obsidian Black"></button>
+<button class="swatch-btn w-3.5 h-3.5 rounded-full bg-neutral-400 hover:scale-110 transition-all" title="Matte Titanium"></button>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface line-clamp-2 leading-tight group-hover:text-secondary transition-colors" title="Sony Alpha ILCE-7M3K Full-Frame 24.2MP Mirrorless Camera">
+                    Sony Alpha ILCE-7M3K Full-Frame 24.2MP...
+                  </h3>
+</div>
+<div class="pt-2">
+<div class="flex items-baseline gap-2.5 mb-4">
+<span class="font-price-hero text-price-hero text-primary tracking-tight">₹1,36,490</span>
+<span class="font-price-original text-price-original line-through text-on-surface-variant">₹1,82,490</span>
+</div>
+<button class="cart-action-btn w-full h-11 bg-primary text-on-primary rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-neutral-800 active:scale-[0.98] transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+<span>Add to Cart</span>
+</button>
+</div>
+</div>
+</article>
+<!-- PRODUCT 2: Apple Airpods Pro (3rd Gen) -->
+<article class="group bg-surface-container-lowest rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="relative bg-surface-container-low p-6 flex items-center justify-center aspect-square overflow-hidden">
+<!-- Badges & Wishlist -->
+<div class="absolute top-4 left-4 z-10">
+<span class="inline-block px-2.5 py-1 rounded-full bg-surface-container-highest text-on-surface font-caption-caps text-caption-caps tracking-wider uppercase shadow-xs">
+                    Popular
+                  </span>
+</div>
+<button aria-label="Add Apple Airpods Pro to Wishlist" class="wishlist-btn absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-on-surface-variant hover:text-secondary hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<!-- Product Cutout Imagery -->
+<img alt="Apple Airpods Pro (3rd Gen)" class="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500" data-alt="Minimalist commercial studio shot of Apple AirPods Pro wireless earbuds with open magnetic wireless charging case, pure porcelain white, soft ambient shadow, high-end Apple luxury packaging photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCI2gbl7gGqJpj0QZix9zxOSWPYPn2nuXxIaJB0fjGNxz3Fj4xP2-vplEgCEIFMtWFrS4BvUcuo-GLEsK0lDGbhmZqmiNmQfo36qcjKPbJg1OVvd-iPdubPWxBkpTZj4hVsV5jSmwpzFR07HIyVmxdUvhwofBNCsGhFbPmXgeBCfrvg6UODoHTyHrNuD2ZCGhMWyIVmYXfkjrMIsP6y2iOiyXml5ILH4VoMMG9tWq5NkZSRCzL9oQVu"/>
+</div>
+<!-- Product Info Body -->
+<div class="p-6 flex flex-col flex-1 justify-between gap-4">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps uppercase tracking-wider text-on-surface-variant">Apple Inc. • Audio</span>
+<!-- Color Swatches (White/Silver) -->
+<div class="flex items-center gap-1.5">
+<button class="swatch-btn w-3.5 h-3.5 rounded-full bg-white shadow-xs ring-2 ring-primary ring-offset-2 transition-all" title="Pure White"></button>
+<button class="swatch-btn w-3.5 h-3.5 rounded-full bg-surface-dim hover:scale-110 transition-all" title="Silver Haze"></button>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface line-clamp-2 leading-tight group-hover:text-secondary transition-colors" title="Apple Airpods Pro (3rd Gen)">
+                    Apple Airpods Pro (3rd Gen)
+                  </h3>
+</div>
+<div class="pt-2">
+<div class="flex items-baseline gap-2.5 mb-4">
+<span class="font-price-hero text-price-hero text-primary tracking-tight">₹25,900</span>
+</div>
+<button class="cart-action-btn w-full h-11 bg-primary text-on-primary rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-neutral-800 active:scale-[0.98] transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+<span>Add to Cart</span>
+</button>
+</div>
+</div>
+</article>
+<!-- PRODUCT 3: Samsung Galaxy S26 5G 256 GB -->
+<article class="group bg-surface-container-lowest rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="relative bg-surface-container-low p-6 flex items-center justify-center aspect-square overflow-hidden">
+<!-- Badges & Wishlist -->
+<div class="absolute top-4 left-4 z-10">
+<span class="inline-block px-2.5 py-1 rounded-full bg-secondary text-on-secondary font-caption-caps text-caption-caps tracking-wider uppercase shadow-sm">
+                    -13%
+                  </span>
+</div>
+<button aria-label="Add Samsung Galaxy S26 to Wishlist" class="wishlist-btn absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-on-surface-variant hover:text-secondary hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<!-- Product Cutout Imagery -->
+<img alt="Samsung Galaxy S26 5G 256 GB" class="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500" data-alt="Editorial studio render of Samsung Galaxy S26 5G flagship smartphone showing titanium frame and contoured back panel, clean studio lighting, warm minimal grey backdrop, luxury tech retail standard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxKQzLzW7OdfG6BrbqTG0yp12i4NKvg7u4C9rlwZG6FQ2z0_fwHHmbhZ7of9DEU0b8gCzAIsUjBZUMQqHSDpqAql8FF52rvm9faVslXJ2IuIjmL2kckhEp9aB6vI5-hrKpajI0Vag90VC3HqGTfbTiDqGnbDhkLDTbFaK_oBNJc1aMfcMAOFMi92RYa9EWL3A24jKKy42aRj9wmKRtMyh5ARD0V1gdQQODiOEs_XVMXhnYReOLB7qI"/>
+</div>
+<!-- Product Info Body -->
+<div class="p-6 flex flex-col flex-1 justify-between gap-4">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps uppercase tracking-wider text-on-surface-variant">Samsung • 5G Flagship</span>
+<!-- Color Swatches (Dark grey, light lavender/silver) -->
+<div class="flex items-center gap-1.5">
+<button class="swatch-btn w-3.5 h-3.5 rounded-full bg-neutral-800 ring-2 ring-primary ring-offset-2 transition-all" title="Dark Graphite Grey"></button>
+<button class="swatch-btn w-3.5 h-3.5 rounded-full bg-purple-200 hover:scale-110 transition-all" title="Light Lavender / Silver"></button>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface line-clamp-2 leading-tight group-hover:text-secondary transition-colors" title="Samsung Galaxy S26 5G 256 GB">
+                    Samsung Galaxy S26 5G 256 GB
+                  </h3>
+</div>
+<div class="pt-2">
+<div class="flex items-baseline gap-2.5 mb-4">
+<span class="font-price-hero text-price-hero text-primary tracking-tight">₹1,02,999</span>
+<span class="font-price-original text-price-original line-through text-on-surface-variant">₹1,17,999</span>
+</div>
+<button class="cart-action-btn w-full h-11 bg-primary text-on-primary rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-neutral-800 active:scale-[0.98] transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+<span>Add to Cart</span>
+</button>
+</div>
+</div>
+</article>
+<!-- PRODUCT 4: Iphone 17 Pro -->
+<article class="group bg-surface-container-lowest rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="relative bg-surface-container-low p-6 flex items-center justify-center aspect-square overflow-hidden">
+<!-- Badges & Wishlist -->
+<div class="absolute top-4 left-4 z-10">
+<span class="inline-block px-2.5 py-1 rounded-full bg-secondary text-on-secondary font-caption-caps text-caption-caps tracking-wider uppercase shadow-sm">
+                    -100%
+                  </span>
+</div>
+<button aria-label="Add Iphone 17 Pro to Wishlist" class="wishlist-btn absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-on-surface-variant hover:text-secondary hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<!-- Product Cutout Imagery -->
+<img alt="Iphone 17 Pro" class="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500" data-alt="Next-gen Apple iPhone 17 Pro luxury flagship smartphone standing upright on stone pedestal, natural titanium edge with subtle gold sheen, pristine glass reflections, minimal dark aesthetic backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjVBctM7VES5hpf3HghLxTMj6Qrwg7vRoXI1iWUMtLo95L4blL6GJZTrCogaG1i5ZQU3P7DZv3Su3SW0pnxotW4Gz_-Vr6Q2DC9F4Hc05Us6KvQ1QpVR3lufWDvCKbnBAayAzEJKI8BM0D-1fTvj1ffeRLuPNcFHEbQ-OwK7QpnhAJ4mk2assHUbfkoWtS_CGeX0fuDy408V395PEfZyC3yOmLklxUS08ZMmBUO7AFxIzKRyq-yJrl"/>
+</div>
+<!-- Product Info Body -->
+<div class="p-6 flex flex-col flex-1 justify-between gap-4">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-caption-caps text-caption-caps uppercase tracking-wider text-on-surface-variant">Apple Inc. • Next-Gen</span>
+<!-- Color Swatches (Gold, Black) -->
+<div class="flex items-center gap-1.5">
+<button class="swatch-btn w-3.5 h-3.5 rounded-full bg-amber-300 ring-2 ring-primary ring-offset-2 transition-all" title="Desert Gold"></button>
+<button class="swatch-btn w-3.5 h-3.5 rounded-full bg-black hover:scale-110 transition-all" title="Space Black"></button>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface line-clamp-2 leading-tight group-hover:text-secondary transition-colors" title="Iphone 17 Pro">
+                    Iphone 17 Pro
+                  </h3>
+</div>
+<div class="pt-2">
+<div class="flex items-baseline gap-2.5 mb-4">
+<span class="font-price-hero text-price-hero text-secondary tracking-tight">₹1</span>
+<span class="font-price-original text-price-original line-through text-on-surface-variant">₹1,34,560</span>
+</div>
+<button class="cart-action-btn w-full h-11 bg-primary text-on-primary rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-neutral-800 active:scale-[0.98] transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+<span>Add to Cart</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+<!-- End of Catalog Signature Banner -->
+<div class="bg-surface-container-lowest rounded-2xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xs">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Guaranteed Official Warranty</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">All Apple, Sony, and Samsung devices come with official manufacturer seals and registered serials.</p>
+</div>
+</div>
+<div class="shrink-0 flex items-center gap-3">
+<span class="font-caption-caps text-caption-caps uppercase tracking-wider text-on-surface-variant">Showing 4 of 4</span>
+<div class="w-24 h-1.5 rounded-full bg-surface-container-high overflow-hidden">
+<div class="w-full h-full bg-primary rounded-full"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</section>
+<!-- Interactive Scripts for Shop Micro-Interactions -->
+<script>
+    (function() {
+      // Sort Dropdown Toggle
+      const sortBtn = document.getElementById('sort-menu-button');
+      const sortPanel = document.getElementById('sort-menu-panel');
+      const sortChevron = document.getElementById('sort-chevron');
+      const sortLabel = document.getElementById('selected-sort-label');
+
+      if (sortBtn && sortPanel) {
+        sortBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isHidden = sortPanel.classList.contains('hidden');
+          if (isHidden) {
+            sortPanel.classList.remove('hidden');
+            sortChevron.classList.add('rotate-180');
+          } else {
+            sortPanel.classList.add('hidden');
+            sortChevron.classList.remove('rotate-180');
+          }
+        });
+
+        sortPanel.querySelectorAll('button').forEach(item => {
+          item.addEventListener('click', () => {
+            sortLabel.textContent = item.textContent.trim();
+            sortPanel.classList.add('hidden');
+            sortChevron.classList.remove('rotate-180');
+          });
+        });
+
+        document.addEventListener('click', () => {
+          sortPanel.classList.add('hidden');
+          sortChevron.classList.remove('rotate-180');
+        });
+      }
+
+      // Collapsible Category Section
+      const catToggle = document.getElementById('toggle-cat-section');
+      const catContent = document.getElementById('cat-content');
+      const catChevron = document.getElementById('cat-chevron');
+
+      if (catToggle && catContent) {
+        catToggle.addEventListener('click', () => {
+          catContent.classList.toggle('hidden');
+          catChevron.classList.toggle('rotate-180');
+        });
+      }
+
+      // Price Slider Dynamic Bound
+      const slider = document.getElementById('price-slider');
+      const maxDisplay = document.getElementById('max-price-display');
+
+      if (slider && maxDisplay) {
+        slider.addEventListener('input', (e) => {
+          const val = Number(e.target.value).toLocaleString('en-IN');
+          maxDisplay.textContent = '₹' + val;
+        });
+      }
+
+      // Reset Button Feedback
+      const resetBtn = document.getElementById('reset-all-filters');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          if (slider) {
+            slider.value = 182490;
+            maxDisplay.textContent = '₹1,82,490';
+          }
+          document.querySelectorAll('aside input[type="checkbox"]').forEach(cb => {
+            cb.checked = true;
+          });
+        });
+      }
+
+      // Add To Cart Local Micro-Feedback
+      document.querySelectorAll('.cart-action-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const originalHTML = this.innerHTML;
+          this.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span><span>Added</span>';
+          this.classList.add('bg-secondary');
+          setTimeout(() => {
+            this.innerHTML = originalHTML;
+            this.classList.remove('bg-secondary');
+          }, 1500);
+        });
+      });
+    })();
+  </script>
+</div></main>
+<!-- Enhanced Comprehensive Footer -->
+<footer class="w-full bg-surface-container-low text-on-surface border-t border-surface-variant/60 pt-16 pb-12">
+<div class="max-w-[1440px] mx-auto px-6 lg:px-10">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-surface-variant/60">
+<!-- Brand Bio & Contact info -->
+<div class="lg:col-span-4 flex flex-col gap-4">
+<a class="flex items-center gap-1 group w-fit" data-path="home" href="#">
+<span class="font-extrabold text-2xl tracking-tighter text-on-surface uppercase">Shopey</span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary inline-block mb-1 group-hover:scale-125 transition-transform duration-300"></span>
+</a>
+<p class="text-sm text-on-surface-variant max-w-sm leading-relaxed">
+            Premium products for a smarter, better tomorrow. Direct authorized partner distribution of next-generation gadgets and luxury electronics.
+          </p>
+<div class="flex flex-col gap-1.5 text-xs text-on-surface-variant mt-1">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+              404 Tech Horizon Boulevard, Bengaluru, Karnataka, India
+            </span>
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">call</span>
+              +91 (800) 123-4567
+            </span>
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+              support@shopey.store
+            </span>
+</div>
+<!-- Social Icons -->
+<div class="flex items-center flex-wrap gap-2 pt-2">
+<a aria-label="Social Channel" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">share</span></a>
+<a aria-label="Social Media" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">public</span></a>
+<a aria-label="Video Streaming" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">smart_display</span></a>
+<a aria-label="Community Updates" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">tag</span></a>
+<a aria-label="Professional Network" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">hub</span></a>
+<a aria-label="Chat" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">chat</span></a>
+<a aria-label="Email Us" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">mail</span></a>
+<a aria-label="Call Support" class="w-8 h-8 rounded-full bg-surface-container-lowest border border-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all shadow-xs" href="#"><span class="material-symbols-outlined text-[16px]">call</span></a>
+</div>
+</div>
+<!-- Shop Sitemap -->
+<div class="lg:col-span-2 flex flex-col gap-3">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface">Shop</span>
+<div class="flex flex-col gap-2 mt-1">
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="all-products" href="#">All Products</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="categories" href="#">Categories</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="brands" href="#">Brands</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="new-arrivals" href="#">New Arrivals</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="sale" href="#">Sale</a>
+</div>
+</div>
+<!-- Support Sitemap -->
+<div class="lg:col-span-2 flex flex-col gap-3">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface">Support</span>
+<div class="flex flex-col gap-2 mt-1">
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="track-order" href="#">Track Order</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="shipping-policy" href="#">Shipping Policy</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="returns-refunds" href="#">Returns &amp; Refunds</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="faqs" href="#">FAQs</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="contact-us" href="#">Contact Us</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="privacy-policy" href="#">Privacy Policy</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="terms-conditions" href="#">Terms &amp; Conditions</a>
+</div>
+</div>
+<!-- Account & Newsletter -->
+<div class="lg:col-span-4 flex flex-col gap-5">
+<div class="flex flex-col gap-2">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface">Account</span>
+<div class="flex flex-wrap gap-x-4 gap-y-1.5">
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="my-account" href="#">My Account</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="my-orders" href="#">My Orders</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="wishlist" href="#">Wishlist</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="addresses" href="#">Addresses</a>
+<a class="text-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="help" href="#">Help</a>
+</div>
+</div>
+<!-- Polished Newsletter Card -->
+<div class="flex flex-col gap-2 bg-surface-container-lowest border border-surface-variant/60 p-5 rounded-2xl shadow-xs">
+<span class="font-bold text-sm text-on-surface">Subscribe to our newsletter</span>
+<p class="text-xs text-on-surface-variant">Get updates on new products and exclusive offers.</p>
+<form class="flex items-center gap-2 mt-2" onsubmit="return false;">
+<input class="w-full h-10 px-3.5 bg-surface-container-low border border-surface-variant/40 rounded-xl text-on-surface placeholder:text-on-surface-variant text-xs focus:outline-none focus:border-primary focus:bg-white transition-all" placeholder="Enter your email address" type="email"/>
+<button class="h-10 px-4 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-neutral-800 transition-all flex items-center justify-center shrink-0 shadow-sm" type="button">Subscribe</button>
+</form>
+</div>
+</div>
+</div>
+<!-- Footer Bottom -->
+<div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant">
+<p>© 2026 Kromic Store / Shopey. All rights reserved.</p>
+<div class="flex items-center gap-6">
+<a class="hover:text-on-surface transition-colors" data-path="privacy-policy" href="#">Privacy Policy</a>
+<span class="w-1 h-1 rounded-full bg-surface-variant"></span>
+<a class="hover:text-on-surface transition-colors" data-path="terms-conditions" href="#">Terms &amp; Conditions</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+    (function() {
+      // Hero Carousel Logic
+      const slides = document.querySelectorAll('.hero-slide');
+      const dots = document.querySelectorAll('.slide-dot');
+      const prevBtn = document.getElementById('prev-slide');
+      const nextBtn = document.getElementById('next-slide');
+      let currentSlide = 0;
+      let autoplayTimer;
+
+      function goToSlide(index) {
+        slides.forEach((slide, i) => {
+          if (i === index) {
+            slide.classList.remove('opacity-0', 'z-0');
+            slide.classList.add('opacity-100', 'z-10');
+          } else {
+            slide.classList.remove('opacity-100', 'z-10');
+            slide.classList.add('opacity-0', 'z-0');
+          }
+        });
+
+        dots.forEach((dot, i) => {
+          if (i === index) {
+            dot.classList.remove('w-2', 'bg-on-surface-variant/40');
+            dot.classList.add('w-6', 'bg-primary');
+          } else {
+            dot.classList.remove('w-6', 'bg-primary');
+            dot.classList.add('w-2', 'bg-on-surface-variant/40');
+          }
+        });
+
+        currentSlide = index;
+      }
+
+      function nextSlide() {
+        const next = (currentSlide + 1) % slides.length;
+        goToSlide(next);
+      }
+
+      function prevSlide() {
+        const prev = (currentSlide - 1 + slides.length) % slides.length;
+        goToSlide(prev);
+      }
+
+      if (nextBtn && prevBtn) {
+        nextBtn.addEventListener('click', () => {
+          nextSlide();
+          resetTimer();
+        });
+        prevBtn.addEventListener('click', () => {
+          prevSlide();
+          resetTimer();
+        });
+      }
+
+      dots.forEach((dot, idx) => {
+        dot.addEventListener('click', () => {
+          goToSlide(idx);
+          resetTimer();
+        });
+      });
+
+      function resetTimer() {
+        clearInterval(autoplayTimer);
+        autoplayTimer = setInterval(nextSlide, 6500);
+      }
+
+      resetTimer();
+
+      // Wishlist toggle interaction
+      document.querySelectorAll('.wishlist-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const icon = btn.querySelector('.material-symbols-outlined');
+          const isFilled = icon.style.fontVariationSettings && icon.style.fontVariationSettings.includes("'FILL' 1");
+          if (isFilled) {
+            icon.style.fontVariationSettings = "'FILL' 0";
+            btn.classList.remove('text-secondary');
+          } else {
+            icon.style.fontVariationSettings = "'FILL' 1";
+            btn.classList.add('text-secondary');
+          }
+        });
+      });
+
+      // Swatch selection interaction
+      const swatches = document.querySelectorAll('.swatch-btn');
+      swatches.forEach(swatch => {
+        swatch.addEventListener('click', () => {
+          swatches.forEach(s => s.classList.remove('ring-2', 'ring-primary', 'ring-offset-2'));
+          swatch.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+        });
+      });
+
+      // Cart Button feedback
+      const addCartBtn = document.getElementById('add-cart-btn');
+      if (addCartBtn) {
+        addCartBtn.addEventListener('click', function() {
+          const originalHTML = this.innerHTML;
+          this.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span><span>Added to Cart</span>';
+          this.classList.add('bg-secondary');
+          setTimeout(() => {
+            this.innerHTML = originalHTML;
+            this.classList.remove('bg-secondary');
+          }, 1600);
+        });
+      }
+    })();
+  </script>
+</body></html>
