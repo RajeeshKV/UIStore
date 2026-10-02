@@ -1190,15 +1190,53 @@ export interface PhoneVerificationStatusResponse {
   otpLength: number;
   otpExpiryMinutes: number;
   resendCooldownSeconds: number;
-  activeProvider?: string;
 }
 
 // ── SMS Admin ─────────────────────────────────────────────────────────────────
 
-/** GET /api/v1/admin/integrations/sms/providers */
+/**
+ * GET /api/v1/admin/integrations/sms/providers
+ * Full field schema per provider — the UI renders fields from this, not from hardcoded lists.
+ * The backend validates the save using the same schema, so the form and enforcement cannot disagree.
+ */
+export interface SmsProviderSettingField {
+  /** Wire key used in PUT /admin/integrations/sms settings object */
+  key: string;
+  /** Human-readable label to render as the field label */
+  label: string;
+  /** Input type: Text | Secret | Textarea | Number | Select */
+  type: "Text" | "Secret" | "Textarea" | "Number" | "Select";
+  required: boolean;
+  /** Write-only — never pre-fill; never returned by any endpoint */
+  secret: boolean;
+  /** Collapse behind a disclosure toggle; show by default when false */
+  advanced: boolean;
+  helpText?: string | null;
+  placeholder?: string | null;
+  formatHint?: string | null;
+  maxLength?: number | null;
+  /** Populated when type === "Select" */
+  allowedValues?: string[] | null;
+  /** Field becomes required under this condition (e.g. when a specific delivery mode is selected) */
+  requiredWhen?: string | null;
+  defaultValue?: string | null;
+}
+
 export interface SmsProviderOptionResponse {
-  name?: string;
+  name: string;
   description?: string;
+  /** True when the gateway has a dedicated native OTP endpoint — offer delivery mode selector */
+  supportsNativeOtp: boolean;
+  /** True when a template row is needed for this provider */
+  requiresTemplate: boolean;
+  /** Wire keys that must be present when enabled:true */
+  requiredSettings: string[];
+  /** All configurable settings for this provider */
+  settings: SmsProviderSettingField[];
+  /** Fields that apply to the template model for this provider (same shape as settings[]) */
+  templateFields: SmsProviderSettingField[];
+  /** Provider-specific guidance notes to display in the UI */
+  notes: string[];
 }
 
 /** GET/POST/PUT /api/v1/admin/integrations/sms/templates */
