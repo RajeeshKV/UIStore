@@ -28,6 +28,8 @@ export default async function CheckoutPage() {
   // codEnabled drives the initial UI: hide the COD option unless the admin has configured it.
   // delivery.codEnabled is the canonical field (set from Shipping settings).
   const codEnabled = settings?.delivery?.codEnabled ?? false;
+  // Pass mobileOtpEnabled so checkout knows to enforce phone verification gate
+  const mobileOtpEnabled = settings?.auth?.mobileOtpEnabled ?? false;
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>
@@ -37,6 +39,7 @@ export default async function CheckoutPage() {
         storeName={storeName}
         razorpayEnabled={razorpayEnabled}
         codEnabled={codEnabled}
+        mobileOtpEnabled={mobileOtpEnabled}
       />
     </StorefrontLayout>
   );

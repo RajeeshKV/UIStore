@@ -144,7 +144,7 @@ export function Header({
 
             {/* Wishlist — visible on all sizes */}
             <Link
-              href="/account"
+              href="/account/wishlist"
               aria-label="Wishlist"
               className="flex items-center justify-center h-9 w-9 rounded-full text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e] transition-all duration-150"
             >

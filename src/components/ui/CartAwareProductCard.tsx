@@ -1,14 +1,19 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCart } from "@/features/cart/CartContext";
+import { useAuth } from "@/features/auth/AuthContext";
 import { ProductCard } from "./ProductCard";
+import { pendingCartItem } from "@/lib/pendingCartItem";
 import type { StorefrontProductSummaryResponse } from "@/types/api";
 
 /**
- * ProductCard wired to the cart context.
- * Products that require variant selection (canPurchase=false without a variant)
- * are handled by navigating to the product page via the card link.
- * This component simply forwards addItem to the existing card UI.
+ * ProductCard wired to CartContext + auth.
+ *
+ * If the user is not authenticated and clicks "Add to Cart":
+ *  1. Saves the item to sessionStorage (pendingCartItem).
+ *  2. Redirects to /auth/login?redirect=<current path>.
+ *  After login, CartContext replays the pending item automatically.
  */
 export function CartAwareProductCard({
   product,
@@ -22,13 +27,21 @@ export function CartAwareProductCard({
   eager?: boolean;
 }) {
   const { addItem } = useCart();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
 
   function handleAddToCart(p: StorefrontProductSummaryResponse) {
-    // Only add directly if backend says canPurchase — no variant needed
+    if (!isAuthenticated) {
+      // Save pending item and send user to login
+      pendingCartItem.save({ productId: p.id, variantId: undefined, quantity: 1 });
+      const redirect = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
+      router.push(`/auth/login?redirect=${encodeURIComponent(redirect)}`);
+      return;
+    }
+
     if (p.canPurchase) {
       addItem(p.id, undefined, 1);
     }
-    // If canPurchase=false (variant required), the button is disabled in ProductCard
   }
 
   return (

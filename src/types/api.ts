@@ -283,6 +283,12 @@ export interface StorefrontProductSummaryResponse {
   brandName?: string;
   brandSlug?: string;
   isFeatured: boolean;
+  /** Average rating from published reviews (0 = no reviews yet, don't show stars) */
+  ratingAverage?: number;
+  /** Number of published reviews */
+  ratingCount?: number;
+  /** True when ratingCount > 0 — use this as the display gate */
+  hasRatings?: boolean;
 }
 
 export interface StorefrontProductResponse extends StorefrontProductSummaryResponse {

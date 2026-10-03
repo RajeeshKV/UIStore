@@ -84,6 +84,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         tokenStore.set(result.data.accessToken, result.data.refreshToken ?? "");
         const meResult = await authApi.me();
         if (meResult.ok) setUser(meResult.data);
+        // Notify CartContext to replay any pending cart item saved before login
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("kromic:session-restored"));
+        }
         return { ok: true };
       }
       const msg =

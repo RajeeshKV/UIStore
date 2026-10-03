@@ -12,6 +12,7 @@ import {
 import { cartApi, cartTokenStore } from "@/services/api/cart";
 import { useToast } from "@/components/ui/Toast";
 import { extractApiError } from "@/lib/utils";
+import { pendingCartItem } from "@/lib/pendingCartItem";
 import type { CartResponse } from "@/types/api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -80,9 +81,32 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     };
     void load();
 
-    const handler = () => void refresh();
+    // After login, replay any pending cart item that was saved before auth
+    const onSessionRestored = async () => {
+      const pending = pendingCartItem.load();
+      if (pending) {
+        pendingCartItem.clear();
+        const result = await cartApi.addItem({
+          productId: pending.productId,
+          variantId: pending.variantId,
+          quantity: pending.quantity,
+        });
+        if (result.ok) {
+          applyCartResponse(result.data);
+          setDrawerOpen(true);
+        }
+      } else {
+        void refresh();
+      }
+    };
+
+    const handler = () => void onSessionRestored();
     window.addEventListener("kromic:session-expired", handler);
-    return () => window.removeEventListener("kromic:session-expired", handler);
+    window.addEventListener("kromic:session-restored", handler);
+    return () => {
+      window.removeEventListener("kromic:session-expired", handler);
+      window.removeEventListener("kromic:session-restored", handler);
+    };
   }, [refresh]);
 
   // ── Mutations ──────────────────────────────────────────────────────────────

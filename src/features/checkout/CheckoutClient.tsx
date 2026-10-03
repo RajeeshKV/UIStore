@@ -79,6 +79,8 @@ interface CheckoutClientProps {
   razorpayEnabled: boolean;
   /** Hint for initial COD availability; authoritative from summary.paymentMethods[] */
   codEnabled: boolean;
+  /** When true, phone must be verified before order can be placed */
+  mobileOtpEnabled: boolean;
 }
 
 type PaymentMethod = "Razorpay" | "CashOnDelivery";
@@ -112,6 +114,7 @@ export function CheckoutClient({
   storeName,
   razorpayEnabled,
   codEnabled,
+  mobileOtpEnabled,
 }: CheckoutClientProps) {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { cart, isLoading: cartLoading, refresh: refreshCart } = useCart();
@@ -210,14 +213,16 @@ export function CheckoutClient({
     if (isAuthenticated) {
       void loadAddresses();
       void fetchSummary(paymentMethod);
-      // Fetch phone verification status (required for checkout gate)
-      void otpApi.getVerificationStatus().then((res) => {
-        if (res.ok) setVerifStatus(res.data);
-      });
+      // Only fetch verification status when OTP is enabled on this store
+      if (mobileOtpEnabled) {
+        void otpApi.getVerificationStatus().then((res) => {
+          if (res.ok) setVerifStatus(res.data);
+        });
+      }
     }
     // fetchSummary intentionally not in deps — only runs on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, loadAddresses]);
+  }, [isAuthenticated, loadAddresses, mobileOtpEnabled]);
 
   // ── Re-fetch summary when payment method changes ────────────────────────────
   // §3.3: codFee only appears in summary once CashOnDelivery is selected
@@ -416,18 +421,20 @@ export function CheckoutClient({
     }
 
     // ── Phone verification gate (frontend UX layer) ──────────────────────────
-    // Re-fetch verification-status fresh rather than relying on cached state.
-    // The server independently enforces this, so the frontend check is UX only.
-    const freshVerif = await otpApi.getVerificationStatus();
-    if (freshVerif.ok) {
-      setVerifStatus(freshVerif.data);
-      if (!freshVerif.data.verificationSatisfied) {
-        // Show verification dialog — do not submit; server would reject with PHONE_VERIFICATION_REQUIRED
-        setVerifyOpen(true);
-        return;
+    // Only enforced when the store has mobileOtpEnabled.
+    // The server independently enforces this; this is a UX-layer early return.
+    if (mobileOtpEnabled) {
+      const freshVerif = await otpApi.getVerificationStatus();
+      if (freshVerif.ok) {
+        setVerifStatus(freshVerif.data);
+        if (!freshVerif.data.verificationSatisfied) {
+          // Show blocking verification dialog — do not submit
+          setVerifyOpen(true);
+          return;
+        }
       }
+      // If getVerificationStatus fails (e.g. network): allow checkout attempt — server enforces.
     }
-    // If getVerificationStatus fails (e.g. network): allow checkout attempt — server enforces.
 
     // ── Resolve address ID ────────────────────────────────────────────────────
     let resolvedAddressId = selectedAddressId;
@@ -581,7 +588,7 @@ export function CheckoutClient({
   }, [
     step, selectedAddressId, inlineForm, paymentMethod, couponActive, summary,
     router, refreshCart, effectiveCurrency, addresses, openRazorpayWidget,
-    handlePaymentMethodChange, setVerifyOpen,
+    handlePaymentMethodChange, setVerifyOpen, mobileOtpEnabled,
   ]);
 
   // ── Loading ──────────────────────────────────────────────────────────────────

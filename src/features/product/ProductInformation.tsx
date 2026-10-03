@@ -84,6 +84,30 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
         {product.name}
       </h1>
 
+      {/* Star rating — only when product has reviews */}
+      {(product as StorefrontProductResponse & { hasRatings?: boolean; ratingAverage?: number; ratingCount?: number }).hasRatings && (
+        <div className="flex items-center gap-1.5">
+          {(() => {
+            const avg = (product as StorefrontProductResponse & { ratingAverage?: number }).ratingAverage ?? 0;
+            const cnt = (product as StorefrontProductResponse & { ratingCount?: number }).ratingCount ?? 0;
+            const filled = Math.round(avg);
+            return (
+              <>
+                <div className="flex items-center gap-0.5" aria-label={`${avg.toFixed(1)} out of 5 stars`}>
+                  {[1,2,3,4,5].map((i) => (
+                    <svg key={i} viewBox="0 0 24 24" className={cn("size-4 shrink-0", i <= filled ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-[#D1D5DB]")} stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-[13px] font-semibold text-[#191c1e]">{avg.toFixed(1)}</span>
+                <span className="text-[13px] text-[#5A6578]">({cnt} review{cnt !== 1 ? "s" : ""})</span>
+              </>
+            );
+          })()}
+        </div>
+      )}
+
       {/* Short description */}
       {product.shortDescription && (
         <p className="text-[14px] text-[#444748] leading-relaxed">{product.shortDescription}</p>

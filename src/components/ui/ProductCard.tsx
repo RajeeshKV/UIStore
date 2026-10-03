@@ -2,13 +2,46 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingBag } from "lucide-react";
+import { ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { formatPrice, discountPercent } from "@/lib/utils";
 import type { StorefrontProductSummaryResponse } from "@/types/api";
 import { normalizeStock } from "@/types/api";
+import { useWishlist } from "@/features/wishlist/WishlistContext";
+import { useAuth } from "@/features/auth/AuthContext";
+
+// ── Star rating display ───────────────────────────────────────────────────────
+
+function StarRating({ average, count }: { average: number; count: number }) {
+  // Don't show when no reviews
+  if (!count || count === 0) return null;
+
+  const filled = Math.round(average);
+  return (
+    <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5" aria-label={`${average.toFixed(1)} out of 5 stars`}>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Star
+            key={i}
+            className={cn(
+              "size-3 shrink-0",
+              i <= filled ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-[#D1D5DB]",
+            )}
+            aria-hidden="true"
+          />
+        ))}
+      </div>
+      <span className="text-[11px] text-[#5A6578] tabular-nums">
+        {average.toFixed(1)} <span className="text-[#c4c7c7]">({count})</span>
+      </span>
+    </div>
+  );
+}
+
+// ── Product card ──────────────────────────────────────────────────────────────
 
 interface ProductCardProps {
   product: StorefrontProductSummaryResponse;
@@ -28,8 +61,12 @@ export function ProductCard({
   eager = false,
 }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const { wishedIds, toggle } = useWishlist();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const isWishlisted = wishedIds.has(product.id);
 
   const effectiveCurrency = product.currency ?? currency ?? "INR";
   const effectiveLocale   = locale ?? "en-IN";
@@ -58,14 +95,22 @@ export function ProductCard({
     setTimeout(() => setAddingToCart(false), 800);
   };
 
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      router.push(`/auth/login?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/")}`);
+      return;
+    }
+    await toggle(product.id);
+  };
+
   return (
     <motion.article
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        // Design reference: white card, 1px border #E5E7EB, 0px shadow default
         "group relative flex flex-col rounded-2xl overflow-hidden border border-[#E5E7EB] bg-white",
-        // Hover: soft shadow elevation
         "hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.06)] transition-shadow duration-200",
         isOutOfStock && "opacity-70",
         className,
@@ -73,7 +118,7 @@ export function ProductCard({
     >
       {/* ── Image area ───────────────────────────────────────────────────── */}
       <div className="relative aspect-square w-full bg-[#F4F5F7] overflow-hidden">
-        {/* Discount badge — top-left crimson pill */}
+        {/* Discount badge */}
         {discount > 0 && !isOutOfStock && (
           <span className="absolute top-2.5 left-2.5 z-10 rounded bg-[#E02E2E] px-1.5 py-0.5 text-[9px] font-bold text-white leading-none uppercase tracking-wide pointer-events-none">
             -{discount}%
@@ -92,28 +137,35 @@ export function ProductCard({
           </span>
         )}
 
-        {/* Wishlist — top-right circle */}
+        {/* Wishlist — top-right, wired to WishlistContext */}
         <button
+          type="button"
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           aria-pressed={isWishlisted}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsWishlisted((w) => !w);
-          }}
+          onClick={handleWishlist}
           className={cn(
             "absolute top-2.5 right-2.5 z-10",
             "flex h-8 w-8 items-center justify-center rounded-full",
-            "bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
+            "bg-white border shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
             "hover:border-[#D1D5DB] transition-all duration-150",
+            isWishlisted ? "border-[#E02E2E]" : "border-[#E5E7EB]",
           )}
         >
-          <Heart
+          <svg
+            viewBox="0 0 24 24"
             className={cn(
-              "size-3.5 transition-colors",
-              isWishlisted ? "fill-[#E02E2E] text-[#E02E2E]" : "text-[#5A6578]",
+              "size-3.5 transition-all duration-150",
+              isWishlisted
+                ? "fill-[#E02E2E] stroke-[#E02E2E]"
+                : "fill-none stroke-[#5A6578]",
             )}
-          />
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
         </button>
 
         {/* Product image */}
@@ -146,6 +198,14 @@ export function ProductCard({
           {product.name}
         </Link>
 
+        {/* Star rating — only when hasRatings or ratingCount > 0 */}
+        {(product.hasRatings || (product.ratingCount ?? 0) > 0) && (
+          <StarRating
+            average={product.ratingAverage ?? 0}
+            count={product.ratingCount ?? 0}
+          />
+        )}
+
         {/* Price row */}
         <div className="flex items-baseline gap-1.5 flex-wrap">
           <span className="text-[15px] font-extrabold text-[#0D0D0D] leading-none">{priceStr}</span>
@@ -154,7 +214,7 @@ export function ProductCard({
           )}
         </div>
 
-        {/* Spacer to push button to bottom */}
+        {/* Spacer */}
         <div className="flex-1" />
 
         {/* Add to Cart */}

@@ -82,8 +82,10 @@ export function ProfileClient() {
         : false;
       setMobileOtpEnabled(otpEnabled);
 
-      // Fetch verification status only when OTP is enabled
-      if (otpEnabled) {
+      // Always fetch verification status when user has a phone number — not just when OTP is enabled.
+      // The badge shows regardless of whether OTP is required for checkout.
+      const p = profileRes.ok ? profileRes.data : null;
+      if (p?.phoneNumber) {
         const statusRes = await otpApi.getVerificationStatus();
         if (statusRes.ok) setVerifStatus(statusRes.data);
       }
@@ -180,21 +182,24 @@ export function ProfileClient() {
             </span>
           </div>
         )}
-        {/* Verification status badge */}
-        {mobileOtpEnabled && (
+        {/* Verification status badge — shown whenever phone number exists */}
+        {profile?.phoneNumber && (
           <div className="flex justify-between text-body-sm items-center pt-1 border-t border-border mt-1">
-            <span className="text-foreground-muted">Phone verification</span>
-            {isVerified ? (
-              <span className="inline-flex items-center gap-1 text-success font-medium">
-                <CheckCircle className="size-3.5" aria-hidden="true" />
-                Verified
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-warning font-medium">
-                <XCircle className="size-3.5" aria-hidden="true" />
-                Not verified
-              </span>
-            )}
+            <span className="text-foreground-muted">Phone</span>
+            <div className="flex items-center gap-2">
+              <span className="text-foreground font-medium font-mono">{profile.phoneNumber}</span>
+              {isVerified ? (
+                <span className="inline-flex items-center gap-1 text-success font-semibold">
+                  <CheckCircle className="size-3.5" aria-hidden="true" />
+                  Verified
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-warning font-semibold">
+                  <XCircle className="size-3.5" aria-hidden="true" />
+                  Not verified
+                </span>
+              )}
+            </div>
           </div>
         )}
         <p className="text-caption text-foreground-muted mt-1">
