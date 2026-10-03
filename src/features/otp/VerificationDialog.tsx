@@ -202,7 +202,11 @@ export function VerificationDialog({
 
       // Fetch otpLength from verification-status (authenticated)
       const statusRes = await otpApi.getVerificationStatus();
-      if (statusRes.ok) setOtpLength(statusRes.data.otpLength ?? 4);
+      if (statusRes.ok) {
+        const len = statusRes.data.otpLength;
+        // Guard: treat 0 or missing as 4 (default)
+        setOtpLength(len && len > 0 ? len : 4);
+      }
 
       otpSession.save({
         phone: normalisePhone(phone),
@@ -408,8 +412,8 @@ export function VerificationDialog({
                 length={otpLength}
                 value={otp}
                 onChange={setOtp}
-                disabled={isVerifying || submitLocked || flowDisabled || expiryRemaining === 0}
-                error={!!otpError}
+                disabled={isVerifying || submitLocked || flowDisabled}
+                error={!!otpError || expiryRemaining === 0}
                 autoFocus
               />
 
