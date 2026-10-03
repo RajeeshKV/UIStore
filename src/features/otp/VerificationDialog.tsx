@@ -200,14 +200,8 @@ export function VerificationDialog({
       setOtp("");
       setStep("code");
 
-      // Try to get otpLength from verification-status — but don't block on it.
-      // Fall back to 4 (the default) if the call fails or returns 0.
-      otpApi.getVerificationStatus().then((statusRes) => {
-        if (statusRes.ok) {
-          const len = statusRes.data.otpLength;
-          if (len && len > 0) setOtpLength(len);
-        }
-      });
+      // Always 4-digit OTP — no server call needed for length
+      setOtpLength(4);
 
       otpSession.save({
         phone: normalisePhone(phone),
@@ -322,7 +316,7 @@ export function VerificationDialog({
       title={title}
       description={subtitle}
       hideClose={blocking}
-      size="max-w-sm"
+      size="max-w-xs sm:max-w-sm"
     >
       {isVerified ? (
         // ── Success state ──────────────────────────────────────────────────
