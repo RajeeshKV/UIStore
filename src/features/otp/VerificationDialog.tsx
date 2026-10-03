@@ -200,13 +200,14 @@ export function VerificationDialog({
       setOtp("");
       setStep("code");
 
-      // Fetch otpLength from verification-status (authenticated)
-      const statusRes = await otpApi.getVerificationStatus();
-      if (statusRes.ok) {
-        const len = statusRes.data.otpLength;
-        // Guard: treat 0 or missing as 4 (default)
-        setOtpLength(len && len > 0 ? len : 4);
-      }
+      // Try to get otpLength from verification-status — but don't block on it.
+      // Fall back to 4 (the default) if the call fails or returns 0.
+      otpApi.getVerificationStatus().then((statusRes) => {
+        if (statusRes.ok) {
+          const len = statusRes.data.otpLength;
+          if (len && len > 0) setOtpLength(len);
+        }
+      });
 
       otpSession.save({
         phone: normalisePhone(phone),
