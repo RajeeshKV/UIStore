@@ -4,21 +4,22 @@
  * Admin SMS Integration — schema-driven from GET /providers.
  *
  * Layout:
- *   ┌─ Status bar ─────────────────────────────────────────────────────────┐
- *   ├─ Gateway config ───────────────────┬─ OTP Policy ────────────────────┤
- *   │  Provider selector                 │  expiry / cooldown / attempts   │
- *   │  Schema-driven credential fields   │                                 │
- *   │  Provider notes                    │                                 │
- *   └────────────────────────────────────┴─────────────────────────────────┘
+ *   ┌─ Status bar ──────────────────────────────────────────────────────────┐
+ *   ├─ Gateway config (full width) ─────────────────────────────────────────┤
+ *   │  Provider selector                                                    │
+ *   │  Schema-driven credential fields (2-col grid)                        │
+ *   │  Provider notes                                                       │
+ *   └───────────────────────────────────────────────────────────────────────┘
  *
- * No templates section — templates management was removed per spec.
- * No DeliveryMode dropdown — no provider schema exposes this field.
+ * OTP policy is no longer configurable — removed.
+ * Templates section removed per spec.
+ * No DeliveryMode dropdown — not in any provider schema.
  * Secrets are write-only: blank = preserve existing, non-blank = replace.
  */
 
 import { useEffect, useState, useCallback } from "react";
 import { MessageSquare, CheckCircle2, AlertTriangle, WifiOff, Info } from "lucide-react";
-import { adminIntegrationsApi, adminSmsApi, adminSettingsApi } from "@/services/api/admin";
+import { adminIntegrationsApi, adminSmsApi } from "@/services/api/admin";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -41,10 +42,9 @@ interface SchemaFieldProps {
 
 function SchemaField({ field, value, onChange, isConfigured }: SchemaFieldProps) {
   const isSecret = field.type === "Secret";
-  // Secrets are write-only — never pre-fill, show placeholder only when already configured
   const placeholder = isSecret && isConfigured
     ? "Configured — enter new value to replace"
-    : "";
+    : (field.placeholder ?? "");
 
   const inputId = `sms-field-${field.key}`;
 
@@ -100,7 +100,6 @@ function SchemaField({ field, value, onChange, isConfigured }: SchemaFieldProps)
     );
   }
 
-  // Text / Secret / Number — all render as a single input
   return (
     <Input
       label={field.label}
@@ -119,6 +118,8 @@ function SchemaField({ field, value, onChange, isConfigured }: SchemaFieldProps)
 // ── Status strip ──────────────────────────────────────────────────────────────
 
 function SmsStatusStrip({ status }: { status: SmsIntegrationStatusResponse }) {
+  const missing = status.missingSettings ?? [];
+
   if (!status.enabled) {
     return (
       <div className="flex items-center gap-3 rounded-lg bg-muted/60 border border-border px-4 py-2.5">
@@ -132,14 +133,10 @@ function SmsStatusStrip({ status }: { status: SmsIntegrationStatusResponse }) {
       <div className="flex flex-col gap-2 rounded-lg bg-warning/5 border border-warning/30 px-4 py-3">
         <div className="flex items-center gap-2">
           <AlertTriangle className="size-4 text-warning shrink-0" />
-          <p className="text-body-sm text-warning font-medium">
-            SMS is enabled but not fully configured.
-          </p>
+          <p className="text-body-sm text-warning font-medium">SMS is enabled but not fully configured.</p>
         </div>
-        {status.missingSettings.length > 0 && (
-          <p className="text-caption text-foreground-muted pl-6">
-            Missing: {status.missingSettings.join(", ")}
-          </p>
+        {missing.length > 0 && (
+          <p className="text-caption text-foreground-muted pl-6">Missing: {missing.join(", ")}</p>
         )}
       </div>
     );
@@ -157,15 +154,12 @@ function SmsStatusStrip({ status }: { status: SmsIntegrationStatusResponse }) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function AdminSmsIntegrationClient() {
-  // ── Provider catalogue ────────────────────────────────────────────────────
   const [providers, setProviders] = useState<SmsProviderOptionResponse[]>([]);
   const [providersLoading, setProvidersLoading] = useState(true);
 
-  // ── Integration status ────────────────────────────────────────────────────
   const [status, setStatus] = useState<SmsIntegrationStatusResponse | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
 
-  // ── Gateway form ──────────────────────────────────────────────────────────
   const [selectedProvider, setSelectedProvider] = useState("");
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [integEnabled, setIntegEnabled] = useState(false);
@@ -173,15 +167,6 @@ export function AdminSmsIntegrationClient() {
   const [integError, setIntegError] = useState("");
   const [integSuccess, setIntegSuccess] = useState(false);
 
-  // ── OTP policy ────────────────────────────────────────────────────────────
-  const [otpExpiry, setOtpExpiry] = useState("10");
-  const [otpCooldown, setOtpCooldown] = useState("60");
-  const [otpMaxAttempts, setOtpMaxAttempts] = useState("5");
-  const [policySaving, setPolicySaving] = useState(false);
-  const [policyError, setPolicyError] = useState("");
-  const [policySuccess, setPolicySuccess] = useState(false);
-
-  // ── Load ──────────────────────────────────────────────────────────────────
   const loadProviders = useCallback(async () => {
     setProvidersLoading(true);
     const res = await adminSmsApi.getProviders();
@@ -191,21 +176,12 @@ export function AdminSmsIntegrationClient() {
 
   const loadStatus = useCallback(async () => {
     setStatusLoading(true);
-    const [smsRes, settingsRes] = await Promise.all([
-      adminIntegrationsApi.getSms(),
-      adminSettingsApi.get(),
-    ]);
-    if (smsRes.ok) {
-      const s = smsRes.data as SmsIntegrationStatusResponse;
+    const res = await adminIntegrationsApi.getSms();
+    if (res.ok) {
+      const s = res.data as SmsIntegrationStatusResponse;
       setStatus(s);
       setIntegEnabled(s.enabled);
       if (s.provider) setSelectedProvider(s.provider);
-    }
-    if (settingsRes.ok && settingsRes.data.auth) {
-      const a = settingsRes.data.auth;
-      setOtpExpiry(String(a.otpExpiryMinutes ?? 10));
-      setOtpCooldown(String(a.otpResendCooldownSeconds ?? 60));
-      setOtpMaxAttempts(String(a.otpMaxAttempts ?? 5));
     }
     setStatusLoading(false);
   }, []);
@@ -215,7 +191,6 @@ export function AdminSmsIntegrationClient() {
     void loadStatus();
   }, [loadProviders, loadStatus]);
 
-  // Switching provider clears field values — new provider has different keys
   function handleProviderChange(name: string) {
     setSelectedProvider(name);
     setFieldValues({});
@@ -228,7 +203,6 @@ export function AdminSmsIntegrationClient() {
   const activeSchema: SmsProviderOptionResponse | null =
     providers.find((p) => p.name === selectedProvider) ?? null;
 
-  // ── Save gateway config ───────────────────────────────────────────────────
   async function handleIntegSave(e: React.FormEvent) {
     e.preventDefault();
 
@@ -236,7 +210,6 @@ export function AdminSmsIntegrationClient() {
       setIntegError("Select a provider before enabling SMS."); return;
     }
 
-    // Client-side required field check
     if (activeSchema && integEnabled) {
       const missingLabels = activeSchema.requiredSettings
         .filter((k) => !fieldValues[k]?.trim())
@@ -248,7 +221,6 @@ export function AdminSmsIntegrationClient() {
 
     setIntegSaving(true); setIntegError(""); setIntegSuccess(false);
 
-    // Omit blank values — blank secret = preserve existing credential
     const providerSettings: Record<string, string> = {};
     for (const [k, v] of Object.entries(fieldValues)) {
       if (v.trim()) providerSettings[k] = v.trim();
@@ -265,7 +237,6 @@ export function AdminSmsIntegrationClient() {
       const updated = res.data as SmsIntegrationStatusResponse;
       setStatus(updated);
       setIntegEnabled(updated.enabled);
-      // Clear secret field values — they are write-only
       if (activeSchema) {
         setFieldValues((prev) => {
           const next = { ...prev };
@@ -279,21 +250,6 @@ export function AdminSmsIntegrationClient() {
     }
   }
 
-  // ── Save OTP policy ───────────────────────────────────────────────────────
-  async function handlePolicySave(e: React.FormEvent) {
-    e.preventDefault();
-    setPolicySaving(true); setPolicyError(""); setPolicySuccess(false);
-    const res = await adminSettingsApi.updateAuth({
-      otpExpiryMinutes: parseInt(otpExpiry) || 10,
-      otpResendCooldownSeconds: parseInt(otpCooldown) || 60,
-      otpMaxAttempts: parseInt(otpMaxAttempts) || 5,
-    });
-    setPolicySaving(false);
-    if (res.ok) { setPolicySuccess(true); setTimeout(() => setPolicySuccess(false), 3000); }
-    else setPolicyError(extractApiError(res.error, "Failed to save OTP policy."));
-  }
-
-  // ── Top-bar status badge ──────────────────────────────────────────────────
   const loading = providersLoading || statusLoading;
 
   const topBadge = !status ? null
@@ -305,9 +261,9 @@ export function AdminSmsIntegrationClient() {
 
   return (
     <div className="flex flex-col gap-4">
-      <AdminPageHeader title="SMS" description="SMS provider credentials and phone verification policy." />
+      <AdminPageHeader title="SMS" description="SMS provider credentials for sending OTP verification codes." />
 
-      {/* ── Status bar ────────────────────────────────────────────────── */}
+      {/* Status bar */}
       <div className="flex items-center gap-4 rounded-lg border border-border bg-background px-4 py-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
           <MessageSquare className="size-5 text-foreground-muted" />
@@ -319,176 +275,115 @@ export function AdminSmsIntegrationClient() {
         {loading ? <Skeleton className="h-6 w-28 rounded-full" /> : topBadge}
       </div>
 
-      {/* ── Live status strip ─────────────────────────────────────────── */}
+      {/* Live status strip */}
       {!loading && status && <SmsStatusStrip status={status} />}
 
-      {/* ── Two-column: Gateway (2/3) | OTP Policy (1/3) ─────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      {/* Gateway credentials form */}
+      <div className="rounded-lg border border-border bg-background p-4 flex flex-col gap-4">
+        <h3 className="text-body-sm font-semibold text-foreground border-b border-border pb-2">
+          Gateway Credentials
+        </h3>
 
-        {/* Gateway config */}
-        <div className="xl:col-span-2 rounded-lg border border-border bg-background p-4 flex flex-col gap-4">
-          <h3 className="text-body-sm font-semibold text-foreground border-b border-border pb-2">
-            Gateway Credentials
-          </h3>
-
-          {integError && (
-            <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-3 py-2">
-              {integError}
-            </p>
-          )}
-          {integSuccess && (
-            <p className="text-body-sm text-success bg-success/5 border border-success/20 rounded-md px-3 py-2">
-              SMS integration saved.
-            </p>
-          )}
-
-          {/* Write-only notice when credentials already stored */}
-          {status?.isConfigured && (
-            <p className="text-caption text-warning bg-warning/5 border border-warning/20 rounded-md px-3 py-2">
-              Credentials are write-only — leave fields blank to keep existing values.
-            </p>
-          )}
-
-          <form onSubmit={handleIntegSave} noValidate className="flex flex-col gap-4">
-
-            {/* Provider selector */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="sms-provider" className="text-body-sm font-medium text-foreground">
-                Provider <span className="text-danger" aria-hidden="true">*</span>
-              </label>
-              {providersLoading ? (
-                <Skeleton className="h-9 w-full rounded-md" />
-              ) : (
-                <select
-                  id="sms-provider"
-                  value={selectedProvider}
-                  onChange={(e) => handleProviderChange(e.target.value)}
-                  className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
-                >
-                  <option value="">— Select provider —</option>
-                  {providers.map((p) => (
-                    <option key={p.name} value={p.name}>
-                      {p.name}{p.description ? ` — ${p.description}` : ""}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {/* Schema-driven credential fields */}
-            {activeSchema && activeSchema.settings.length > 0 && (
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-                {activeSchema.settings.map((field: SmsProviderSettingField) => (
-                  <div key={field.key} className={cn(field.type === "Textarea" && "xl:col-span-2")}>
-                    <SchemaField
-                      field={field}
-                      value={fieldValues[field.key] ?? ""}
-                      onChange={setFieldValue}
-                      isConfigured={status?.isConfigured ?? false}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Provider notes */}
-            {activeSchema?.notes && activeSchema.notes.length > 0 && (
-              <div className="rounded-md bg-muted/60 border border-border px-3 py-2.5 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <Info className="size-3.5 text-foreground-muted shrink-0" />
-                  <span className="text-caption font-semibold text-foreground-muted">Notes</span>
-                </div>
-                {activeSchema.notes.map((note, i) => (
-                  <p key={i} className="text-caption text-foreground-muted pl-5">{note}</p>
-                ))}
-              </div>
-            )}
-
-            {/* Staged guidance */}
-            {selectedProvider && !integEnabled && !status?.isConfigured && (
-              <p className="text-caption text-foreground-muted bg-muted/40 rounded-md px-3 py-2">
-                Tip: save with SMS disabled to store credentials first, then enable once all required fields are filled.
-              </p>
-            )}
-
-            {/* Enable toggle + save */}
-            <div className="flex items-center justify-between gap-4 pt-1 border-t border-border">
-              <label className="flex items-start gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={integEnabled}
-                  onChange={(e) => setIntegEnabled(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
-                />
-                <span className="flex flex-col">
-                  <span className="text-body-sm font-medium text-foreground">Enable SMS</span>
-                  <span className="text-caption text-foreground-muted">
-                    All required credentials must be saved before enabling.
-                  </span>
-                </span>
-              </label>
-              <Button type="submit" variant="primary" size="sm" loading={integSaving}>
-                Save
-              </Button>
-            </div>
-          </form>
-        </div>
-
-        {/* OTP Policy */}
-        <div className="rounded-lg border border-border bg-background p-4 flex flex-col gap-4">
-          <h3 className="text-body-sm font-semibold text-foreground border-b border-border pb-2">
-            OTP Policy
-          </h3>
-          <p className="text-caption text-foreground-muted -mt-1">
-            Code expiry, resend cooldown and attempt limits.
+        {integError && (
+          <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-3 py-2">
+            {integError}
           </p>
+        )}
+        {integSuccess && (
+          <p className="text-body-sm text-success bg-success/5 border border-success/20 rounded-md px-3 py-2">
+            SMS integration saved.
+          </p>
+        )}
 
-          {policyError && (
-            <p role="alert" className="text-body-sm text-danger bg-danger/5 border border-danger/20 rounded-md px-3 py-2">
-              {policyError}
-            </p>
-          )}
-          {policySuccess && (
-            <p className="text-body-sm text-success bg-success/5 border border-success/20 rounded-md px-3 py-2">
-              OTP policy saved.
-            </p>
-          )}
+        {status?.isConfigured && (
+          <p className="text-caption text-warning bg-warning/5 border border-warning/20 rounded-md px-3 py-2">
+            Credentials are write-only — leave fields blank to keep existing values.
+          </p>
+        )}
 
-          <form onSubmit={handlePolicySave} noValidate className="flex flex-col gap-3">
-            <Input
-              label="Code expiry (minutes)"
-              type="number"
-              min={1}
-              max={60}
-              value={otpExpiry}
-              onChange={(e) => setOtpExpiry(e.target.value)}
-              hint="How long a code stays valid after sending."
-            />
-            <Input
-              label="Resend cooldown (seconds)"
-              type="number"
-              min={10}
-              max={300}
-              value={otpCooldown}
-              onChange={(e) => setOtpCooldown(e.target.value)}
-              hint="Minimum wait before a new code can be requested."
-            />
-            <Input
-              label="Max attempts"
-              type="number"
-              min={1}
-              max={10}
-              value={otpMaxAttempts}
-              onChange={(e) => setOtpMaxAttempts(e.target.value)}
-              hint="Wrong guesses allowed before the code is invalidated."
-            />
-            <div className="flex justify-end pt-1 border-t border-border">
-              <Button type="submit" variant="primary" size="sm" loading={policySaving}>
-                Save
-              </Button>
+        <form onSubmit={handleIntegSave} noValidate className="flex flex-col gap-4">
+
+          {/* Provider selector */}
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="sms-provider" className="text-body-sm font-medium text-foreground">
+              Provider <span className="text-danger" aria-hidden="true">*</span>
+            </label>
+            {providersLoading ? (
+              <Skeleton className="h-9 w-full rounded-md" />
+            ) : (
+              <select
+                id="sms-provider"
+                value={selectedProvider}
+                onChange={(e) => handleProviderChange(e.target.value)}
+                className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
+              >
+                <option value="">— Select provider —</option>
+                {providers.map((p) => (
+                  <option key={p.name} value={p.name}>
+                    {p.name}{p.description ? ` — ${p.description}` : ""}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* Schema-driven credential fields */}
+          {activeSchema && activeSchema.settings.length > 0 && (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+              {activeSchema.settings.map((field: SmsProviderSettingField) => (
+                <div key={field.key} className={cn(field.type === "Textarea" && "xl:col-span-2")}>
+                  <SchemaField
+                    field={field}
+                    value={fieldValues[field.key] ?? ""}
+                    onChange={setFieldValue}
+                    isConfigured={status?.isConfigured ?? false}
+                  />
+                </div>
+              ))}
             </div>
-          </form>
-        </div>
+          )}
+
+          {/* Provider notes */}
+          {activeSchema?.notes && activeSchema.notes.length > 0 && (
+            <div className="rounded-md bg-muted/60 border border-border px-3 py-2.5 flex flex-col gap-1">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Info className="size-3.5 text-foreground-muted shrink-0" />
+                <span className="text-caption font-semibold text-foreground-muted">Notes</span>
+              </div>
+              {activeSchema.notes.map((note, i) => (
+                <p key={i} className="text-caption text-foreground-muted pl-5">{note}</p>
+              ))}
+            </div>
+          )}
+
+          {/* Staged setup guidance */}
+          {selectedProvider && !integEnabled && !status?.isConfigured && (
+            <p className="text-caption text-foreground-muted bg-muted/40 rounded-md px-3 py-2">
+              Tip: save with SMS disabled to store credentials first, then enable once all required fields are filled.
+            </p>
+          )}
+
+          {/* Enable toggle + save */}
+          <div className="flex items-center justify-between gap-4 pt-1 border-t border-border">
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={integEnabled}
+                onChange={(e) => setIntegEnabled(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
+              />
+              <span className="flex flex-col">
+                <span className="text-body-sm font-medium text-foreground">Enable SMS</span>
+                <span className="text-caption text-foreground-muted">
+                  All required credentials must be saved before enabling.
+                </span>
+              </span>
+            </label>
+            <Button type="submit" variant="primary" size="sm" loading={integSaving}>
+              Save
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

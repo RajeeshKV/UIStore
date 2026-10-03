@@ -1209,6 +1209,8 @@ export interface SmsProviderSettingField {
   maxLength?: number | null;
   /** Help text shown under the field */
   description?: string | null;
+  /** Input placeholder text */
+  placeholder?: string | null;
   /** Populated when type === "Select" */
   allowedValues?: string[] | null;
 }
@@ -1226,13 +1228,14 @@ export interface SmsProviderOptionResponse {
 
 /**
  * GET /api/v1/admin/integrations/sms response.
- * missingSettings is an array of wire keys that are required but not yet saved.
+ * missingSettings may be absent or null when not applicable — always treat as optional.
  */
 export interface SmsIntegrationStatusResponse {
   enabled: boolean;
   provider?: string | null;
   isConfigured: boolean;
-  missingSettings: string[];
+  /** Keys that are required but not yet saved. May be absent/null — always default to []. */
+  missingSettings?: string[] | null;
 }
 
 /** GET/POST/PUT /api/v1/admin/integrations/sms/templates */
