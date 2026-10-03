@@ -115,14 +115,14 @@ export function OtpInput({ length, value, onChange, disabled, error, autoFocus }
           onFocus={() => handleFocus(index)}
           onPaste={handlePaste}
           className={cn(
-            "h-12 w-11 rounded-lg border text-center font-mono text-h4 font-semibold",
-            "bg-surface-elevated text-foreground",
+            "h-12 w-11 rounded-lg border-2 text-center font-mono text-h4 font-semibold",
+            "bg-[#f3f4f6] text-foreground",
             "focus:outline-none focus:ring-2 focus:ring-focus transition-colors duration-150",
             error
-              ? "border-danger focus:ring-danger/30 text-danger"
+              ? "border-danger focus:ring-danger/30 text-danger bg-danger/5"
               : digit
                 ? "border-primary bg-primary/5 text-primary"
-                : "border-border",
+                : "border-[#d1d5db] focus:border-primary",
             disabled && "opacity-50 cursor-not-allowed",
           )}
         />
