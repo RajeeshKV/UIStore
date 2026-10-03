@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { AdminGoogleIntegrationClient } from "@/features/admin/settings/AdminGoogleIntegrationClient";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Google OAuth" };
 

@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { AdminSeoClient } from "@/features/admin/settings/AdminSeoClient";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "SEO" };
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AdminProductEditClient } from "@/features/admin/products/AdminProductEditClient";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Edit Product" };
 
 interface Props {

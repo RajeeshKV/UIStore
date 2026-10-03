@@ -1,4 +1,6 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Customer registration via email/password has been removed.

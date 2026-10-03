@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { FeaturedProductCard } from "./FeaturedProductCard";
 import { useCart } from "@/features/cart/CartContext";
+import { useAuth } from "@/features/auth/AuthContext";
+import { pendingCartItem } from "@/lib/pendingCartItem";
 import type { StorefrontProductSummaryResponse } from "@/types/api";
 
 interface FeaturedProductsProps {
@@ -106,8 +109,16 @@ function FeaturedGrid({
   shouldReduce: boolean;
 }) {
   const { addItem } = useCart();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
 
   function handleAddToCart(p: StorefrontProductSummaryResponse) {
+    if (!isAuthenticated) {
+      pendingCartItem.save({ productId: p.id, variantId: undefined, quantity: 1 });
+      const redirect = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
+      router.push(`/auth/login?redirect=${encodeURIComponent(redirect)}`);
+      return;
+    }
     if (p.canPurchase) addItem(p.id, undefined, 1);
   }
 

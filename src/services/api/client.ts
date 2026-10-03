@@ -123,6 +123,9 @@ async function request<T>(
     res = await fetch(url, {
       ...init,
       headers,
+      // Never cache API responses — backend is the source of truth.
+      // Next.js extended fetch caches GET responses by default; this disables it.
+      cache: "no-store",
       body: body !== undefined ? (isFormData ? (body as FormData) : JSON.stringify(body)) : undefined,
     });
   } catch {

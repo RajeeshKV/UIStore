@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -6,6 +6,8 @@ import { ArrowLeft } from "lucide-react";
 import { authApi } from "@/services/api/auth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+
+export const dynamic = "force-dynamic";
 
 export default function AdminForgotPasswordPage() {
   const [email, setEmail] = useState("");

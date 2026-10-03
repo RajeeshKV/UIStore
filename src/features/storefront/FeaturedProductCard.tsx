@@ -2,12 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingBag } from "lucide-react";
+import { ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { cn, formatPrice, discountPercent } from "@/lib/utils";
 import type { StorefrontProductSummaryResponse } from "@/types/api";
 import { normalizeStock } from "@/types/api";
+import { useWishlist } from "@/features/wishlist/WishlistContext";
+import { useAuth } from "@/features/auth/AuthContext";
 
 interface FeaturedProductCardProps {
   product: StorefrontProductSummaryResponse;
@@ -17,14 +20,6 @@ interface FeaturedProductCardProps {
   eager?: boolean;
 }
 
-/**
- * Matches the design reference exactly:
- * - bg-white rounded-2xl p-5, border, subtle shadow
- * - Discount badge top-left (crimson pill)
- * - Wishlist top-right (circle button)
- * - Image inside a contained rounded-xl bg area (not edge-to-edge)
- * - Title, price row, Add to Cart CTA
- */
 export function FeaturedProductCard({
   product,
   currency,
@@ -32,9 +27,13 @@ export function FeaturedProductCard({
   onAddToCart,
   eager = false,
 }: FeaturedProductCardProps) {
-  const [imgError, setImgError]         = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const { wishedIds, toggle } = useWishlist();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const isWishlisted = wishedIds.has(product.id);
 
   const effectiveCurrency = product.currency ?? currency ?? "INR";
   const effectiveLocale   = locale ?? "en-IN";
@@ -53,6 +52,11 @@ export function FeaturedProductCard({
       ? formatPrice(product.compareAtPrice, effectiveCurrency, effectiveLocale)
       : null;
 
+  const hasRatings = product.hasRatings || (product.ratingCount ?? 0) > 0;
+  const ratingAvg = product.ratingAverage ?? 0;
+  const ratingCount = product.ratingCount ?? 0;
+  const filledStars = Math.round(ratingAvg);
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -62,21 +66,29 @@ export function FeaturedProductCard({
     setTimeout(() => setAddingToCart(false), 800);
   };
 
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      router.push(`/auth/login?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/")}`);
+      return;
+    }
+    await toggle(product.id);
+  };
+
   return (
     <motion.article
       whileHover={{ y: -3, boxShadow: "0 16px 40px rgba(0,0,0,0.10)" }}
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        // Design reference: bg-white rounded-2xl p-5 border shadow-sm
         "group relative flex flex-col bg-white rounded-2xl p-4",
         "border border-[#e1e2e4]/60 shadow-sm",
         "transition-shadow duration-300",
         isOutOfStock && "opacity-70",
       )}
     >
-      {/* ── Top row: badge left + wishlist right ────────────────────────── */}
+      {/* ── Top row: badge left + wishlist right ── */}
       <div className="flex items-center justify-between w-full mb-3">
-        {/* Discount badge — crimson pill */}
         {discount > 0 && !isOutOfStock ? (
           <span className="bg-[#E02E2E] text-white text-[10px] px-2.5 py-0.5 rounded-full font-extrabold tracking-wider uppercase shadow-sm">
             -{discount}%
@@ -89,18 +101,36 @@ export function FeaturedProductCard({
           <span />
         )}
 
-        {/* Wishlist button */}
+        {/* Wishlist — wired to WishlistContext */}
         <button
+          type="button"
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           aria-pressed={isWishlisted}
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsWishlisted((w) => !w); }}
-          className="w-8 h-8 rounded-full bg-[#f3f4f6] text-[#5A6578] hover:text-[#E02E2E] hover:bg-[#fff0f0] flex items-center justify-center transition-all duration-150"
+          onClick={handleWishlist}
+          className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150",
+            isWishlisted
+              ? "bg-[#fff0f0] text-[#E02E2E]"
+              : "bg-[#f3f4f6] text-[#5A6578] hover:text-[#E02E2E] hover:bg-[#fff0f0]",
+          )}
         >
-          <Heart className={cn("size-3.5", isWishlisted && "fill-[#E02E2E] text-[#E02E2E]")} />
+          <svg
+            viewBox="0 0 24 24"
+            className={cn(
+              "size-3.5 transition-all duration-150",
+              isWishlisted ? "fill-[#E02E2E] stroke-[#E02E2E]" : "fill-none stroke-current",
+            )}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
         </button>
       </div>
 
-      {/* ── Image — contained in a rounded bg area ───────────────────────── */}
+      {/* ── Image ── */}
       <Link
         href={`/products/${product.slug}`}
         aria-label={`View ${product.name}`}
@@ -126,7 +156,7 @@ export function FeaturedProductCard({
         )}
       </Link>
 
-      {/* ── Product info ──────────────────────────────────────────────────── */}
+      {/* ── Info ── */}
       <div className="flex flex-col gap-1 flex-1">
         <Link
           href={`/products/${product.slug}`}
@@ -134,6 +164,27 @@ export function FeaturedProductCard({
         >
           {product.name}
         </Link>
+
+        {/* Star rating — only when there are reviews */}
+        {hasRatings && (
+          <div className="flex items-center gap-1 mt-0.5">
+            <div className="flex items-center gap-0.5" aria-label={`${ratingAvg.toFixed(1)} out of 5 stars`}>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Star
+                  key={i}
+                  className={cn(
+                    "size-3 shrink-0",
+                    i <= filledStars ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-[#D1D5DB]",
+                  )}
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+            <span className="text-[11px] text-[#5A6578]">
+              {ratingAvg.toFixed(1)} <span className="text-[#c4c7c7]">({ratingCount})</span>
+            </span>
+          </div>
+        )}
 
         {/* Price row */}
         <div className="flex items-baseline gap-2 mt-0.5">
@@ -148,7 +199,7 @@ export function FeaturedProductCard({
         </div>
       </div>
 
-      {/* ── Add to Cart CTA ───────────────────────────────────────────────── */}
+      {/* ── Add to Cart ── */}
       {!isOutOfStock && product.canPurchase && onAddToCart ? (
         <button
           onClick={handleAddToCart}
@@ -159,8 +210,7 @@ export function FeaturedProductCard({
             "py-3 px-4 rounded-xl",
             "bg-[#0D0D0D] text-white text-[13px] font-bold tracking-wide",
             "hover:bg-[#262626] active:scale-[0.98] transition-all duration-150",
-            "shadow-md hover:shadow-lg",
-            "disabled:opacity-60",
+            "shadow-md hover:shadow-lg disabled:opacity-60",
           )}
         >
           <ShoppingBag className="size-4" aria-hidden="true" />

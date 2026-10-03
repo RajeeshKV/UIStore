@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { AdminBasicSettingsClient } from "@/features/admin/settings/AdminBasicSettingsClient";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Basic Info" };
 

@@ -8,13 +8,15 @@ import type { NextConfig } from "next";
  * Images: served via Next.js Image Optimization from any HTTPS source.
  */
 const nextConfig: NextConfig = {
-  // ── No caching — all pages fetch live from backend on every request ────────
-  // This ensures store settings, products, policies etc. are always up-to-date
-  // without requiring a redeploy when admin changes backend data.
+  // ── No caching — all pages and API calls go to the network on every request ─
+  // cache: "no-store" on every fetch in the API client handles request-level caching.
+  // force-dynamic on every page handles route-level caching.
   experimental: {
     staleTimes: {
       dynamic: 0,
-      static: 0,
+      // static minimum is 30 per Next.js; compensated by force-dynamic on all pages
+      // + cache: "no-store" on all API fetches in client.ts.
+      static: 30,
     },
   },
 

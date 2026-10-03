@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { adminCategoriesApi, adminBrandsApi } from "@/services/api/admin";
 import { ProductForm } from "@/features/admin/products/ProductForm";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { CategoryResponse, BrandResponse } from "@/types/api";
+
+export const dynamic = "force-dynamic";
 
 export default function AdminNewProductPage() {
   const [categories, setCategories] = useState<CategoryResponse[]>([]);

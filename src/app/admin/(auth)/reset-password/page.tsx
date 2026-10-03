@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -7,6 +7,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { authApi } from "@/services/api/auth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+
+export const dynamic = "force-dynamic";
 
 function AdminResetPasswordForm() {
   const router = useRouter();
