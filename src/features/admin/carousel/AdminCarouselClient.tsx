@@ -72,49 +72,43 @@ function SlideImageUpload({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-2">
-        {slide.imageUrl ? (
-          <div className="relative shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.imageUrl}
-              alt={slide.title ?? "Slide"}
-              className="h-14 w-24 rounded-lg object-cover border border-border bg-surface"
-            />
-          </div>
-        ) : (
-          <div className="h-14 w-24 rounded-lg bg-muted border border-dashed border-border flex items-center justify-center shrink-0">
-            <Images className="size-4 text-foreground-muted" />
-          </div>
-        )}
-        <div className="flex flex-col gap-1">
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            aria-label="Upload slide image"
-            onChange={handleUpload}
-            className="sr-only"
-            id={`slide-img-${slide.id}`}
-          />
-          <label
-            htmlFor={`slide-img-${slide.id}`}
-            className={cn(
-              "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md",
-              "border border-border text-caption text-foreground cursor-pointer",
-              "hover:bg-muted transition-colors",
-              uploading && "opacity-60 pointer-events-none",
-            )}
-          >
-            <Upload className="size-3" />
-            {uploading ? "Uploading..." : slide.imageUrl ? "Replace" : "Upload"}
-          </label>
-          <p className="text-[10px] text-foreground-muted">PNG, JPG, WebP</p>
+      {/* Image preview */}
+      {slide.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={slide.imageUrl}
+          alt={slide.title ?? "Slide"}
+          className="h-14 w-28 rounded-lg object-cover border border-border bg-surface"
+        />
+      ) : (
+        <div className="h-14 w-28 rounded-lg bg-muted border border-dashed border-border flex items-center justify-center">
+          <Images className="size-4 text-foreground-muted" />
         </div>
-      </div>
-      {error && (
-        <p className="text-caption text-danger">{error}</p>
       )}
+      {/* Upload button below the image */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        aria-label="Upload slide image"
+        onChange={handleUpload}
+        className="sr-only"
+        id={`slide-img-${slide.id}`}
+      />
+      <label
+        htmlFor={`slide-img-${slide.id}`}
+        className={cn(
+          "inline-flex items-center gap-1 h-6 px-2 rounded-md w-fit",
+          "border border-border text-[11px] text-foreground cursor-pointer",
+          "hover:bg-muted transition-colors whitespace-nowrap",
+          uploading && "opacity-60 pointer-events-none",
+        )}
+      >
+        <Upload className="size-3 shrink-0" />
+        {uploading ? "Uploading…" : slide.imageUrl ? "Replace" : "Upload"}
+      </label>
+      <p className="text-[10px] text-foreground-muted">PNG, JPG, WebP</p>
+      {error && <p className="text-caption text-danger">{error}</p>}
     </div>
   );
 }
@@ -289,7 +283,7 @@ export function AdminCarouselClient() {
     {
       key: "image",
       header: "Image",
-      className: "w-44 min-w-[11rem]",
+      className: "w-36 min-w-[9rem]",
       render: (row) => (
         <SlideImageUpload slide={row} onRefresh={load} />
       ),
