@@ -508,14 +508,9 @@ function StockManager({ productId, variantId, label, compact = false }: StockMan
   const [inventory, setInventory] = useState<InventoryResponse | null>(null);
   const [onHand, setOnHand] = useState("");
   const [lowStockThreshold, setLowStockThreshold] = useState("");
-  const [setSaving, setSetSaving] = useState(false);
-  const [setError, setSetError] = useState("");
-  const [setSuccess, setSetSuccess] = useState("");
-  const [delta, setDelta] = useState("");
-  const [reason, setReason] = useState("");
-  const [adjSaving, setAdjSaving] = useState(false);
-  const [adjError, setAdjError] = useState("");
-  const [adjSuccess, setAdjSuccess] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   function applyInventory(inv: InventoryResponse) {
     setInventory(inv);
@@ -523,27 +518,20 @@ function StockManager({ productId, variantId, label, compact = false }: StockMan
     setLowStockThreshold(String(inv.lowStockThreshold));
   }
 
-  async function handleSet(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSet() {
     const parsed = parseInt(onHand);
-    if (isNaN(parsed) || parsed < 0) { setSetError("Non-negative integer required."); return; }
-    setSetError(""); setSetSuccess(""); setSetSaving(true);
+    if (isNaN(parsed) || parsed < 0) { setError("On-hand must be a non-negative integer."); return; }
+    setError(""); setSuccess(""); setSaving(true);
     const threshold = lowStockThreshold.trim() !== "" ? parseInt(lowStockThreshold) : undefined;
     const res = await adminInventoryApi.set(productId, { onHand: parsed, lowStockThreshold: threshold }, variantId);
-    setSetSaving(false);
-    if (res.ok) { applyInventory(res.data); setSetSuccess("Updated."); setTimeout(() => setSetSuccess(""), 3000); }
-    else setSetError(extractApiError(res.error, "Failed."));
-  }
-
-  async function handleAdjust(e: React.FormEvent) {
-    e.preventDefault();
-    const parsedDelta = parseInt(delta);
-    if (isNaN(parsedDelta) || parsedDelta === 0) { setAdjError("Non-zero integer required."); return; }
-    setAdjError(""); setAdjSuccess(""); setAdjSaving(true);
-    const res = await adminInventoryApi.adjust(productId, { delta: parsedDelta, reason: reason.trim() || undefined }, variantId);
-    setAdjSaving(false);
-    if (res.ok) { applyInventory(res.data); setAdjSuccess(`Adjusted ${parsedDelta > 0 ? "+" : ""}${parsedDelta}.`); setDelta(""); setReason(""); setTimeout(() => setAdjSuccess(""), 3000); }
-    else setAdjError(extractApiError(res.error, "Failed."));
+    setSaving(false);
+    if (res.ok) {
+      applyInventory(res.data);
+      setSuccess("Stock updated.");
+      setTimeout(() => setSuccess(""), 3000);
+    } else {
+      setError(extractApiError(res.error, "Failed to set stock."));
+    }
   }
 
   // Compact layout (inline in variant row)
@@ -559,27 +547,39 @@ function StockManager({ productId, variantId, label, compact = false }: StockMan
           </div>
         )}
         {!inventory && (
-          <p className="text-caption text-foreground-muted">No inventory record — use Set stock to initialise.</p>
+          <p className="text-caption text-foreground-muted">No inventory record — set stock to initialise.</p>
         )}
-        <div className="grid grid-cols-2 gap-2">
-          <form onSubmit={handleSet} noValidate className="flex flex-col gap-1.5">
-            <p className="text-caption font-semibold text-foreground">Set stock</p>
-            {setError && <p className="text-caption text-danger">{setError}</p>}
-            {setSuccess && <p className="text-caption text-success">{setSuccess}</p>}
-            <div className="flex gap-1.5">
-              <input type="number" min={0} value={onHand} onChange={(e) => setOnHand(e.target.value)} placeholder="On hand" aria-label="On hand quantity" className="flex-1 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus" />
-              <Button variant="outline" size="sm" type="submit" loading={setSaving} className="h-7 px-2 text-caption">Set</Button>
-            </div>
-          </form>
-          <form onSubmit={handleAdjust} noValidate className="flex flex-col gap-1.5">
-            <p className="text-caption font-semibold text-foreground">Adjust</p>
-            {adjError && <p className="text-caption text-danger">{adjError}</p>}
-            {adjSuccess && <p className="text-caption text-success">{adjSuccess}</p>}
-            <div className="flex gap-1.5">
-              <input type="number" value={delta} onChange={(e) => setDelta(e.target.value)} placeholder="±delta" aria-label="Stock delta" className="flex-1 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus" />
-              <Button variant="outline" size="sm" type="submit" loading={adjSaving} className="h-7 px-2 text-caption">Adj</Button>
-            </div>
-          </form>
+        {error && <p className="text-caption text-danger">{error}</p>}
+        {success && <p className="text-caption text-success">{success}</p>}
+        <div className="flex gap-1.5">
+          <input
+            type="number"
+            min={0}
+            value={onHand}
+            onChange={(e) => setOnHand(e.target.value)}
+            placeholder="On hand"
+            aria-label="On hand quantity"
+            className="w-20 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus"
+          />
+          <input
+            type="number"
+            min={0}
+            value={lowStockThreshold}
+            onChange={(e) => setLowStockThreshold(e.target.value)}
+            placeholder="Low threshold"
+            aria-label="Low stock threshold"
+            className="w-24 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={handleSet}
+            loading={saving}
+            className="h-7 px-2 text-caption shrink-0"
+          >
+            Set
+          </Button>
         </div>
       </div>
     );
@@ -587,8 +587,12 @@ function StockManager({ productId, variantId, label, compact = false }: StockMan
 
   // Full layout (product-level stock card)
   return (
-    <div className="flex flex-col gap-4">
-      {label && <p className="text-body-sm font-medium text-foreground flex items-center gap-1.5"><Package className="size-3.5" aria-hidden="true" />{label}</p>}
+    <div className="flex flex-col gap-3">
+      {label && (
+        <p className="text-body-sm font-medium text-foreground flex items-center gap-1.5">
+          <Package className="size-3.5" aria-hidden="true" />{label}
+        </p>
+      )}
 
       {inventory && (
         <div className="flex flex-wrap items-center gap-3 text-caption text-foreground-muted rounded-lg bg-surface border border-border px-3 py-2.5">
@@ -600,32 +604,46 @@ function StockManager({ productId, variantId, label, compact = false }: StockMan
         </div>
       )}
       {!inventory && (
-        <p className="text-caption text-foreground-muted">No inventory record yet. Use Set stock to create one.</p>
+        <p className="text-caption text-foreground-muted">No inventory record yet. Enter values below and click Set stock to create one.</p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <form onSubmit={handleSet} noValidate className="flex flex-col gap-2.5">
-          <p className="text-body-sm font-semibold text-foreground">Set stock</p>
-          {setError && <p className="text-caption text-danger">{setError}</p>}
-          {setSuccess && <p className="text-caption text-success">{setSuccess}</p>}
-          <Input label="On hand (absolute)" type="number" min={0} value={onHand} onChange={(e) => setOnHand(e.target.value)} placeholder="e.g. 100" hint="Replaces current quantity." />
-          <Input label="Low-stock threshold" type="number" min={0} value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} placeholder="e.g. 10" />
-          <Button variant="outline" size="sm" type="submit" loading={setSaving} className="self-start">Set stock</Button>
-        </form>
+      {error && <p className="text-caption text-danger">{error}</p>}
+      {success && <p className="text-caption text-success">{success}</p>}
 
-        <form onSubmit={handleAdjust} noValidate className="flex flex-col gap-2.5">
-          <p className="text-body-sm font-semibold text-foreground">Adjust stock</p>
-          {adjError && <p className="text-caption text-danger">{adjError}</p>}
-          {adjSuccess && <p className="text-caption text-success">{adjSuccess}</p>}
-          <Input label="Delta" type="number" value={delta} onChange={(e) => setDelta(e.target.value)} placeholder="+10 or -5" hint="Positive adds, negative removes." />
-          <Input label="Reason (optional)" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Restocked" />
-          <Button variant="outline" size="sm" type="submit" loading={adjSaving} className="self-start">Adjust stock</Button>
-        </form>
+      {/* Two fields + button in one row — no nested form */}
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label="On hand (absolute)"
+          type="number"
+          min={0}
+          value={onHand}
+          onChange={(e) => setOnHand(e.target.value)}
+          placeholder="e.g. 100"
+          hint="Replaces the current quantity."
+        />
+        <Input
+          label="Low-stock threshold"
+          type="number"
+          min={0}
+          value={lowStockThreshold}
+          onChange={(e) => setLowStockThreshold(e.target.value)}
+          placeholder="e.g. 10"
+          hint="Alert when available stock falls to this."
+        />
       </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={handleSet}
+        loading={saving}
+        className="self-start"
+      >
+        Set stock
+      </Button>
     </div>
   );
 }
-
 function StockPill({ inventory }: { inventory: InventoryResponse }) {
   if (inventory.isOutOfStock) return <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-danger/10 text-danger">Out of stock</span>;
   if (inventory.isLowStock) return <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-warning/15 text-warning">Low stock · {inventory.available} left</span>;
