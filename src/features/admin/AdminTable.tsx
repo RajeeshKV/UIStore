@@ -90,7 +90,7 @@ export function AdminTable<T>({
                   )}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className={cn("px-4 py-3 text-[#191c1e]", col.className)}>
+                    <td key={col.key} className={cn("px-4 py-3 text-[#191c1e] overflow-hidden", col.className)}>
                       {col.render(row)}
                     </td>
                   ))}

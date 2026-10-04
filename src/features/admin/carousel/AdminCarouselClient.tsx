@@ -289,7 +289,7 @@ export function AdminCarouselClient() {
     {
       key: "image",
       header: "Image",
-      className: "w-40",
+      className: "w-44 min-w-[11rem]",
       render: (row) => (
         <SlideImageUpload slide={row} onRefresh={load} />
       ),
@@ -298,17 +298,17 @@ export function AdminCarouselClient() {
       key: "content",
       header: "Content",
       render: (row) => (
-        <div className="flex flex-col gap-0.5 min-w-0">
-          <p className="text-body-sm font-semibold text-foreground truncate max-w-xs">
+        <div className="flex flex-col gap-0.5 min-w-0 max-w-[220px]">
+          <p className="text-body-sm font-semibold text-foreground truncate">
             {row.title ?? <span className="text-foreground-muted italic">No title</span>}
           </p>
           {row.subtitle && (
-            <p className="text-caption text-foreground-muted truncate max-w-xs">
+            <p className="text-caption text-foreground-muted truncate">
               {row.subtitle}
             </p>
           )}
           {row.ctaText && (
-            <span className="mt-1 self-start inline-flex items-center px-2 py-0.5 rounded-full bg-muted text-[10px] font-medium text-foreground-muted">
+            <span className="mt-1 self-start inline-flex items-center px-2 py-0.5 rounded-full bg-muted text-[10px] font-medium text-foreground-muted whitespace-nowrap">
               CTA: {row.ctaText}
             </span>
           )}

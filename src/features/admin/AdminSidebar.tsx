@@ -47,7 +47,6 @@ const NAV: NavItem[] = [
       { label: "Basic Info", href: "/admin/settings/basic"    },
       { label: "Policies",   href: "/admin/settings/policies" },
       { label: "SEO",        href: "/admin/settings/seo"      },
-      { label: "Support",    href: "/admin/settings/support"  },
     ],
   },
   {
