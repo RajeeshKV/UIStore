@@ -270,6 +270,17 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
         </div>
       )}
 
+      {/* Remarks / Cancellation reason — shown when admin has provided one */}
+      {order.cancellationReason && (
+        <div className="rounded-xl border border-warning/30 bg-warning/5 p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <svg className="size-4 text-warning shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <h2 className="text-body-sm font-semibold text-foreground">Order Remarks</h2>
+          </div>
+          <p className="text-body-sm text-foreground-muted">{order.cancellationReason}</p>
+        </div>
+      )}
+
       {/* Cancellation confirmation */}
       <Modal
         open={cancelOpen}

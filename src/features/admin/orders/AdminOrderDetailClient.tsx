@@ -259,6 +259,14 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
                 </dl>
               </div>
             )}
+
+            {/* Cancellation / Remarks */}
+            {order.cancellationReason && (
+              <div className="rounded-lg border border-warning/30 bg-warning/5 p-5">
+                <h3 className="text-body font-semibold text-foreground border-b border-warning/20 pb-3 mb-3">Remarks</h3>
+                <p className="text-body-sm text-foreground">{order.cancellationReason}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -312,21 +320,23 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
               className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus"
             />
           </div>
-          {(newStatus === "Cancelled" || newStatus === "Failed") && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-body-sm font-medium text-foreground">
-                Reason {newStatus === "Cancelled" ? "(recommended)" : "(optional)"}
-              </label>
-              <input
-                type="text"
-                value={cancellationReason}
-                onChange={(e) => setCancellationReason(e.target.value)}
-                placeholder="e.g. Customer requested cancellation"
-                aria-label="Cancellation reason"
-                className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus"
-              />
-            </div>
-          )}
+          {/* Remarks / Reason — available for all status changes */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-body-sm font-medium text-foreground">
+              Remarks / Reason (optional)
+            </label>
+            <input
+              type="text"
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+              placeholder="e.g. Customer requested cancellation, damaged in transit…"
+              aria-label="Remarks or reason"
+              className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus"
+            />
+            <p className="text-caption text-foreground-muted">
+              Shown to the customer in their order detail if provided.
+            </p>
+          </div>
         </div>
       </ConfirmDialog>
     </>
