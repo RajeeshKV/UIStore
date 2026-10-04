@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard, Package, ShoppingCart, Percent,
-  Settings, Plug, ChevronDown, ChevronRight, X, Menu, Images, Star,
+  Settings, Plug, ChevronDown, ChevronRight, X, Menu, Images, Star, MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,7 @@ const NAV: NavItem[] = [
   },
   { label: "Orders",   href: "/admin/orders",   icon: <ShoppingCart className="size-4" /> },
   { label: "Reviews",  href: "/admin/reviews",  icon: <Star className="size-4" /> },
+  { label: "Support",  href: "/admin/support",  icon: <MessageCircle className="size-4" /> },
   { label: "Carousel", href: "/admin/carousel", icon: <Images className="size-4" /> },
   {
     label: "Commerce",
@@ -46,6 +47,7 @@ const NAV: NavItem[] = [
       { label: "Basic Info", href: "/admin/settings/basic"    },
       { label: "Policies",   href: "/admin/settings/policies" },
       { label: "SEO",        href: "/admin/settings/seo"      },
+      { label: "Support",    href: "/admin/settings/support"  },
     ],
   },
   {

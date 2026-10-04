@@ -1492,3 +1492,162 @@ export interface UpdateReviewStatusRequest {
   status: "Published" | "Rejected" | "Pending";
   reason?: string;
 }
+
+// ── Support Desk ──────────────────────────────────────────────────────────────
+
+export type TicketStatus   = "Open" | "Resolved" | "Closed";
+export type TicketPriority = "Low" | "Normal" | "High" | "Urgent";
+export type TicketActor    = "User" | "Admin" | "System";
+export type AttachmentKind = "Image" | "Video";
+
+/** Attachment — returned inside comments and from POST /tickets/media */
+export interface TicketAttachment {
+  id?: string;
+  kind: AttachmentKind;
+  publicId: string;
+  secureUrl: string;
+  format: string;
+  contentType: string;
+  width?: number | null;
+  height?: number | null;
+  durationSeconds?: number | null;
+  sizeBytes?: number | null;
+  altText?: string | null;
+}
+
+/** Recursive comment node — server provides depth and replies[] */
+export interface TicketCommentResponse {
+  id: string;
+  parentCommentId?: string | null;
+  authorId?: string;
+  authorName?: string;
+  isAdminAuthor: boolean;
+  body: string;
+  depth: number;
+  isInternalNote: boolean;
+  createdAtUtc: string;
+  attachments: TicketAttachment[];
+  replies: TicketCommentResponse[];
+}
+
+/** Single history row */
+export interface TicketHistoryEntry {
+  id: string;
+  fromStatus?: TicketStatus | null;
+  toStatus?: TicketStatus;
+  actor: TicketActor;
+  actorId?: string;
+  actorName?: string;
+  note?: string | null;
+  occurredAtUtc: string;
+}
+
+/** Lightweight ticket — returned by list endpoints */
+export interface TicketSummaryResponse {
+  id: string;
+  ticketNumber: string;
+  subject: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  assignedAdminId?: string | null;
+  relatedOrderId?: string | null;
+  orderNumber?: string | null;
+  commentCount: number;
+  reopenCount: number;
+  awaitingFirstResponse: boolean;
+  createdAtUtc: string;
+  lastActivityAtUtc: string;
+  resolvedAtUtc?: string | null;
+  closedAtUtc?: string | null;
+  autoCloseAtUtc?: string | null;
+}
+
+/** Full ticket detail — the "ticket" wrapper in GET /tickets/{id} */
+export interface TicketDetailResponse {
+  id: string;
+  ticketNumber: string;
+  subject: string;
+  description: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  assignedAdminId?: string | null;
+  relatedOrderId?: string | null;
+  orderNumber?: string | null;
+  reopenCount: number;
+  awaitingFirstResponse: boolean;
+  createdAtUtc: string;
+  lastActivityAtUtc: string;
+  resolvedAtUtc?: string | null;
+  closedAtUtc?: string | null;
+  autoCloseAtUtc?: string | null;
+  comments: TicketCommentResponse[];
+  /** Customer-visible transitions only (use fullHistory for admin) */
+  history: TicketHistoryEntry[];
+}
+
+/** Wrapper returned by GET /tickets/{id} and GET /admin/tickets/{id} */
+export interface TicketDetailEnvelope {
+  ticket: TicketDetailResponse;
+  /** Admin-only; same as history for now */
+  fullHistory?: TicketHistoryEntry[];
+}
+
+// ── Support — request bodies ──────────────────────────────────────────────
+
+export interface CreateTicketRequest {
+  subject: string;
+  description: string;
+  orderId?: string | null;
+}
+
+export interface PostTicketCommentRequest {
+  body: string;
+  parentCommentId?: string | null;
+  attachments?: TicketAttachmentInput[];
+}
+
+/** Subset of TicketAttachment sent back when creating a comment */
+export interface TicketAttachmentInput {
+  kind: AttachmentKind;
+  publicId: string;
+  secureUrl: string;
+  format: string;
+  contentType: string;
+  width?: number | null;
+  height?: number | null;
+  durationSeconds?: number | null;
+  sizeBytes?: number | null;
+  altText?: string | null;
+}
+
+export interface CloseTicketRequest  { note?: string | null }
+export interface ReopenTicketRequest { reason?: string | null }
+export interface ResolveTicketRequest { resolutionNote?: string | null }
+export interface SetTicketPriorityRequest { priority: TicketPriority }
+
+// ── Support settings ──────────────────────────────────────────────────────
+
+export interface SupportSettingsResponse {
+  autoCloseIdleHours: number;
+  notifyAdminOnTicketCreated: boolean;
+  notifyAdminOnTicketReopened: boolean;
+  notifyCustomerOnTicketResolved: boolean;
+  maxAttachmentsPerComment: number;
+  adminNotificationConfigured: boolean;
+  /** Masked address or literal "not configured" — never empty string */
+  adminNotificationTarget: string;
+}
+
+export interface UpdateSupportSettingsRequest {
+  autoCloseIdleHours?: number | null;
+  notifyAdminOnTicketCreated?: boolean | null;
+  notifyAdminOnTicketReopened?: boolean | null;
+  notifyCustomerOnTicketResolved?: boolean | null;
+  maxAttachmentsPerComment?: number | null;
+}

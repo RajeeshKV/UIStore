@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, User, MapPin, ShoppingBag, Heart, Star, LogOut } from "lucide-react";
+import { LayoutDashboard, User, MapPin, ShoppingBag, Heart, Star, MessageCircle, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { label: "Orders",    href: "/account/orders",    icon: ShoppingBag },
   { label: "Wishlist",  href: "/account/wishlist",  icon: Heart },
   { label: "Reviews",   href: "/account/reviews",   icon: Star },
+  { label: "Support",   href: "/account/support",   icon: MessageCircle },
   { label: "Addresses", href: "/account/addresses", icon: MapPin },
 ] as const;
 
