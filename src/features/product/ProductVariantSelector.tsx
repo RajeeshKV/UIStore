@@ -64,10 +64,13 @@ export function ProductVariantSelector({
   selectedVariantId,
   onSelect,
 }: ProductVariantSelectorProps) {
+  // Guard: filter out any null/undefined entries the API might return
+  const safeVariants = variants.filter(Boolean) as StorefrontVariantResponse[];
+
   // selection: axisId → valueId
   const [selection, setSelection] = useState<Record<string, string>>(() => {
     // Pre-select from the initial selectedVariantId if given
-    const initial = variants.find((v) => v != null && v.id === selectedVariantId);
+    const initial = safeVariants.find((v) => v.id === selectedVariantId);
     if (!initial || !attributes) return {};
     const ids = parseIds(initial.attributeValueIds);
     const sel: Record<string, string> = {};
@@ -78,13 +81,13 @@ export function ProductVariantSelector({
     return sel;
   });
 
-  if (!variants.length) return null;
+  if (!safeVariants.length) return null;
 
   // No attributes configured → simple fallback list
   if (!attributes || attributes.length === 0) {
     return (
       <SimpleVariantList
-        variants={variants}
+        variants={safeVariants}
         selectedVariantId={selectedVariantId}
         onSelect={onSelect}
       />
@@ -101,14 +104,14 @@ export function ProductVariantSelector({
 
     // Resolve variant if all axes are selected
     if (Object.keys(next).length === sortedAxes.length) {
-      const v = findVariant(variants, next);
+      const v = findVariant(safeVariants, next);
       if (v) onSelect(v);
     }
   }
 
   // Current resolved variant (may be undefined if selection is partial)
   const resolved = Object.keys(selection).length === sortedAxes.length
-    ? findVariant(variants, selection)
+    ? findVariant(safeVariants, selection)
     : undefined;
 
   // Sync: if the parent changed selectedVariantId externally, also highlight
@@ -140,7 +143,7 @@ export function ProductVariantSelector({
             <div role="group" aria-label={`Select ${axis.name}`} className="flex flex-wrap gap-2">
               {sortedValues.map((val) => {
                 const isSelected = selectedValueId === val.id;
-                const available = isValueAvailable(variants, selection, axis.id, val.id ?? "");
+                const available = isValueAvailable(safeVariants, selection, axis.id, val.id ?? "");
 
                 return (
                   <button
@@ -178,7 +181,7 @@ export function ProductVariantSelector({
 
       {/* Show selected variant SKU for reference */}
       {activeVariantId && (() => {
-        const v = variants.find((v) => v.id === activeVariantId);
+        const v = safeVariants.find((v) => v.id === activeVariantId);
         return v?.sku ? (
           <p className="text-[11px] text-[#5A6578]">SKU: {v.sku}</p>
         ) : null;
@@ -198,11 +201,12 @@ function SimpleVariantList({
   selectedVariantId: string | null;
   onSelect: (v: StorefrontVariantResponse) => void;
 }) {
+  const safeVariants = variants.filter(Boolean) as StorefrontVariantResponse[];
   return (
     <div>
       <p className="text-[13px] font-bold text-[#191c1e] mb-2.5">Option</p>
       <div role="group" aria-label="Select variant" className="flex flex-wrap gap-2">
-        {variants.map((v, i) => {
+        {safeVariants.map((v, i) => {
           const isSelected = v.id === selectedVariantId;
           const isUnavailable = !v.canPurchase;
           return (

@@ -841,7 +841,7 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title="Delete variant"
-        description={`Delete variant "${getAttrLabel(deleteTarget!) || deleteTarget?.sku || deleteTarget?.id.slice(0, 8)}"? This cannot be undone.`}
+        description={`Delete variant "${deleteTarget ? (getAttrLabel(deleteTarget) || deleteTarget.sku || deleteTarget.id.slice(0, 8)) : ""}"? This cannot be undone.`}
         confirmLabel="Delete"
         confirmVariant="danger"
         loading={deleting}

@@ -35,9 +35,11 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
   const shouldReduce = useReducedMotion();
   const { addItem, isMutating } = useCart();
   const hasVariants = (product.variants?.length ?? 0) > 0;
+  // Filter out null entries the API may return
+  const safeVariants = (product.variants ?? []).filter(Boolean);
 
   const [selectedVariant, setSelectedVariant] = useState<StorefrontVariantResponse | null>(
-    product.variants?.find((v) => v.canPurchase) ?? product.variants?.[0] ?? null,
+    safeVariants.find((v) => v.canPurchase) ?? safeVariants[0] ?? null,
   );
 
   const effectivePrice      = selectedVariant?.effectivePrice ?? product.price;
@@ -140,9 +142,9 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
       <StockBadge availability={effectiveStock} />
 
       {/* Variants */}
-      {hasVariants && product.variants && (
+      {hasVariants && safeVariants.length > 0 && (
         <ProductVariantSelector
-          variants={product.variants}
+          variants={safeVariants}
           attributes={product.attributes}
           selectedVariantId={selectedVariant?.id ?? null}
           onSelect={setSelectedVariant}
