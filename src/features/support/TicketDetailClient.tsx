@@ -476,14 +476,31 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
 
       {/* Resolved actions */}
       {isResolved && (
-        <div className="rounded-2xl border border-success/20 bg-success/5 p-4 flex items-center justify-between gap-4">
+        <div className="rounded-2xl border border-success/20 bg-success/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-[13px] font-semibold text-[#191c1e]">Was your issue resolved?</p>
-            <p className="text-[12px] text-[#5A6578] mt-0.5">Confirm to close the request, or reply to keep it open.</p>
+            <p className="text-[12px] text-[#5A6578] mt-0.5">Close the request if you're satisfied, or reopen if you still need help.</p>
           </div>
-          <Button variant="secondary" size="sm" loading={closing} onClick={handleClose} iconLeft={<CheckCircle className="size-3.5" />}>
-            Yes, it's fixed
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              loading={reopening}
+              onClick={handleReopen}
+              iconLeft={<RotateCcw className="size-3.5" />}
+            >
+              Reopen
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={closing}
+              onClick={handleClose}
+              iconLeft={<CheckCircle className="size-3.5" />}
+            >
+              Yes, it&apos;s resolved
+            </Button>
+          </div>
         </div>
       )}
 

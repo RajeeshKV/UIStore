@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ShoppingBag, Tag, X, Truck, CreditCard, Banknote, CheckCircle,
-  Plus, Star, AlertTriangle, RefreshCw, XCircle, Info, Phone,
+  Plus, Star, AlertTriangle, RefreshCw, XCircle, Info, Phone, Loader2, CheckCircle2,
 } from "lucide-react";
 import { cn, formatPrice, extractApiError } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -17,12 +17,15 @@ import { addressesApi } from "@/services/api/addresses";
 import { otpApi } from "@/services/api/otp";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
 import { AddressForm } from "@/features/account/AddressForm";
 import { VerificationDialog } from "@/features/otp/VerificationDialog";
 import { loadRazorpayScript, openRazorpay } from "@/lib/razorpay";
 import { pendingPaymentStore } from "@/lib/pendingPayment";
+import { useIndianStates, matchStateName } from "@/hooks/useIndianStates";
+import { usePinLookup } from "@/hooks/usePinLookup";
 import type {
   CustomerAddressResponse,
   CreateAddressRequest,
@@ -47,6 +50,7 @@ interface InlineAddressForm {
   addressLine1: string;
   addressLine2: string;
   city: string;
+  district: string;
   state: string;
   postalCode: string;
   countryCode: string;
@@ -56,7 +60,7 @@ function emptyInlineAddress(): InlineAddressForm {
   return {
     firstName: "", lastName: "", phone: "",
     addressLine1: "", addressLine2: "",
-    city: "", state: "", postalCode: "", countryCode: "IN",
+    city: "", district: "", state: "", postalCode: "", countryCode: "IN",
   };
 }
 
@@ -64,9 +68,10 @@ function validateInlineAddress(f: InlineAddressForm): Record<string, string> {
   const e: Record<string, string> = {};
   if (!f.phone.trim()) e.phone = "Phone number is required.";
   if (!f.addressLine1.trim()) e.addressLine1 = "Address is required.";
-  if (!f.city.trim()) e.city = "City is required.";
+  if (!f.city.trim()) e.city = "City / Post Office is required.";
   if (!f.state.trim()) e.state = "State is required.";
-  if (!f.postalCode.trim()) e.postalCode = "Postal code is required.";
+  if (!f.postalCode.trim()) e.postalCode = "PIN code is required.";
+  else if (f.postalCode.length !== 6) e.postalCode = "PIN code must be exactly 6 digits.";
   return e;
 }
 
@@ -128,6 +133,47 @@ export function CheckoutClient({
   // Inline form — only rendered when addresses.length === 0
   const [inlineForm, setInlineForm] = useState<InlineAddressForm>(emptyInlineAddress());
   const [inlineErrors, setInlineErrors] = useState<Record<string, string>>({});
+
+  // ── PIN + state hooks for the inline address form ─────────────────────────
+  const { states: indiaStates, loading: statesLoading } = useIndianStates();
+  const stateOptions: ComboboxOption[] = indiaStates.map((s) => ({ value: s.name_en, label: s.name_en }));
+
+  const { status: inlinePinStatus, result: inlinePinResult, message: inlinePinMessage } =
+    usePinLookup(inlineForm.postalCode);
+
+  const [inlinePostOfficeOptions, setInlinePostOfficeOptions] = useState<ComboboxOption[]>([]);
+  const [inlineDistrictOptions, setInlineDistrictOptions] = useState<ComboboxOption[]>([]);
+  const [inlinePinPopulated, setInlinePinPopulated] = useState(false);
+
+  useEffect(() => {
+    if (inlinePinStatus === "success" && inlinePinResult) {
+      const matchedState = matchStateName(inlinePinResult.state, indiaStates);
+      const resolvedState = matchedState ? matchedState.name_en : inlinePinResult.state;
+      const offices: ComboboxOption[] = inlinePinResult.postOffices.map((o) => ({ value: o.name, label: o.name }));
+      setInlinePostOfficeOptions(offices);
+      if (inlinePinResult.multipleDistricts) {
+        const uniqueDistricts = [...new Set(inlinePinResult.postOffices.map((o) => o.district))];
+        setInlineDistrictOptions(uniqueDistricts.map((d) => ({ value: d, label: d })));
+      } else {
+        setInlineDistrictOptions([]);
+      }
+      setInlineForm((f) => ({
+        ...f,
+        state: resolvedState,
+        district: inlinePinResult.district,
+        city: offices.length === 1 ? offices[0].value : f.city,
+      }));
+      setInlinePinPopulated(true);
+      setInlineErrors((e) => { const n = { ...e }; delete n.state; delete n.postalCode; return n; });
+    }
+    if (inlinePinStatus === "idle" && inlinePinPopulated) {
+      setInlinePostOfficeOptions([]);
+      setInlineDistrictOptions([]);
+      setInlinePinPopulated(false);
+      setInlineForm((f) => ({ ...f, district: "", city: "" }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inlinePinStatus, inlinePinResult, indiaStates]);
 
   // Modal for adding additional addresses when user already has saved ones
   const [addAddressOpen, setAddAddressOpen] = useState(false);
@@ -713,14 +759,136 @@ export function CheckoutClient({
                 <Input label="Phone" type="tel" required value={inlineForm.phone} onChange={setInline("phone")} error={inlineErrors.phone} autoComplete="tel" />
                 <Input label="Address Line 1" required value={inlineForm.addressLine1} onChange={setInline("addressLine1")} error={inlineErrors.addressLine1} autoComplete="address-line1" />
                 <Input label="Address Line 2 (optional)" value={inlineForm.addressLine2} onChange={setInline("addressLine2")} autoComplete="address-line2" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input label="City" required value={inlineForm.city} onChange={setInline("city")} error={inlineErrors.city} autoComplete="address-level2" />
-                  <Input label="State" required value={inlineForm.state} onChange={setInline("state")} error={inlineErrors.state} autoComplete="address-level1" />
+
+                {/* PIN code with live lookup */}
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="checkout-pincode" className="text-[13px] font-semibold text-foreground">
+                    PIN Code <span className="text-danger" aria-hidden="true">*</span>
+                  </label>
+                  <div className="relative flex items-center">
+                    <input
+                      id="checkout-pincode"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={inlineForm.postalCode}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "").slice(0, 6);
+                        if (inlinePinPopulated && raw !== inlineForm.postalCode) {
+                          setInlinePostOfficeOptions([]);
+                          setInlineDistrictOptions([]);
+                          setInlinePinPopulated(false);
+                          setInlineForm((f) => ({ ...f, postalCode: raw, district: "", city: "" }));
+                        } else {
+                          setInlineForm((f) => ({ ...f, postalCode: raw }));
+                        }
+                        setInlineErrors((prev) => { const n = { ...prev }; delete n.postalCode; return n; });
+                      }}
+                      placeholder="6-digit PIN"
+                      autoComplete="postal-code"
+                      aria-invalid={!!inlineErrors.postalCode}
+                      className={cn(
+                        "w-full rounded-md border border-border bg-[#F4F5F7]",
+                        "h-11 px-3 pr-10 text-[14px] text-foreground placeholder:text-[#5A6578]",
+                        "transition-colors duration-150",
+                        "focus:outline-none focus:bg-white focus:border-[#0D0D0D]/40 focus:ring-1 focus:ring-[#0D0D0D]/10",
+                        inlineErrors.postalCode && "border-danger",
+                      )}
+                    />
+                    {inlinePinStatus === "loading" && (
+                      <Loader2 className="absolute right-3 size-4 text-foreground-muted animate-spin pointer-events-none" aria-hidden="true" />
+                    )}
+                  </div>
+                  {inlinePinStatus === "loading" && (
+                    <span className="flex items-center gap-1 text-[11px] text-foreground-muted">
+                      <Loader2 className="size-3 animate-spin" aria-hidden="true" />Checking PIN…
+                    </span>
+                  )}
+                  {inlinePinStatus === "success" && (
+                    <span className="flex items-center gap-1 text-[11px] text-success font-medium">
+                      <CheckCircle2 className="size-3" aria-hidden="true" />Location found
+                    </span>
+                  )}
+                  {(inlinePinStatus === "invalid" || inlinePinStatus === "error") && inlinePinMessage && (
+                    <span className="flex items-center gap-1 text-[11px] text-danger">
+                      <AlertTriangle className="size-3" aria-hidden="true" />{inlinePinMessage}
+                    </span>
+                  )}
+                  {inlineErrors.postalCode && (
+                    <p className="text-[12px] text-danger" role="alert">{inlineErrors.postalCode}</p>
+                  )}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input label="Postal Code" required value={inlineForm.postalCode} onChange={setInline("postalCode")} error={inlineErrors.postalCode} autoComplete="postal-code" />
-                  <Input label="Country Code" required value={inlineForm.countryCode} onChange={setInline("countryCode")} placeholder="IN" autoComplete="country" />
-                </div>
+
+                {/* State — searchable combobox */}
+                <Combobox
+                  id="checkout-state"
+                  label="State"
+                  required
+                  options={stateOptions}
+                  value={inlineForm.state}
+                  onChange={(v) => {
+                    setInlineForm((f) => ({ ...f, state: v }));
+                    setInlineErrors((p) => { const n = { ...p }; delete n.state; return n; });
+                  }}
+                  placeholder="Search state…"
+                  loading={statesLoading}
+                  error={inlineErrors.state}
+                  hint={inlinePinStatus === "success" ? "Auto-filled from PIN — you can change this." : undefined}
+                  autoComplete="address-level1"
+                  clearable={false}
+                />
+
+                {/* District */}
+                {inlineDistrictOptions.length > 1 ? (
+                  <Combobox
+                    id="checkout-district"
+                    label="District"
+                    options={inlineDistrictOptions}
+                    value={inlineForm.district}
+                    onChange={(v) => setInlineForm((f) => ({ ...f, district: v }))}
+                    placeholder="Select district…"
+                    hint="Multiple districts for this PIN — select yours."
+                  />
+                ) : (
+                  <Input
+                    label="District"
+                    value={inlineForm.district}
+                    onChange={setInline("district")}
+                    placeholder="Auto-filled from PIN"
+                    hint={inlinePinStatus === "success" ? "Auto-filled from PIN — you can change this." : undefined}
+                  />
+                )}
+
+                {/* City / Post Office */}
+                {inlinePostOfficeOptions.length > 1 ? (
+                  <Combobox
+                    id="checkout-city"
+                    label="City / Post Office"
+                    required
+                    options={inlinePostOfficeOptions}
+                    value={inlineForm.city}
+                    onChange={(v) => {
+                      setInlineForm((f) => ({ ...f, city: v }));
+                      setInlineErrors((p) => { const n = { ...p }; delete n.city; return n; });
+                    }}
+                    placeholder="Select post office…"
+                    error={inlineErrors.city}
+                    hint="Multiple post offices found — select the closest one."
+                  />
+                ) : (
+                  <Input
+                    label="City / Post Office"
+                    required
+                    value={inlineForm.city}
+                    onChange={setInline("city")}
+                    error={inlineErrors.city}
+                    placeholder="e.g. Bangalore GPO"
+                    hint={inlinePostOfficeOptions.length === 1 ? "Auto-filled from PIN — you can change this." : undefined}
+                    autoComplete="address-level2"
+                  />
+                )}
+
+                <Input label="Country Code" required value={inlineForm.countryCode} onChange={setInline("countryCode")} error={inlineErrors.countryCode} placeholder="IN" autoComplete="country" />
               </div>
             ) : (
               /* ── Has saved addresses: radio picker ── */
