@@ -168,12 +168,13 @@ function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function parseIds(csv: string | null | undefined): string[] {
-  return (csv ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (!csv) return [];
+  return csv.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
 /** Returns how many existing variants reference the given attribute value id */
 function variantsUsingValue(variants: VariantResponse[], valueId: string): number {
-  return variants.filter((v) => parseIds(v.attributeValueIds).includes(valueId)).length;
+  return variants.filter((v) => v != null && parseIds(v.attributeValueIds).includes(valueId)).length;
 }
 
 /** Canonical sorted string for exact-set comparison */
@@ -706,7 +707,7 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
 
   // Warn about variants with fewer attribute values than there are axes
   const axisCount = attributes.length;
-  const incompleteVariants = localVariants.filter((v) => parseIds(v.attributeValueIds).length < axisCount && axisCount > 0);
+  const incompleteVariants = localVariants.filter((v) => v != null && parseIds(v.attributeValueIds).length < axisCount && axisCount > 0);
 
   async function handleGenerate() {
     if (attributes.length === 0) { setGenerateError("Define attribute axes first."); return; }
@@ -716,7 +717,7 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
       a.values.slice().sort((x, y) => x.sortOrder - y.sortOrder)
     );
 
-    const existing = new Set(localVariants.map((v) => canonical(parseIds(v.attributeValueIds))));
+    const existing = new Set(localVariants.filter((v) => v != null).map((v) => canonical(parseIds(v.attributeValueIds))));
     const combos = [...cartesian(axes)];
     const missing = combos.filter((c) => !existing.has(canonical(c.map((i) => i.id))));
 

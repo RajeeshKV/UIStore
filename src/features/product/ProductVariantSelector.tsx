@@ -14,7 +14,8 @@ interface ProductVariantSelectorProps {
 // ── Core matching logic (§6 of the guide) ─────────────────────────────────────
 
 function parseIds(csv: string | null | undefined): string[] {
-  return (csv ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (!csv) return [];
+  return csv.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
 /**
@@ -27,6 +28,7 @@ function findVariant(
 ): StorefrontVariantResponse | undefined {
   const wanted = Object.values(selected).sort();
   return variants.find((v) => {
+    if (!v) return false;
     const ids = parseIds(v.attributeValueIds).sort();
     return ids.length === wanted.length && ids.every((id, i) => id === wanted[i]);
   });
@@ -44,6 +46,7 @@ function isValueAvailable(
   valueId: string,
 ): boolean {
   return variants.some((v) => {
+    if (!v) return false;
     const ids = parseIds(v.attributeValueIds);
     if (!ids.includes(valueId) || !v.canPurchase) return false;
     // Check all OTHER axes that have a current selection agree
@@ -64,7 +67,7 @@ export function ProductVariantSelector({
   // selection: axisId → valueId
   const [selection, setSelection] = useState<Record<string, string>>(() => {
     // Pre-select from the initial selectedVariantId if given
-    const initial = variants.find((v) => v.id === selectedVariantId);
+    const initial = variants.find((v) => v != null && v.id === selectedVariantId);
     if (!initial || !attributes) return {};
     const ids = parseIds(initial.attributeValueIds);
     const sel: Record<string, string> = {};
