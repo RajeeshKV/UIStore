@@ -686,7 +686,7 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
   const [deleting, setDeleting] = useState(false);
   const [localVariants, setLocalVariants] = useState<VariantResponse[]>(variants);
 
-  useEffect(() => { setLocalVariants(variants); }, [variants]);
+  useEffect(() => { setLocalVariants((variants ?? []).filter(Boolean)); }, [variants]);
 
   // Build id → label lookup from attributes
   const valueLookup = new Map<string, { attrName: string; label: string }>();
@@ -808,8 +808,9 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
             </thead>
             <tbody>
               {localVariants
+                .filter((v) => v != null)
                 .slice()
-                .sort((a, b) => a.sortOrder - b.sortOrder)
+                .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
                 .map((v) => (
                   <VariantMatrixRow
                     key={v.id}
@@ -884,7 +885,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
   const [apiError, setApiError] = useState("");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [variants, setVariants] = useState<VariantResponse[]>(product?.variants ?? []);
+  const [variants, setVariants] = useState<VariantResponse[]>((product?.variants ?? []).filter(Boolean));
   const [attributes, setAttributes] = useState<ProductAttributeItem[]>([]);
 
   const refreshVariants = useCallback(async () => {
@@ -893,10 +894,16 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
       adminVariantsApi.list(productId),
       adminAttributesApi.get(productId),
     ]);
-    if (varRes.ok) setVariants(varRes.data);
-    if (attrRes.ok) setAttributes(attrRes.data.attributes);
+    if (varRes.ok) setVariants((varRes.data ?? []).filter(Boolean));
+    if (attrRes.ok) setAttributes(attrRes.data.attributes ?? []);
     if (onRefresh) onRefresh();
   }, [productId, onRefresh]);
+
+  // Load attributes on mount for existing products
+  useEffect(() => {
+    if (productId) void refreshVariants();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
 
   function set<K extends keyof CreateProductRequest>(key: K, value: CreateProductRequest[K]) {
     setForm((f) => ({ ...f, [key]: value }));
