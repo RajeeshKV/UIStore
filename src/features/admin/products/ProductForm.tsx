@@ -527,18 +527,17 @@ interface VariantMatrixRowProps {
   variant: VariantResponse;
   attrLabel: string;
   productPrice: number;
+  onHand: string;
+  onHandChange: (variantId: string, value: string) => void;
   onDelete: (v: VariantResponse) => void;
   onUpdated: (v: VariantResponse) => void;
 }
 
-function VariantMatrixRow({ productId, variant, attrLabel, productPrice, onDelete, onUpdated }: VariantMatrixRowProps) {
+function VariantMatrixRow({ productId, variant, attrLabel, productPrice, onHand, onHandChange, onDelete, onUpdated }: VariantMatrixRowProps) {
   const [sku, setSku] = useState(variant.sku ?? "");
   const [priceOverride, setPriceOverride] = useState(variant.priceOverride != null ? String(variant.priceOverride) : "");
-  const [onHand, setOnHand] = useState(variant.availableStock != null ? String(variant.availableStock) : "");
   const [isActive, setIsActive] = useState(variant.isActive);
   const [saving, setSaving] = useState(false);
-  const [stockSaving, setStockSaving] = useState(false);
-  const [stockSuccess, setStockSuccess] = useState(false);
   const [error, setError] = useState("");
 
   const displayPrice = priceOverride !== "" ? parseFloat(priceOverride) || 0 : productPrice;
@@ -556,29 +555,12 @@ function VariantMatrixRow({ productId, variant, attrLabel, productPrice, onDelet
     else setError(extractApiError(res.error, "Failed."));
   }
 
-  async function handleSetStock() {
-    const parsed = parseInt(onHand);
-    if (isNaN(parsed) || parsed < 0) { setError("On-hand must be ≥ 0."); return; }
-    setStockSaving(true); setError("");
-    const res = await adminInventoryApi.set(productId, { onHand: parsed }, variant.id);
-    setStockSaving(false);
-    if (res.ok) {
-      setStockSuccess(true);
-      setTimeout(() => setStockSuccess(false), 2000);
-    } else {
-      setError(extractApiError(res.error, "Stock failed."));
-    }
-  }
-
   return (
     <tr className="group border-b border-border last:border-none hover:bg-surface/60">
       {/* Attribute label — single line, truncated */}
       <td className="py-2 pl-3 pr-2 min-w-0 max-w-[180px]">
         {attrLabel ? (
-          <span
-            className="block text-body-sm font-medium text-foreground truncate"
-            title={attrLabel}
-          >
+          <span className="block text-body-sm font-medium text-foreground truncate" title={attrLabel}>
             {attrLabel}
           </span>
         ) : (
@@ -617,34 +599,17 @@ function VariantMatrixRow({ productId, variant, attrLabel, productPrice, onDelet
         />
       </td>
 
-      {/* Stock */}
+      {/* Stock — input only, saved via section-level button */}
       <td className="py-2 px-2">
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            min={0}
-            value={onHand}
-            onChange={(e) => setOnHand(e.target.value)}
-            placeholder="0"
-            aria-label="On hand"
-            className="w-20 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus"
-          />
-          <button
-            type="button"
-            onClick={handleSetStock}
-            disabled={stockSaving}
-            aria-label="Set stock"
-            className={cn(
-              "h-7 w-7 flex items-center justify-center rounded border text-[10px] font-semibold transition-colors shrink-0",
-              stockSuccess
-                ? "bg-success/10 border-success/30 text-success"
-                : "border-border text-foreground-muted hover:border-primary hover:text-primary",
-              stockSaving && "opacity-50 pointer-events-none",
-            )}
-          >
-            {stockSaving ? "…" : stockSuccess ? "✓" : "↑"}
-          </button>
-        </div>
+        <input
+          type="number"
+          min={0}
+          value={onHand}
+          onChange={(e) => onHandChange(variant.id, e.target.value)}
+          placeholder="0"
+          aria-label="On hand"
+          className="w-24 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus"
+        />
       </td>
 
       {/* Active toggle */}
@@ -664,7 +629,7 @@ function VariantMatrixRow({ productId, variant, attrLabel, productPrice, onDelet
         </button>
       </td>
 
-      {/* Save / Delete */}
+      {/* Save variant (SKU/price/active) / Delete */}
       <td className="py-2 pl-2 pr-3">
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {dirty && (
@@ -695,7 +660,32 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
   const [deleting, setDeleting] = useState(false);
   const [localVariants, setLocalVariants] = useState<VariantResponse[]>(variants);
 
-  useEffect(() => { setLocalVariants((variants ?? []).filter(Boolean)); }, [variants]);
+  // Stock map: variantId → on-hand string (lifted from rows so we can batch-save)
+  const [stockMap, setStockMap] = useState<Record<string, string>>(() => {
+    const m: Record<string, string> = {};
+    for (const v of (variants ?? []).filter(Boolean)) {
+      m[v.id] = v.availableStock != null ? String(v.availableStock) : "";
+    }
+    return m;
+  });
+  // Which variantIds had their stock changed by the user (to detect dirty)
+  const [stockDirty, setStockDirty] = useState<Set<string>>(new Set());
+  const [stockSaving, setStockSaving] = useState(false);
+  const [stockSaveResult, setStockSaveResult] = useState<{ ok: number; failed: number } | null>(null);
+
+  // Keep localVariants and stockMap in sync when parent refreshes
+  useEffect(() => {
+    const safe = (variants ?? []).filter(Boolean);
+    setLocalVariants(safe);
+    setStockMap((prev) => {
+      const next: Record<string, string> = {};
+      for (const v of safe) {
+        // Preserve user-edited values; fill in only new/unknown rows
+        next[v.id] = prev[v.id] !== undefined ? prev[v.id] : (v.availableStock != null ? String(v.availableStock) : "");
+      }
+      return next;
+    });
+  }, [variants]);
 
   // Build id → label lookup from attributes
   const valueLookup = new Map<string, { attrName: string; label: string }>();
@@ -759,6 +749,36 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
 
   function handleUpdated(updated: VariantResponse) {
     setLocalVariants((prev) => prev.map((v) => v.id === updated.id ? updated : v));
+  }
+
+  function handleStockChange(variantId: string, value: string) {
+    setStockMap((prev) => ({ ...prev, [variantId]: value }));
+    setStockDirty((prev) => new Set(prev).add(variantId));
+    setStockSaveResult(null);
+  }
+
+  async function handleSaveStock() {
+    const toSave = localVariants.filter((v) => stockDirty.has(v.id));
+    if (toSave.length === 0) return;
+    setStockSaving(true);
+    setStockSaveResult(null);
+
+    let ok = 0;
+    let failed = 0;
+    for (const v of toSave) {
+      const raw = (stockMap[v.id] ?? "").trim();
+      const parsed = raw === "" ? 0 : parseInt(raw);
+      if (isNaN(parsed) || parsed < 0) { failed++; continue; }
+      const res = await adminInventoryApi.set(productId, { onHand: parsed }, v.id);
+      if (res.ok) ok++;
+      else failed++;
+    }
+
+    setStockSaving(false);
+    setStockDirty(new Set());
+    setStockSaveResult({ ok, failed });
+    // Clear success message after 3 s
+    setTimeout(() => setStockSaveResult(null), 3000);
   }
 
   const soldOutCount = localVariants.filter((v) => v.availableStock === 0).length;
@@ -828,6 +848,8 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
                     variant={v}
                     attrLabel={getAttrLabel(v)}
                     productPrice={productPrice}
+                    onHand={stockMap[v.id] ?? ""}
+                    onHandChange={handleStockChange}
                     onDelete={setDeleteTarget}
                     onUpdated={handleUpdated}
                   />
@@ -843,6 +865,31 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
               ? 'Click "Generate combinations" to create all axis combinations.'
               : "Define attribute axes above first, then generate combinations."}
           </p>
+        </div>
+      )}
+
+      {/* Save stock footer — only when table has rows */}
+      {localVariants.length > 0 && (
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <div className="text-caption text-foreground-muted">
+            {stockDirty.size > 0
+              ? `${stockDirty.size} row${stockDirty.size !== 1 ? "s" : ""} with unsaved stock changes`
+              : stockSaveResult
+              ? stockSaveResult.failed === 0
+                ? <span className="text-success font-medium">✓ Stock saved for {stockSaveResult.ok} variant{stockSaveResult.ok !== 1 ? "s" : ""}</span>
+                : <span className="text-danger">{stockSaveResult.failed} failed, {stockSaveResult.ok} saved</span>
+              : "Edit the Stock column above, then click Save stock"}
+          </div>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={handleSaveStock}
+            loading={stockSaving}
+            disabled={stockDirty.size === 0 || stockSaving}
+          >
+            Save stock
+          </Button>
         </div>
       )}
 
