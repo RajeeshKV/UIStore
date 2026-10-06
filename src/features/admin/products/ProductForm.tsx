@@ -888,6 +888,9 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
   const [variants, setVariants] = useState<VariantResponse[]>((product?.variants ?? []).filter(Boolean));
   const [attributes, setAttributes] = useState<ProductAttributeItem[]>([]);
 
+  // Refreshes only local variant + attribute state — does NOT call onRefresh (parent)
+  // because that would cause the parent to reload the product, which re-mounts this
+  // component and triggers an infinite loop.
   const refreshVariants = useCallback(async () => {
     if (!productId) return;
     const [varRes, attrRes] = await Promise.all([
@@ -896,12 +899,12 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
     ]);
     if (varRes.ok) setVariants((varRes.data ?? []).filter(Boolean));
     if (attrRes.ok) setAttributes(attrRes.data.attributes ?? []);
-    if (onRefresh) onRefresh();
-  }, [productId, onRefresh]);
+  }, [productId]);
 
-  // Load attributes on mount for existing products
+  // Load variants + attributes once on mount for existing products
   useEffect(() => {
     if (productId) void refreshVariants();
+  // productId is stable for the lifetime of this edit page
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
