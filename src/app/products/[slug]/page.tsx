@@ -4,8 +4,7 @@ import { StorefrontLayout } from "@/components/layout";
 import { storeApi } from "@/services/api/store";
 import { CatalogBreadcrumb } from "@/features/catalog/CatalogBreadcrumb";
 import { safeData } from "@/lib/utils";
-import { ProductGallery, ProductGalleryFallback } from "@/features/product/ProductGallery";
-import { ProductInformation } from "@/features/product/ProductInformation";
+import { ProductDetailIsland } from "@/features/product/ProductDetailIsland";
 import { RelatedProducts } from "@/features/product/RelatedProducts";
 import { ProductReviews } from "@/features/reviews/ProductReviews";
 import { env } from "@/config/env";
@@ -97,9 +96,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // Mirrors checkout/page.tsx — backend is the authority on COD availability
   const codEnabled = settings?.payment?.codEnabled ?? settings?.delivery?.codEnabled ?? false;
 
-  // Build gallery images — use images array if available, fall back to primaryImageUrl
-  const galleryImages = product.images ?? [];
-
   const breadcrumbs = [
     { label: "Home", href: "/" },
     ...(product.categoryName && product.categorySlug
@@ -116,32 +112,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <CatalogBreadcrumb items={breadcrumbs} />
         </div>
 
-        {/* Main product section */}
+        {/* Main product section — island owns variant state + image switching */}
         <div className="px-5 md:px-8 lg:px-10 py-8 md:py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-            {/* Gallery */}
-            <div className="lg:sticky lg:top-24">
-              {galleryImages.length > 0 ? (
-                <ProductGallery
-                  images={galleryImages}
-                  productName={product.name ?? "Product"}
-                />
-              ) : (
-                <ProductGalleryFallback
-                  imageUrl={product.primaryImageUrl}
-                  productName={product.name ?? "Product"}
-                />
-              )}
-            </div>
-
-            {/* Info panel */}
-            <ProductInformation
-              product={product}
-              currency={currency}
-              locale={locale}
-              codEnabled={codEnabled}
-            />
-          </div>
+          <ProductDetailIsland
+            product={product}
+            currency={currency}
+            locale={locale}
+            codEnabled={codEnabled}
+          />
         </div>
 
         {/* Related products */}

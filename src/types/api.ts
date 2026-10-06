@@ -209,6 +209,64 @@ export interface StorefrontImageResponse {
   sortOrder: number;
 }
 
+// ── Variant Grid (GET /api/v1/store/products/variants) ────────────────────────
+
+/**
+ * Per-image record in a GridRow. Uses secureUrl (Cloudinary) not url.
+ * The images array is the variant-level gallery. Fall back to primaryImageUrl
+ * when this array is empty.
+ */
+export interface GridImage {
+  id: string;
+  secureUrl: string;
+  altText: string | null;
+  sortOrder: number;
+  isPrimary: boolean;
+}
+
+/**
+ * One row from GET /api/v1/store/products/variants.
+ * - variantId is null for simple products (no variants).
+ * - id is always set and is the row's own id (variant id for variant rows, product id for simple rows).
+ * - effectivePrice is already resolved (priceOverride ?? product.price).
+ * - canPurchase gates the add-to-cart button.
+ */
+export interface GridRow {
+  id: string;
+  variantId: string | null;
+  productId: string;
+  slug: string;
+  name: string;
+  sku: string | null;
+  effectivePrice: number;
+  currency: string;
+  primaryImageUrl: string | null;
+  stockAvailability: StockAvailability;
+  canPurchase: boolean;
+  isOutOfStock: boolean;
+  categoryId: string | null;
+  categoryName: string | null;
+  categorySlug: string | null;
+  brandId: string | null;
+  brandName: string | null;
+  brandSlug: string | null;
+  isFeatured: boolean;
+  ratingAverage: number;
+  ratingCount: number;
+  compareAtPrice?: number;
+  images: GridImage[];
+}
+
+export interface GridRowPagedResponse {
+  items: GridRow[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export interface AttributeValueDto {
   id: string;
   value?: string;
@@ -255,6 +313,12 @@ export interface StorefrontVariantResponse {
   canPurchase: boolean;
   /** §1.6 NEW — resolved attribute values; use for display labels */
   attributes?: VariantAttributeValueResponse[];
+  /**
+   * Variant-scoped image gallery (guide 41 §4.6, §7).
+   * When the user selects a variant, show these images in the PDP gallery.
+   * Fall back to the product gallery when this array is empty.
+   */
+  images?: StorefrontImageResponse[];
 }
 
 export interface DeliveryEstimateDto {

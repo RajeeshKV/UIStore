@@ -332,7 +332,8 @@ The storefront reads `/api/v1/store/...` (anonymous). The admin catalogue lives 
 
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
-| GET | `/api/v1/store/products` | None | Paginated storefront catalogue |
+| GET | `/api/v1/store/products` | None | Paginated storefront catalogue (one row per product) |
+| GET | `/api/v1/store/products/variants` | None | Variant-level grid (one row per active variant) |
 | GET | `/api/v1/store/products/{slug}` | None | Product detail by slug (includes variants, images, rating) |
 | GET | `/api/v1/store/products/{slug}/related` | None | Related products |
 | GET | `/api/v1/store/featured` | None | Featured products |
@@ -396,7 +397,76 @@ Errors: `400` validation, `404 PRODUCT_NOT_FOUND` / `CATEGORY_NOT_FOUND` / `BRAN
 
 ---
 
-## Product Images â€” Admin
+## Variant Grid — Storefront
+
+Returns one row per active variant of an active product, so the storefront can render each
+combination (e.g. "Blue-256GB", "Red-256GB") as a separate card in the product grid. Products
+without variants appear once with `variantId: null`.
+
+Reuses the same query-string surface as the product list: `search`, `categorySlug`, `brandSlug`,
+`attributeFilters`, `minPrice`/`maxPrice`, `isFeatured`, `inStockOnly`, `sortBy`, `sortDirection`,
+`page`, `pageSize`. An unrecognised `sortBy` is rejected with `400 INVALID_SORT_FIELD`.
+
+```
+GET /api/v1/store/products/variants?search=t-shirt&categorySlug=shirts&inStockOnly=true&page=1&pageSize=20
+```
+
+```jsonc
+{
+  "items": [
+    {
+      "id": "var-001",                   // ← POST this to cart as variantId
+      "variantId": "var-001",            // null for products without variants
+      "productId": "P1",
+      "slug": "classic-t-shirt",
+      "name": "Classic T-Shirt",
+      "sku": "TSH-RED-S",
+      "effectivePrice": 999.00,
+      "currency": "INR",
+      "primaryImageUrl": "https://…",    // product primary image (variant image if configured)
+      "stockAvailability": "InStock",    // InStock | LowStock | OutOfStock
+      "canPurchase": true,
+      "isOutOfStock": false,
+      "categoryId": "cat-001",
+      "categoryName": "Shirts",
+      "categorySlug": "shirts",
+      "brandId": "brand-001",
+      "brandName": "Kromic",
+      "brandSlug": "kromic",
+      "isFeatured": true,
+      "ratingAverage": 4.5,
+      "ratingCount": 12,
+      "images": [                         // variant-level images (empty = none configured)
+        { "id": "img-001", "secureUrl": "…", "altText": "Red shirt", "sortOrder": 0, "isPrimary": true }
+      ]
+    }
+  ],
+  "page": 1, "pageSize": 20, "totalCount": 42,
+  "totalPages": 3, "hasNextPage": true, "hasPreviousPage": false
+}
+```
+
+### Stock semantics
+
+`canPurchase` is `isActive && availableStock > 0`. The grid should disable the add-to-cart button
+when `canPurchase` is `false` and may optionally show a badge:
+- `InStock` — purchasable
+- `LowStock` — purchasable, but `availableStock <= lowStockThreshold`
+- `OutOfStock` — not purchasable
+
+### Image fallback
+
+A variant with no uploaded images falls back to the product's own primary image. The product-level
+gallery is always available at `GET /api/v1/store/products/{slug}`. Variant images are optional;
+the grid must not break when `images` is empty.
+
+### Admin image management for variants
+
+See **Variant Images — Admin** below.
+
+---
+
+## Product Images — Admin
 
 All routes require `AdminOnly`.
 
@@ -406,6 +476,25 @@ All routes require `AdminOnly`.
 | PUT | `/api/v1/products/{productId}/images/reorder` | Reorder the gallery |
 | PUT | `/api/v1/products/{productId}/images/{imageId}/set-primary` | Set the primary image |
 | DELETE | `/api/v1/products/{productId}/images/{imageId}` | Delete an image |
+
+### Variant Images — Admin
+
+Variant images are stored alongside product images in the same Cloudinary folder
+`products/{productId}` but carry a `VariantId` so they can be displayed only for that
+combination. Upload, reorder, set-primary and delete work exactly as for product images.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/v1/products/{productId}/variants/{variantId}/images` | Upload one or more variant images |
+| PUT | `/api/v1/products/{productId}/variants/{variantId}/images/reorder` | Reorder the variant gallery |
+| PUT | `/api/v1/products/{productId}/variants/{variantId}/images/{imageId}/set-primary` | Set primary variant image |
+| DELETE | `/api/v1/products/{productId}/variants/{variantId}/images/{imageId}` | Delete a variant image |
+
+Returns `ProductImageDto` with the same shape as product images. The first image uploaded for a
+variant becomes its primary automatically.
+
+Errors: `400 EMPTY_FILE`, `400 INVALID_MIME_TYPE`, `400 TOO_MANY_FILES`, `502 UPLOAD_FAILED`,
+`404 PRODUCT_NOT_FOUND`, `404 VARIANT_NOT_FOUND`, `404 IMAGE_NOT_FOUND`.
 
 > The set-primary path segment is **`set-primary`**, not `/primary`. Use this exact spelling.
 
@@ -1493,11 +1582,99 @@ Errors: `ORDER_NOT_FOUND`, `ORDER_INVOICE_ALREADY_EXISTS`, `ORDER_INVOICE_NOT_IS
 
 ---
 
+## Get Started — Lead Capture
+
+Public form on the marketing site: a visitor supplies their details and the sales team is emailed.
+No authentication — this is the form a stranger fills **before** they have an account.
+
+| Method | Route | Auth | Result |
+|--------|-------|------|--------|
+| POST | `/api/v1/leads` | Public | `201` `CreateLeadResponse` |
+| GET | `/api/v1/leads` | Admin | `200` `PagedResponse<LeadResponse>` |
+
+### `POST /api/v1/leads`
+
+```jsonc
+{
+  "name": "Rahul Sharma",              // required, 2–120
+  "phone": "+91 98765 43210",          // required, 7–15 digits after formatting is stripped
+  "email": "rahul@example.com",        // required, valid address, ≤ 254
+  "business": "Kromic Retail Pvt Ltd", // required, 2–120 — business name OR category
+  "source": "hero-form",               // optional, ≤ 200 — attribution
+  "website": ""                        // honeypot — MUST be empty
+}
+```
+
+```jsonc
+// 201
+{ "success": true, "message": "Thanks — we'll be in touch shortly." }
+```
+
+`business` covers both "business name" and "category" because the form asks for either — one field,
+so a visitor who types "Retail" and one who types "Kromic Retail Pvt Ltd" both answer it.
+
+**The notification destination is server configuration, never the request.** The submitted `email`
+is applied as **Reply-To** so the team can answer by pressing reply; it is never a `To` address.
+Without that separation this public endpoint would be a mail relay pointed wherever the caller asked.
+Set the destination with `Leads__NotificationEmail` (default `hello@shopey.tech`).
+
+The lead is **stored as well as emailed**. A notification that fails — provider outage, quota, spam
+filter — must not lose the enquiry, and the admin list remains the durable record.
+
+#### Abuse protection
+
+| Defence | Behaviour |
+|---|---|
+| Rate limit | 6 requests per hour per IP. `429` when exceeded |
+| Honeypot (`website`) | A filled field returns the **same `201`** as a genuine submission, but stores nothing and queues no email. A distinguishable status would tell a bot which field gave it away, and it would simply stop filling that one |
+| Unique active phone | A second submission for a live number is `409 LEAD_ALREADY_CAPTURED`, not a `500`. The first lead is untouched |
+| Archived numbers | The unique index is partial on `IsArchived`, so someone who genuinely enquires again later is not permanently blocked |
+
+#### Field behaviour
+
+| Field | Notes |
+|---|---|
+| `phone` | Formatting is stripped for storage: `+91 98765 43210` → `+919876543210`. **No country code is guessed** — a wrong guess produces a number that dials a different person. Both forms are returned: `phone` normalised, `phoneRaw` as typed |
+| `email` | Lower-cased and trimmed |
+| `source` | Supply from a query string or UTM value to attribute leads later |
+
+#### Responses
+
+| Code | Meaning | UI action |
+|---|---|---|
+| `201` | Captured | Show the success message |
+| `400` | Validation or `LEAD_INVALID` | Show inline, do not retry |
+| `409 LEAD_ALREADY_CAPTURED` | That number is already an active lead | Show "We've already got your details" — **not** an error banner |
+| `429` | Rate limited | Show "Too many attempts, try later" |
+
+### `GET /api/v1/leads` (admin)
+
+```jsonc
+{
+  "items": [{
+    "id": "…", "name": "Rahul Sharma",
+    "phone": "+919876543210", "phoneRaw": "+91 98765 43210",
+    "email": "rahul@example.com",
+    "business": "Kromic Retail Pvt Ltd",
+    "status": "New",                  // New | Contacted | Qualified | Unqualified
+    "source": "hero-form", "isArchived": false,
+    "createdAtUtc": "2026-10-04T09:20:02Z"
+  }],
+  "page": 1, "pageSize": 20, "totalCount": 1,
+  "totalPages": 1, "hasNextPage": false, "hasPreviousPage": false
+}
+```
+
+`?status=`, `?search=` (matches name, email, phone, business — case-insensitive),
+`?includeArchived=true`, `?page=`, `?pageSize=` (max 100). Archived leads are hidden by default.
+
+---
+
 ## Authorization Summary
 
 | Level | Endpoints |
 |-------|-----------|
-| Public (no auth) | Store settings, categories, brands, products, policies, OTP, published reviews |
+| Public (no auth) | Store settings, categories, brands, products, policies, OTP, published reviews, **`POST /leads`** |
 | Customer Google auth only | `POST /auth/google` (issues application JWT) |
 | Admin password auth only | `POST /auth/login`, `POST /auth/request-password-reset`, `POST /auth/reset-password` |
 | Shared (any valid JWT) | `POST /auth/refresh`, `POST /auth/logout`, `POST /auth/logout-all` |

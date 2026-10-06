@@ -11,6 +11,7 @@ import type {
   StorePolicyResponse,
   PagedResponse,
   StorefrontCarouselSlideResponse,
+  GridRowPagedResponse,
 } from "@/types/api";
 
 export const storeApi = {
@@ -78,4 +79,21 @@ export const storeApi = {
     apiClient.get<StorefrontCarouselSlideResponse[]>("/api/v1/store/carousel", {
       skipAuth: true,
     }),
+
+  /**
+   * Variant-aware product grid — GET /api/v1/store/products/variants.
+   * Returns one row per active variant; products without variants appear once
+   * with variantId: null.
+   *
+   * Pass a pre-built query string from catalogParamsToQueryString() so that
+   * bracket-notation AttributeFilters are serialized correctly.
+   * Use this for all catalog grids instead of getProducts.
+   */
+  getVariantGrid: (queryString: string = "") => {
+    const query = queryString ? `?${queryString}` : "";
+    return apiClient.get<GridRowPagedResponse>(
+      `/api/v1/store/products/variants${query}`,
+      { skipAuth: true },
+    );
+  },
 };

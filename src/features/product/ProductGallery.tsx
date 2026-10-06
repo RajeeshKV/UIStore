@@ -11,12 +11,22 @@ import type { StorefrontImageResponse } from "@/types/api";
 interface ProductGalleryProps {
   images: StorefrontImageResponse[];
   productName: string;
+  /**
+   * Optional variant-level image override (guide 41 §4.6).
+   * When non-empty, these images are shown instead of the product gallery.
+   * When empty/undefined, falls back to the product `images` prop.
+   * The gallery resets to index 0 whenever this prop identity changes.
+   */
+  overrideImages?: StorefrontImageResponse[];
 }
 
-export function ProductGallery({ images, productName }: ProductGalleryProps) {
+export function ProductGallery({ images, productName, overrideImages }: ProductGalleryProps) {
   const shouldReduce = useReducedMotion();
 
-  const sorted = [...images]
+  // Active image set: prefer overrideImages when present, else product images
+  const activeImages = (overrideImages && overrideImages.length > 0) ? overrideImages : images;
+
+  const sorted = [...activeImages]
     .filter((img) => !!img.url)
     .sort((a, b) => {
       if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
@@ -26,6 +36,12 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [activeIdx, setActiveIdx]       = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [direction, setDirection]       = useState<1 | -1>(1);
+
+  // Reset to first image whenever the override set changes (new variant selected)
+  useEffect(() => {
+    setActiveIdx(0);
+    setDirection(1);
+  }, [overrideImages]);
 
   const activeImage = sorted[activeIdx];
   const total = sorted.length;

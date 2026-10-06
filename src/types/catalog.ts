@@ -98,22 +98,59 @@ export function buildCatalogUrl(params: CatalogParams, baseSlug?: string): strin
   return qs ? `${base}?${qs}` : base;
 }
 
-/** Convert CatalogParams to the raw Record<string, string|number|undefined> that storeApi.getProducts expects */
+/**
+ * Serialize CatalogParams into a URLSearchParams string suitable for
+ * GET /api/v1/store/products/variants (and the legacy /products endpoint).
+ *
+ * AttributeFilters are serialized with bracket notation as the backend expects:
+ *   attributeFilters[0][attributeName]=Colour&attributeFilters[0][attributeValue]=Red
+ *
+ * Returns a plain string (no leading "?") so callers can append it directly.
+ */
+export function catalogParamsToQueryString(p: CatalogParams): string {
+  const qs = new URLSearchParams();
+
+  if (p.Page)              qs.set("page",          String(p.Page));
+  qs.set("pageSize",       String(p.PageSize ?? DEFAULT_PAGE_SIZE));
+  if (p.Search)            qs.set("search",         p.Search);
+  if (p.CategorySlug)      qs.set("categorySlug",   p.CategorySlug);
+  if (p.BrandSlug)         qs.set("brandSlug",      p.BrandSlug);
+  if (p.MinPrice != null)  qs.set("minPrice",       String(p.MinPrice));
+  if (p.MaxPrice != null)  qs.set("maxPrice",       String(p.MaxPrice));
+  if (p.IsFeatured)        qs.set("isFeatured",     "true");
+  if (p.InStockOnly)       qs.set("inStockOnly",    "true");
+  if (p.SortBy)            qs.set("sortBy",         p.SortBy);
+  if (p.SortDirection)     qs.set("sortDirection",  p.SortDirection);
+
+  // Bracket-notation for attribute filters
+  if (p.AttributeFilters?.length) {
+    for (let i = 0; i < p.AttributeFilters.length; i++) {
+      qs.set(`attributeFilters[${i}][attributeName]`,  p.AttributeFilters[i].attributeName);
+      qs.set(`attributeFilters[${i}][attributeValue]`, p.AttributeFilters[i].attributeValue);
+    }
+  }
+
+  return qs.toString();
+}
+
+/**
+ * @deprecated Use catalogParamsToQueryString instead.
+ * Kept for any call-sites that still pass the result to storeApi.getProducts directly.
+ */
 export function catalogParamsToApiParams(
   p: CatalogParams,
 ): Record<string, string | number | undefined> {
   const out: Record<string, string | number | undefined> = {};
-  if (p.Page)          out.Page          = p.Page;
-  if (p.PageSize)      out.PageSize      = p.PageSize ?? DEFAULT_PAGE_SIZE;
-  else                 out.PageSize      = DEFAULT_PAGE_SIZE;
-  if (p.Search)        out.Search        = p.Search;
-  if (p.CategorySlug)  out.CategorySlug  = p.CategorySlug;
-  if (p.BrandSlug)     out.BrandSlug     = p.BrandSlug;
-  if (p.MinPrice != null) out.MinPrice   = p.MinPrice;
-  if (p.MaxPrice != null) out.MaxPrice   = p.MaxPrice;
-  if (p.IsFeatured)    out.IsFeatured    = "true";
-  if (p.InStockOnly)   out.InStockOnly   = "true";
-  if (p.SortBy)        out.SortBy        = p.SortBy;
-  if (p.SortDirection) out.SortDirection = p.SortDirection;
+  if (p.Page)          out.page          = p.Page;
+  out.pageSize         = p.PageSize ?? DEFAULT_PAGE_SIZE;
+  if (p.Search)        out.search        = p.Search;
+  if (p.CategorySlug)  out.categorySlug  = p.CategorySlug;
+  if (p.BrandSlug)     out.brandSlug     = p.BrandSlug;
+  if (p.MinPrice != null) out.minPrice   = p.MinPrice;
+  if (p.MaxPrice != null) out.maxPrice   = p.MaxPrice;
+  if (p.IsFeatured)    out.isFeatured    = "true";
+  if (p.InStockOnly)   out.inStockOnly   = "true";
+  if (p.SortBy)        out.sortBy        = p.SortBy;
+  if (p.SortDirection) out.sortDirection = p.SortDirection;
   return out;
 }

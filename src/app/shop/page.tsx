@@ -4,7 +4,7 @@ import { storeApi } from "@/services/api/store";
 import { CatalogShell } from "@/features/catalog/CatalogShell";
 import {
   parseCatalogParams,
-  catalogParamsToApiParams,
+  catalogParamsToQueryString,
   DEFAULT_PAGE_SIZE,
 } from "@/types/catalog";
 import { safeData } from "@/lib/utils";
@@ -57,7 +57,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       storeApi.getPolicies(),
       storeApi.getCategories(),
       storeApi.getBrands(),
-      storeApi.getProducts(catalogParamsToApiParams(params)),
+      storeApi.getVariantGrid(catalogParamsToQueryString(params)),
     ]);
 
   const settings = safeData(settingsRes, null);

@@ -29,18 +29,34 @@ interface ProductInformationProps {
   currency: string;
   locale: string;
   codEnabled?: boolean;
+  /**
+   * Controlled variant — owned by ProductDetailIsland so image switching works.
+   * When provided, the component is controlled; internal state is ignored.
+   */
+  selectedVariant?: StorefrontVariantResponse | null;
+  /** Called when user picks a different variant in the selector. */
+  onVariantChange?: (variant: StorefrontVariantResponse) => void;
 }
 
-export function ProductInformation({ product, currency, locale, codEnabled = false }: ProductInformationProps) {
+export function ProductInformation({ product, currency, locale, codEnabled = false, selectedVariant: controlledVariant, onVariantChange }: ProductInformationProps) {
   const shouldReduce = useReducedMotion();
   const { addItem, isMutating } = useCart();
   const hasVariants = (product.variants?.length ?? 0) > 0;
   // Filter out null entries the API may return
   const safeVariants = (product.variants ?? []).filter(Boolean);
 
-  const [selectedVariant, setSelectedVariant] = useState<StorefrontVariantResponse | null>(
+  // Internal state — used when the component is uncontrolled (no parent island)
+  const [internalVariant, setInternalVariant] = useState<StorefrontVariantResponse | null>(
     safeVariants.find((v) => v.canPurchase) ?? safeVariants[0] ?? null,
   );
+
+  // Use controlled value when provided, fall back to internal state
+  const selectedVariant = controlledVariant !== undefined ? controlledVariant : internalVariant;
+
+  function handleVariantSelect(variant: StorefrontVariantResponse) {
+    setInternalVariant(variant);
+    onVariantChange?.(variant);
+  }
 
   const effectivePrice      = selectedVariant?.effectivePrice ?? product.price;
   const effectiveCompareAt  = product.compareAtPrice;
@@ -147,7 +163,7 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
           variants={safeVariants}
           attributes={product.attributes}
           selectedVariantId={selectedVariant?.id ?? null}
-          onSelect={setSelectedVariant}
+          onSelect={handleVariantSelect}
         />
       )}
 

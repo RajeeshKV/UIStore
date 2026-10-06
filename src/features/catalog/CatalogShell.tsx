@@ -3,7 +3,7 @@
 import { useState, useCallback, useTransition, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { ProductGrid } from "@/components/ui/ProductGrid";
+import { VariantProductGrid } from "@/components/ui/VariantProductGrid";
 import { Pagination } from "@/components/ui/Pagination";
 import { CatalogToolbar } from "./CatalogToolbar";
 import { CatalogFilterSidebar, CatalogFilterDrawer } from "./CatalogFilters";
@@ -11,14 +11,14 @@ import { CatalogBreadcrumb } from "./CatalogBreadcrumb";
 import { staggerContainer } from "@/lib/motion";
 import type { BreadcrumbItem } from "./CatalogBreadcrumb";
 import type {
-  StorefrontProductSummaryResponse,
+  GridRow,
   StorefrontCategoryResponse,
   StorefrontBrandResponse,
 } from "@/types/api";
 import type { CatalogParams } from "@/types/catalog";
 import {
   buildCatalogUrl,
-  catalogParamsToApiParams,
+  catalogParamsToQueryString,
   SORT_OPTIONS,
   DEFAULT_SORT,
   DEFAULT_PAGE_SIZE,
@@ -27,7 +27,7 @@ import { storeApi } from "@/services/api/store";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 interface CatalogShellProps {
-  initialProducts: StorefrontProductSummaryResponse[];
+  initialProducts: GridRow[];
   initialTotalCount: number;
   initialTotalPages: number;
   initialParams: CatalogParams;
@@ -63,7 +63,7 @@ export function CatalogShell({
   const [isPending, startTransition] = useTransition();
 
   const [params, setParams]         = useState<CatalogParams>(initialParams);
-  const [products, setProducts]     = useState(initialProducts);
+  const [products, setProducts]     = useState<GridRow[]>(initialProducts);
   const [totalCount, setTotalCount] = useState(initialTotalCount);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [fetchError, setFetchError] = useState(false);
@@ -82,7 +82,7 @@ export function CatalogShell({
       window.history.pushState({}, "", url);
 
       startTransition(async () => {
-        const result = await storeApi.getProducts(catalogParamsToApiParams(next));
+        const result = await storeApi.getVariantGrid(catalogParamsToQueryString(next));
         if (result.ok) {
           setProducts(result.data.items);
           setTotalCount(result.data.totalCount);
@@ -135,7 +135,7 @@ export function CatalogShell({
 
   return (
     <div className="bg-[#f8f9fb] min-h-screen">
-      {/* ── Page header band — design reference architectural style ──── */}
+      {/* ── Page header band ─────────────────────────────────────────── */}
       <section className="w-full bg-[#f8f9fb] py-8 border-b border-[#e1e2e4]">
         <div className="px-5 md:px-8 lg:px-10">
           {/* Breadcrumb + status */}
@@ -143,7 +143,6 @@ export function CatalogShell({
             {breadcrumbs && breadcrumbs.length > 0 && (
               <CatalogBreadcrumb items={breadcrumbs} />
             )}
-            {/* Live indicator — matches design "Live Inventory Sync" */}
             <div className="hidden sm:flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#ba0918] animate-pulse" aria-hidden="true" />
               <span className="text-[11px] font-bold tracking-widest uppercase text-[#444748]">
@@ -208,8 +207,8 @@ export function CatalogShell({
                 initial="hidden"
                 animate="visible"
               >
-                <ProductGrid
-                  products={products}
+                <VariantProductGrid
+                  rows={products}
                   error={fetchError}
                   onRetry={() => applyParams(params)}
                   currency={currency}
@@ -221,7 +220,7 @@ export function CatalogShell({
               </motion.div>
             )}
 
-            {/* Pagination */}
+            {/* Pagination — note: totalCount is row count, not product count */}
             {!fetchError && totalPages > 1 && !isPending && (
               <div className="mt-12 mb-4 flex flex-col items-center gap-3">
                 <Pagination
@@ -231,7 +230,7 @@ export function CatalogShell({
                 />
                 <p className="text-[12px] text-[#444748]">
                   Page {params.Page ?? 1} of {totalPages} &mdash;{" "}
-                  {totalCount} product{totalCount !== 1 ? "s" : ""}
+                  {totalCount} item{totalCount !== 1 ? "s" : ""}
                 </p>
               </div>
             )}
