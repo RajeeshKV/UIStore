@@ -18,8 +18,12 @@ export function AdminProductEditClient({ productId }: AdminProductEditClientProp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (showLoadingSpinner = false) => {
+    // Only show the skeleton spinner on the very first load (or an explicit retry).
+    // Background refreshes (e.g. after publish/save) must NOT set loading=true because
+    // that unmounts ProductForm, which immediately remounts it, re-triggering onRefresh
+    // and causing an infinite reload loop.
+    if (showLoadingSpinner) setLoading(true);
     setError(null);
     const [productRes, catRes, brandRes] = await Promise.all([
       adminProductsApi.getById(productId),
@@ -40,7 +44,8 @@ export function AdminProductEditClient({ productId }: AdminProductEditClientProp
     setLoading(false);
   }, [productId]);
 
-  useEffect(() => { void load(); }, [load]);
+  // First load — show the skeleton
+  useEffect(() => { void load(true); }, [load]);
 
   if (loading) {
     return (
@@ -56,7 +61,7 @@ export function AdminProductEditClient({ productId }: AdminProductEditClientProp
   }
 
   if (error || !product) {
-    return <ErrorState title="Product not found" description={error ?? "This product could not be loaded."} onRetry={load} />;
+    return <ErrorState title="Product not found" description={error ?? "This product could not be loaded."} onRetry={() => load(true)} />;
   }
 
   return (
