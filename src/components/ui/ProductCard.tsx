@@ -48,6 +48,8 @@ interface ProductCardProps {
   currency?: string;
   locale?: string;
   onAddToCart?: (product: StorefrontProductSummaryResponse) => void;
+  /** Called when user clicks "Choose Options" — triggers variant drawer */
+  onChooseOptions?: (product: StorefrontProductSummaryResponse) => void;
   className?: string;
   eager?: boolean;
 }
@@ -57,6 +59,7 @@ export function ProductCard({
   currency,
   locale,
   onAddToCart,
+  onChooseOptions,
   className,
   eager = false,
 }: ProductCardProps) {
@@ -217,8 +220,23 @@ export function ProductCard({
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Add to Cart */}
-        {!isOutOfStock && product.canPurchase && onAddToCart ? (
+        {/* Add to Cart / Choose Options / Out of Stock */}
+        {isOutOfStock ? (
+          <p className="mt-0.5 text-[11px] text-center text-[#5A6578] py-1">Out of stock</p>
+        ) : onChooseOptions && product.canPurchase ? (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onChooseOptions(product); }}
+            aria-label={`Choose options for ${product.name}`}
+            className={cn(
+              "mt-0.5 w-full flex items-center justify-center gap-1.5",
+              "h-9 rounded-lg text-[12px] font-bold",
+              "bg-[#0D0D0D] text-white",
+              "hover:bg-[#262626] active:scale-[0.98] transition-all duration-150",
+            )}
+          >
+            Choose Options
+          </button>
+        ) : !isOutOfStock && product.canPurchase && onAddToCart ? (
           <button
             onClick={handleAddToCart}
             aria-label={`Add ${product.name} to cart`}
@@ -234,8 +252,6 @@ export function ProductCard({
             <ShoppingBag className="size-3.5" aria-hidden="true" />
             {addingToCart ? "Adding…" : "Add to Cart"}
           </button>
-        ) : isOutOfStock ? (
-          <p className="mt-0.5 text-[11px] text-center text-[#5A6578] py-1">Out of stock</p>
         ) : null}
       </div>
     </motion.article>

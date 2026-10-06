@@ -572,9 +572,18 @@ function VariantMatrixRow({ productId, variant, attrLabel, productPrice, onDelet
 
   return (
     <tr className="group border-b border-border last:border-none hover:bg-surface/60">
-      {/* Attribute label */}
-      <td className="py-2 pl-3 pr-2 text-body-sm text-foreground min-w-0">
-        <span className="font-medium">{attrLabel || <span className="text-foreground-muted italic">no attrs</span>}</span>
+      {/* Attribute label — single line, truncated */}
+      <td className="py-2 pl-3 pr-2 min-w-0 max-w-[180px]">
+        {attrLabel ? (
+          <span
+            className="block text-body-sm font-medium text-foreground truncate"
+            title={attrLabel}
+          >
+            {attrLabel}
+          </span>
+        ) : (
+          <span className="block text-body-sm text-foreground-muted italic">no attrs</span>
+        )}
       </td>
 
       {/* Price */}
@@ -699,10 +708,11 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
   function getAttrLabel(v: VariantResponse): string {
     const ids = parseIds(v.attributeValueIds);
     if (!ids.length) return "";
+    // Use just the value labels without the axis name prefix to keep it compact
     return ids.map((id) => {
       const entry = valueLookup.get(id);
-      return entry ? `${entry.attrName}: ${entry.label}` : id.slice(0, 6);
-    }).join(" / ");
+      return entry ? entry.label : id.slice(0, 6);
+    }).join(" · ");
   }
 
   // Warn about variants with fewer attribute values than there are axes
@@ -996,10 +1006,10 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
         </p>
       )}
 
-      {/* ── 3-column grid ──────────────────────────────────────────────────── */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      {/* ── 2-column grid: left=content, right=sidebar ─────────────────── */}
+      <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
 
-        {/* ── Column 1: Core content ─────────────────────────────────────── */}
+        {/* ── Left column: core content ──────────────────────────────────── */}
         <div className="flex flex-col gap-4">
           <Card title="Basic Information">
             <Input
@@ -1058,7 +1068,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
           </Card>
         </div>
 
-        {/* ── Column 2: Pricing, Images, Attributes, Variants ───────────── */}
+        {/* ── Right sidebar: pricing, organisation, settings, stock ──────── */}
         <div className="flex flex-col gap-4">
           <Card title="Pricing">
             <div className="grid grid-cols-2 gap-3">
@@ -1083,39 +1093,6 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
             </div>
           </Card>
 
-          {isEdit && productId && (
-            <Card title="Images">
-              <ImageManager
-                productId={productId}
-                images={product.images}
-                onRefresh={() => { if (onRefresh) onRefresh(); }}
-              />
-            </Card>
-          )}
-
-          {isEdit && productId && (
-            <Card title="Attribute Axes">
-              <p className="text-caption text-foreground-muted -mt-1">Define dimensions like "Storage" or "Colour" for variant selection.</p>
-              <AttributeEditor productId={productId} variants={variants} onRefresh={refreshVariants} />
-            </Card>
-          )}
-
-          {isEdit && productId && (
-            <Card title="Variants">
-              <p className="text-caption text-foreground-muted -mt-1">Generate all axis combinations, set prices, SKUs and stock.</p>
-              <VariantEditor productId={productId} variants={variants} attributes={attributes} productPrice={form.price} onRefresh={refreshVariants} />
-            </Card>
-          )}
-
-          {!isEdit && (
-            <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
-              <p className="text-caption text-foreground-muted">Images, attributes, variants and stock can be managed after saving.</p>
-            </div>
-          )}
-        </div>
-
-        {/* ── Column 3: Organisation, Settings, Stock ────────────────────── */}
-        <div className="flex flex-col gap-4">
           <Card title="Organisation">
             <div className="flex flex-col gap-1.5">
               <label className="text-body-sm font-medium text-foreground">Category</label>
@@ -1168,22 +1145,52 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
           {isEdit && productId && variants.length === 0 && (
             <Card title="Stock">
               <p className="text-caption text-foreground-muted -mt-1">
-                Product-level inventory. Add variants above to enable per-variant stock.
+                Product-level inventory. Add variants below to enable per-variant stock.
               </p>
               <StockManager productId={productId} label="Product stock" />
             </Card>
           )}
 
-          {/* When variants exist, stock is inline per variant in column 2 */}
           {isEdit && productId && variants.length > 0 && (
             <Card title="Stock">
               <p className="text-caption text-foreground-muted">
-                Stock is managed per variant — use the inline controls on each variant in the Variants section.
+                Stock is managed per variant in the Variants table below.
               </p>
             </Card>
           )}
         </div>
       </div>
+
+      {/* ── Full-width: Images, Attributes, Variants ───────────────────────── */}
+      {isEdit && productId && (
+        <Card title="Images">
+          <ImageManager
+            productId={productId}
+            images={product.images}
+            onRefresh={() => { if (onRefresh) onRefresh(); }}
+          />
+        </Card>
+      )}
+
+      {isEdit && productId && (
+        <Card title="Attribute Axes">
+          <p className="text-caption text-foreground-muted -mt-1">Define the dimensions your product varies on (e.g. "Colour", "Storage"). Each axis becomes a row of options on the product page.</p>
+          <AttributeEditor productId={productId} variants={variants} onRefresh={refreshVariants} />
+        </Card>
+      )}
+
+      {isEdit && productId && (
+        <Card title="Variants">
+          <p className="text-caption text-foreground-muted -mt-1">Generate all axis combinations, set individual prices, SKUs and stock levels.</p>
+          <VariantEditor productId={productId} variants={variants} attributes={attributes} productPrice={form.price} onRefresh={refreshVariants} />
+        </Card>
+      )}
+
+      {!isEdit && (
+        <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
+          <p className="text-caption text-foreground-muted">Images, attributes, variants and stock can be managed after saving the product.</p>
+        </div>
+      )}
     </form>
   );
 }
