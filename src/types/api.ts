@@ -833,8 +833,8 @@ export interface VariantImageDto {
 
 /** Request body for PUT /api/v1/products/{productId}/variants/{variantId}/images/reorder */
 export interface ReorderVariantImagesRequest {
-  /** Full ordered list: [{imageId, sortOrder}] */
-  images: Array<{ imageId: string; sortOrder: number }>;
+  /** Full ordered list: same shape as product image reorder — items[].{imageId, sortOrder} */
+  items: Array<{ imageId: string; sortOrder: number }>;
 }
 
 /** Admin variant — includes priceOverride and attributeValueIds */

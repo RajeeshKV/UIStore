@@ -202,7 +202,7 @@ export function VariantImageManager({
     setReordering(true);
     setError(null);
     const res = await adminVariantImagesApi.reorder(productId, variantId, {
-      images: reordered.map((img) => ({ imageId: img.id, sortOrder: img.sortOrder })),
+      items: reordered.map((img) => ({ imageId: img.id, sortOrder: img.sortOrder })),
     });
     setReordering(false);
 

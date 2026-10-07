@@ -52,7 +52,7 @@ function CardFlush({ title, description, children }: { title: string; descriptio
         <h3 className="text-body-sm font-semibold text-foreground">{title}</h3>
         {description && <p className="text-caption text-foreground-muted">{description}</p>}
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-0">
         {children}
       </div>
     </div>
@@ -812,7 +812,7 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
   return (
     <div className="flex flex-col gap-0">
       {/* Top bar — padded */}
-      <div className="flex items-center justify-between gap-2 flex-wrap px-4 pb-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap px-4 py-3">
         <p className="text-caption text-foreground-muted">
           {localVariants.length} combination{localVariants.length !== 1 ? "s" : ""}
           {soldOutCount > 0 && ` · ${soldOutCount} sold out`}
@@ -1080,69 +1080,75 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
         </p>
       )}
 
-      {/* ── 2-column grid: left=content, right=sidebar ─────────────────── */}
-      <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
+      {/* ── Row 1: 3 content columns + sidebar ─────────────────────────── */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_260px]">
 
-        {/* ── Left column: core content ──────────────────────────────────── */}
-        <div className="flex flex-col gap-4">
-          <Card title="Basic Information">
-            <Input
-              label="Product name"
-              required
-              value={form.name ?? ""}
-              onChange={(e) => handleNameChange(e.target.value)}
-              error={errors.name}
+        {/* Col 1 — Basic Information */}
+        <Card title="Basic Information">
+          <Input
+            label="Product name"
+            required
+            value={form.name ?? ""}
+            onChange={(e) => handleNameChange(e.target.value)}
+            error={errors.name}
+          />
+          <Input
+            label="Slug"
+            value={form.slug ?? ""}
+            onChange={(e) => set("slug", e.target.value)}
+            hint="Auto-generated from name if blank."
+          />
+          <Input
+            label="SKU"
+            value={form.sku ?? ""}
+            onChange={(e) => set("sku", e.target.value)}
+            placeholder="e.g. PROD-001"
+          />
+        </Card>
+
+        {/* Col 2 — Description */}
+        <Card title="Description">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-body-sm font-medium text-foreground">Description</label>
+            <textarea
+              value={form.description ?? ""}
+              onChange={(e) => set("description", e.target.value)}
+              rows={5}
+              aria-label="Product description"
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus resize-none"
+              placeholder="Detailed product description…"
             />
-            <Input
-              label="Slug"
-              value={form.slug ?? ""}
-              onChange={(e) => set("slug", e.target.value)}
-              hint="Auto-generated from name if blank."
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-body-sm font-medium text-foreground">Short description</label>
+            <textarea
+              value={form.shortDescription ?? ""}
+              onChange={(e) => set("shortDescription", e.target.value)}
+              rows={2}
+              aria-label="Short description"
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus resize-none"
+              placeholder="Brief summary for product cards…"
             />
-            <Input
-              label="SKU"
-              value={form.sku ?? ""}
-              onChange={(e) => set("sku", e.target.value)}
-              placeholder="e.g. PROD-001"
+          </div>
+        </Card>
+
+        {/* Col 3 — SEO */}
+        <Card title="SEO">
+          <Input label="Meta title" value={form.metaTitle ?? ""} onChange={(e) => set("metaTitle", e.target.value)} />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-body-sm font-medium text-foreground">Meta description</label>
+            <textarea
+              value={form.metaDescription ?? ""}
+              onChange={(e) => set("metaDescription", e.target.value)}
+              rows={3}
+              aria-label="Meta description"
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus resize-none"
             />
-          </Card>
+          </div>
+          <Input label="Meta keywords" value={form.metaKeywords ?? ""} onChange={(e) => set("metaKeywords", e.target.value)} hint="Comma-separated." />
+        </Card>
 
-          <Card title="Description">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-body-sm font-medium text-foreground">Description</label>
-              <textarea
-                value={form.description ?? ""}
-                onChange={(e) => set("description", e.target.value)}
-                rows={4}
-                aria-label="Product description"
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus resize-none"
-                placeholder="Detailed product description…"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-body-sm font-medium text-foreground">Short description</label>
-              <textarea
-                value={form.shortDescription ?? ""}
-                onChange={(e) => set("shortDescription", e.target.value)}
-                rows={2}
-                aria-label="Short description"
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus resize-none"
-                placeholder="Brief summary for product cards…"
-              />
-            </div>
-          </Card>
-
-          <Card title="SEO">
-            <Input label="Meta title" value={form.metaTitle ?? ""} onChange={(e) => set("metaTitle", e.target.value)} />
-            <div className="flex flex-col gap-1.5">
-              <label className="text-body-sm font-medium text-foreground">Meta description</label>
-              <textarea value={form.metaDescription ?? ""} onChange={(e) => set("metaDescription", e.target.value)} rows={2} aria-label="Meta description" className="w-full rounded-md border border-border bg-background px-3 py-2 text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus resize-none" />
-            </div>
-            <Input label="Meta keywords" value={form.metaKeywords ?? ""} onChange={(e) => set("metaKeywords", e.target.value)} hint="Comma-separated." />
-          </Card>
-        </div>
-
-        {/* ── Right sidebar: pricing, organisation, settings, stock ──────── */}
+        {/* Col 4 — Sidebar: Pricing, Organisation, Settings, Stock */}
         <div className="flex flex-col gap-4">
           <Card title="Pricing">
             <div className="grid grid-cols-2 gap-3">
@@ -1157,7 +1163,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 error={errors.price}
               />
               <Input
-                label="Compare-at price"
+                label="Compare-at"
                 type="number"
                 min={0}
                 step={0.01}
@@ -1176,7 +1182,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 aria-label="Category"
                 className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
               >
-                <option value="">— No category —</option>
+                <option value="">— None —</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
@@ -1188,7 +1194,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 aria-label="Brand"
                 className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
               >
-                <option value="">— No brand —</option>
+                <option value="">— None —</option>
                 {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
@@ -1235,24 +1241,36 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
         </div>
       </div>
 
-      {/* ── Full-width: Images, Attributes, Variants ───────────────────────── */}
+      {/* ── Row 2: Images (hidden when variants exist) + Attribute Axes ── */}
       {isEdit && productId && (
-        <Card title="Images">
-          <ImageManager
-            productId={productId}
-            images={product.images}
-            onRefresh={() => { if (onRefresh) onRefresh(); }}
-          />
-        </Card>
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_260px]">
+          {/* Images — spans first 3 columns; hidden when product has variants */}
+          {variants.length === 0 ? (
+            <div className="lg:col-span-3">
+              <Card title="Images">
+                <ImageManager
+                  productId={productId}
+                  images={product.images}
+                  onRefresh={() => { if (onRefresh) onRefresh(); }}
+                />
+              </Card>
+            </div>
+          ) : (
+            /* Spacer so Attribute Axes stays in its column when Images is hidden */
+            <div className="hidden lg:block lg:col-span-3" aria-hidden="true" />
+          )}
+
+          {/* Attribute Axes — always in the 4th column (sidebar width) */}
+          <Card title="Attribute Axes">
+            <p className="text-caption text-foreground-muted -mt-1">
+              Define the dimensions your product varies on (e.g. "Colour", "Storage").
+            </p>
+            <AttributeEditor productId={productId} variants={variants} onRefresh={refreshVariants} />
+          </Card>
+        </div>
       )}
 
-      {isEdit && productId && (
-        <Card title="Attribute Axes">
-          <p className="text-caption text-foreground-muted -mt-1">Define the dimensions your product varies on (e.g. "Colour", "Storage"). Each axis becomes a row of options on the product page.</p>
-          <AttributeEditor productId={productId} variants={variants} onRefresh={refreshVariants} />
-        </Card>
-      )}
-
+      {/* ── Row 3: Variants — full width ──────────────────────────────────── */}
       {isEdit && productId && (
         <CardFlush
           title="Variants"
