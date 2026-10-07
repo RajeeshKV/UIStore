@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Plus, X, Package, GripVertical, Zap, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { adminProductsApi, adminVariantsApi, adminAttributesApi, adminInventoryApi } from "@/services/api/admin";
+import { VariantImageManager } from "./VariantImageManager";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
@@ -39,6 +40,21 @@ function Card({ title, children, className }: { title: string; children: React.R
     <div className={cn("rounded-lg border border-border bg-background p-4 flex flex-col gap-3", className)}>
       <h3 className="text-body-sm font-semibold text-foreground border-b border-border pb-2">{title}</h3>
       {children}
+    </div>
+  );
+}
+
+/** Like Card but with no padding on the body — table/matrix content sits edge-to-edge. */
+function CardFlush({ title, description, children }: { title: string; description?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-border bg-background flex flex-col">
+      <div className="px-4 pt-4 pb-3 border-b border-border flex flex-col gap-1">
+        <h3 className="text-body-sm font-semibold text-foreground">{title}</h3>
+        {description && <p className="text-caption text-foreground-muted">{description}</p>}
+      </div>
+      <div className="flex flex-col gap-3">
+        {children}
+      </div>
     </div>
   );
 }
@@ -558,7 +574,7 @@ function VariantMatrixRow({ productId, variant, attrLabel, productPrice, onHand,
   return (
     <tr className="group border-b border-border last:border-none hover:bg-surface/60">
       {/* Attribute label — single line, truncated */}
-      <td className="py-2 pl-3 pr-2 min-w-0 max-w-[180px]">
+      <td className="py-2 pl-4 pr-2 min-w-0 max-w-[180px]">
         {attrLabel ? (
           <span className="block text-body-sm font-medium text-foreground truncate" title={attrLabel}>
             {attrLabel}
@@ -566,6 +582,16 @@ function VariantMatrixRow({ productId, variant, attrLabel, productPrice, onHand,
         ) : (
           <span className="block text-body-sm text-foreground-muted italic">no attrs</span>
         )}
+      </td>
+
+      {/* Variant images */}
+      <td className="py-2 px-2">
+        <VariantImageManager
+          productId={productId}
+          variantId={variant.id}
+          variantLabel={attrLabel || variant.sku || undefined}
+          initialImages={variant.images ?? []}
+        />
       </td>
 
       {/* Price */}
@@ -630,7 +656,7 @@ function VariantMatrixRow({ productId, variant, attrLabel, productPrice, onHand,
       </td>
 
       {/* Save variant (SKU/price/active) / Delete */}
-      <td className="py-2 pl-2 pr-3">
+      <td className="py-2 pl-2 pr-4">
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {dirty && (
             <Button type="button" variant="primary" size="sm" onClick={handleSave} loading={saving} className="h-6 px-2 text-caption">Save</Button>
@@ -784,9 +810,9 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
   const soldOutCount = localVariants.filter((v) => v.availableStock === 0).length;
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Top bar */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
+    <div className="flex flex-col gap-0">
+      {/* Top bar — padded */}
+      <div className="flex items-center justify-between gap-2 flex-wrap px-4 pb-3">
         <p className="text-caption text-foreground-muted">
           {localVariants.length} combination{localVariants.length !== 1 ? "s" : ""}
           {soldOutCount > 0 && ` · ${soldOutCount} sold out`}
@@ -807,14 +833,14 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
       </div>
 
       {generateError && (
-        <p className="text-caption text-danger flex items-center gap-1.5">
+        <p className="text-caption text-danger flex items-center gap-1.5 px-4 pb-2">
           <AlertTriangle className="size-3.5 shrink-0" /> {generateError}
         </p>
       )}
 
-      {/* Incomplete combinations warning */}
+      {/* Incomplete combinations warning — padded */}
       {incompleteVariants.length > 0 && (
-        <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/30 px-2.5 py-2">
+        <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/30 px-2.5 py-2 mx-4 mb-3">
           <AlertTriangle className="size-3.5 text-warning mt-0.5 shrink-0" aria-hidden="true" />
           <p className="text-caption text-warning">
             {incompleteVariants.length} variant{incompleteVariants.length !== 1 ? "s are" : " is"} missing values for some axes. These combinations may be unreachable in the storefront.
@@ -822,18 +848,19 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
         </div>
       )}
 
-      {/* Variant table */}
+      {/* Variant table — edge-to-edge, no inner border/rounding since CardFlush provides the outer border */}
       {localVariants.length > 0 ? (
-        <div className="rounded-lg border border-border overflow-hidden">
+        <div className="overflow-x-auto border-t border-border">
           <table className="w-full text-left">
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
-                <th className="py-2 pl-3 pr-2 text-caption font-semibold text-foreground-muted">Variant</th>
+                <th className="py-2 pl-4 pr-2 text-caption font-semibold text-foreground-muted">Variant</th>
+                <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">Images</th>
                 <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">Price override</th>
                 <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">SKU</th>
                 <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">Stock (on hand)</th>
                 <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">Active</th>
-                <th className="py-2 pl-2 pr-3 text-caption font-semibold text-foreground-muted w-24"></th>
+                <th className="py-2 pl-2 pr-4 text-caption font-semibold text-foreground-muted w-24"></th>
               </tr>
             </thead>
             <tbody>
@@ -858,7 +885,7 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
           </table>
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-border p-6 text-center">
+        <div className="border-t border-dashed border-border mx-4 mb-4 mt-1 rounded-lg p-6 text-center">
           <p className="text-body-sm text-foreground-muted">No variants yet.</p>
           <p className="text-caption text-foreground-muted mt-1">
             {attributes.length > 0
@@ -868,9 +895,9 @@ function VariantEditor({ productId, variants, attributes, productPrice, onRefres
         </div>
       )}
 
-      {/* Save stock footer — only when table has rows */}
+      {/* Save stock footer — padded */}
       {localVariants.length > 0 && (
-        <div className="flex items-center justify-between gap-3 pt-1">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-border">
           <div className="text-caption text-foreground-muted">
             {stockDirty.size > 0
               ? `${stockDirty.size} row${stockDirty.size !== 1 ? "s" : ""} with unsaved stock changes`
@@ -1227,10 +1254,12 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
       )}
 
       {isEdit && productId && (
-        <Card title="Variants">
-          <p className="text-caption text-foreground-muted -mt-1">Generate all axis combinations, set individual prices, SKUs and stock levels.</p>
+        <CardFlush
+          title="Variants"
+          description="Generate all axis combinations, set individual prices, SKUs and stock levels."
+        >
           <VariantEditor productId={productId} variants={variants} attributes={attributes} productPrice={form.price} onRefresh={refreshVariants} />
-        </Card>
+        </CardFlush>
       )}
 
       {!isEdit && (

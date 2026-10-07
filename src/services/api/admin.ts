@@ -46,6 +46,8 @@ import type {
   AdjustStockRequest,
   ProductImageDto,
   ReorderImagesRequest,
+  VariantImageDto,
+  ReorderVariantImagesRequest,
   ProductAttributesResponse,
   UpsertProductAttributeRequest,
   UpdateSmsConfigRequest,
@@ -134,6 +136,53 @@ export const adminVariantsApi = {
 
   delete: (productId: string, variantId: string) =>
     apiClient.delete<void>(`/api/v1/products/${productId}/variants/${variantId}`),
+};
+
+// ── Variant Images ────────────────────────────────────────────────────────────
+
+export const adminVariantImagesApi = {
+  /**
+   * POST /api/v1/products/{productId}/variants/{variantId}/images
+   * Batch upload 1–10 files (multipart/form-data, field name "files").
+   * Returns VariantImageDto[] — the first image becomes isPrimary automatically.
+   * Errors: 400 TOO_MANY_FILES | INVALID_MIME_TYPE, 404 VARIANT_NOT_FOUND, 502 UPLOAD_FAILED.
+   */
+  upload: (productId: string, variantId: string, formData: FormData) =>
+    apiClient.postForm<VariantImageDto[]>(
+      `/api/v1/products/${productId}/variants/${variantId}/images`,
+      formData,
+    ),
+
+  /**
+   * PUT /api/v1/products/{productId}/variants/{variantId}/images/reorder
+   * Send full ordered array of {imageId, sortOrder} (0-indexed).
+   * Errors: 404 VARIANT_NOT_FOUND | IMAGE_NOT_FOUND.
+   */
+  reorder: (productId: string, variantId: string, data: ReorderVariantImagesRequest) =>
+    apiClient.put<VariantImageDto[]>(
+      `/api/v1/products/${productId}/variants/${variantId}/images/reorder`,
+      data,
+    ),
+
+  /**
+   * PUT /api/v1/products/{productId}/variants/{variantId}/images/{imageId}/set-primary
+   * Promotes the given image to isPrimary and demotes all others for this variant.
+   * Errors: 404 VARIANT_NOT_FOUND | IMAGE_NOT_FOUND.
+   */
+  setPrimary: (productId: string, variantId: string, imageId: string) =>
+    apiClient.put<VariantImageDto>(
+      `/api/v1/products/${productId}/variants/${variantId}/images/${imageId}/set-primary`,
+    ),
+
+  /**
+   * DELETE /api/v1/products/{productId}/variants/{variantId}/images/{imageId}
+   * If the deleted image was primary, the backend promotes the next by sortOrder.
+   * Errors: 404 VARIANT_NOT_FOUND | IMAGE_NOT_FOUND.
+   */
+  delete: (productId: string, variantId: string, imageId: string) =>
+    apiClient.delete<void>(
+      `/api/v1/products/${productId}/variants/${variantId}/images/${imageId}`,
+    ),
 };
 
 // ── Categories ────────────────────────────────────────────────────────────────

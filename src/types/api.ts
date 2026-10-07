@@ -817,6 +817,26 @@ export interface ProductImageDto {
   isPrimary: boolean;
 }
 
+/**
+ * Variant-level image record returned by the admin API.
+ * Mirrors ProductImageDto but belongs to a specific variant.
+ * secureUrl is on asset (same as product images in admin).
+ */
+export interface VariantImageDto {
+  id: string;
+  asset?: MediaAssetDto;
+  sortOrder: number;
+  isPrimary: boolean;
+  /** variantId is always set for variant images */
+  variantId: string;
+}
+
+/** Request body for PUT /api/v1/products/{productId}/variants/{variantId}/images/reorder */
+export interface ReorderVariantImagesRequest {
+  /** Full ordered list: [{imageId, sortOrder}] */
+  images: Array<{ imageId: string; sortOrder: number }>;
+}
+
 /** Admin variant — includes priceOverride and attributeValueIds */
 export interface VariantResponse {
   id: string;
@@ -830,6 +850,8 @@ export interface VariantResponse {
   availableStock?: number;
   /** §1.6 NEW — resolved attribute values; use for display labels */
   attributes?: VariantAttributeValueResponse[];
+  /** Variant-level image gallery (A.1 NEW) */
+  images?: VariantImageDto[];
 }
 
 /**
