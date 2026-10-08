@@ -1061,8 +1061,13 @@ export function CheckoutClient({
             {/* Line items from summary or cart */}
             <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto">
               {(summary?.items ?? cartItems).map((item) => (
-                <li key={"cartItemId" in item ? item.cartItemId : item.id} className="flex items-center gap-2 text-body-sm">
-                  <span className="flex-1 truncate text-foreground">{item.productName}</span>
+                <li key={"cartItemId" in item ? item.cartItemId : item.id} className="flex items-start gap-2 text-body-sm">
+                  <div className="flex-1 min-w-0">
+                    <span className="block truncate text-foreground">{item.productName}</span>
+                    {"variantDescription" in item && item.variantDescription && (
+                      <span className="block truncate text-[11px] text-foreground-muted">{item.variantDescription}</span>
+                    )}
+                  </div>
                   <span className="text-foreground-muted shrink-0">×{item.quantity}</span>
                   <span className="font-medium text-foreground shrink-0 tabular-nums">
                     {formatPrice(item.lineTotal, effectiveCurrency, locale)}

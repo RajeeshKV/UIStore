@@ -372,7 +372,8 @@ export interface StorefrontProductResponse extends StorefrontProductSummaryRespo
  * Actual CartItemResponse from the backend.
  * 'id' is the line-item UUID used for update/delete.
  * 'productSlug' is used for navigation.
- * 'variantDescription' is the human-readable variant label.
+ * 'variantDescription' is the human-readable variant label (e.g. "Red / Small").
+ * 'variantAttributes' is the structured breakdown for display (Color: Red, Size: Small).
  * 'unitPrice' + 'lineTotal' are the pricing fields (not 'price'/'subtotal').
  * 'primaryImageUrl' is the image field (not 'imageUrl').
  */
@@ -383,6 +384,8 @@ export interface CartItemResponse {
   productSlug?: string;
   variantId?: string;
   variantDescription?: string;
+  /** Structured variant attribute breakdown — use for richer display if present */
+  variantAttributes?: VariantAttributeValueResponse[];
   sku?: string;
   unitPrice: number;
   quantity: number;
@@ -427,6 +430,7 @@ export interface UpdateCartItemRequest {
 /**
  * OrderItemResponse from the backend.
  * 'variantDescription' not 'variantName'.
+ * 'variantAttributes' is the structured breakdown for display (Color: Red, Size: Small).
  * 'lineTotal' not 'subtotal'.
  * 'primaryImageUrl' added as of latest API update.
  */
@@ -436,6 +440,8 @@ export interface OrderItemResponse {
   variantId?: string;
   productName?: string;
   variantDescription?: string;
+  /** Structured variant attribute breakdown — use for richer display if present */
+  variantAttributes?: VariantAttributeValueResponse[];
   sku?: string;
   unitPrice: number;
   quantity: number;
@@ -604,6 +610,8 @@ export interface CheckoutSummaryResponse {
     productName: string;
     productSlug: string;
     variantDescription: string | null;
+    /** Structured variant attribute breakdown — use for richer display if present */
+    variantAttributes?: VariantAttributeValueResponse[];
     sku: string | null;
     unitPrice: number;
     quantity: number;
