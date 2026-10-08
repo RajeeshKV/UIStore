@@ -9,6 +9,12 @@ interface ProductVariantSelectorProps {
   attributes?: ProductAttributeDto[];
   selectedVariantId: string | null;
   onSelect: (variant: StorefrontVariantResponse) => void;
+  /**
+   * Called whenever the selection changes but does NOT yet resolve a full variant.
+   * The parent should clear its selectedVariant state so price/stock/gallery
+   * reflect "partial selection" rather than the previously resolved variant.
+   */
+  onPartialSelect?: () => void;
 }
 
 // ── Core matching logic (§6 of the guide) ─────────────────────────────────────
@@ -63,6 +69,7 @@ export function ProductVariantSelector({
   attributes,
   selectedVariantId,
   onSelect,
+  onPartialSelect,
 }: ProductVariantSelectorProps) {
   // Guard: filter out any null/undefined entries the API might return
   const safeVariants = variants.filter(Boolean) as StorefrontVariantResponse[];
@@ -102,10 +109,18 @@ export function ProductVariantSelector({
     const next = { ...selection, [axisId]: valueId };
     setSelection(next);
 
-    // Resolve variant if all axes are selected
+    // Attempt full resolution only when every axis has a value
     if (Object.keys(next).length === sortedAxes.length) {
       const v = findVariant(safeVariants, next);
-      if (v) onSelect(v);
+      if (v) {
+        onSelect(v);
+      } else {
+        // All axes chosen but no matching variant — treat as unresolved
+        onPartialSelect?.();
+      }
+    } else {
+      // Fewer axes chosen than exist — partial selection, clear resolved state
+      onPartialSelect?.();
     }
   }
 

@@ -32,13 +32,16 @@ interface ProductInformationProps {
   /**
    * Controlled variant — owned by ProductDetailIsland so image switching works.
    * When provided, the component is controlled; internal state is ignored.
+   * null means "no variant selected yet" (partial or no selection).
    */
   selectedVariant?: StorefrontVariantResponse | null;
-  /** Called when user picks a different variant in the selector. */
+  /** Called when user picks a different variant in the selector (fully resolved). */
   onVariantChange?: (variant: StorefrontVariantResponse) => void;
+  /** Called when selection becomes partial — clears resolved variant in parent. */
+  onVariantClear?: () => void;
 }
 
-export function ProductInformation({ product, currency, locale, codEnabled = false, selectedVariant: controlledVariant, onVariantChange }: ProductInformationProps) {
+export function ProductInformation({ product, currency, locale, codEnabled = false, selectedVariant: controlledVariant, onVariantChange, onVariantClear }: ProductInformationProps) {
   const shouldReduce = useReducedMotion();
   const { addItem, isMutating } = useCart();
   const hasVariants = (product.variants?.length ?? 0) > 0;
@@ -58,11 +61,37 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
     onVariantChange?.(variant);
   }
 
+  function handleVariantClear() {
+    setInternalVariant(null);
+    onVariantClear?.();
+  }
+
   const effectivePrice      = selectedVariant?.effectivePrice ?? product.price;
   const effectiveCompareAt  = product.compareAtPrice;
   const effectiveStock: StockAvailability = selectedVariant?.stockAvailability ?? product.stockAvailability;
-  const effectiveCanPurchase = selectedVariant !== null ? selectedVariant.canPurchase : product.canPurchase;
   const effectiveCurrency   = product.currency ?? currency;
+
+  /**
+   * CTA state machine (spec R4, R5, R8):
+   *   hasVariants && !selectedVariant  → "Select options"  disabled
+   *   hasVariants && !canPurchase       → "Out of Stock"    disabled
+   *   hasVariants && canPurchase        → "Add to Cart"     enabled
+   *   !hasVariants && canPurchase       → "Add to Cart"     enabled
+   *   !hasVariants && !canPurchase      → "Out of Stock"    disabled
+   */
+  const needsSelection = hasVariants && selectedVariant === null;
+  const effectiveCanPurchase = selectedVariant !== null
+    ? selectedVariant.canPurchase
+    : (!hasVariants && product.canPurchase);
+
+  let ctaText: string;
+  if (needsSelection) {
+    ctaText = "Select options";
+  } else if (!effectiveCanPurchase) {
+    ctaText = "Out of Stock";
+  } else {
+    ctaText = "Add to Cart";
+  }
 
   const discount =
     effectiveCompareAt && effectiveCompareAt > effectivePrice
@@ -164,6 +193,7 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
           attributes={product.attributes}
           selectedVariantId={selectedVariant?.id ?? null}
           onSelect={handleVariantSelect}
+          onPartialSelect={handleVariantClear}
         />
       )}
 
@@ -178,19 +208,19 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
           variant="primary"
           size="lg"
           fullWidth
-          disabled={!effectiveCanPurchase || isMutating}
+          disabled={needsSelection || !effectiveCanPurchase || isMutating}
           loading={isMutating}
-          iconLeft={!isMutating ? <ShoppingBag className="size-4" /> : undefined}
-          aria-label={effectiveCanPurchase ? `Add ${product.name} to cart` : "Out of stock"}
+          iconLeft={!isMutating && !needsSelection ? <ShoppingBag className="size-4" /> : undefined}
+          aria-label={needsSelection ? "Select all options to add to cart" : effectiveCanPurchase ? `Add ${product.name} to cart` : "Out of stock"}
           onClick={() => {
-            if (!effectiveCanPurchase) return;
+            if (needsSelection || !effectiveCanPurchase) return;
             const variantId = hasVariants ? selectedVariant?.id : undefined;
             if (hasVariants && !variantId) return;
             addItem(product.id, variantId, 1);
           }}
           className="rounded-xl h-12 text-[14px]"
         >
-          {effectiveCanPurchase ? "Add to Cart" : "Out of Stock"}
+          {ctaText}
         </Button>
         {/* Wishlist circle button */}
         <WishlistButton

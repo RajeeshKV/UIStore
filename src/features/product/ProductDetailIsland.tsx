@@ -6,9 +6,16 @@
  * selecting a variant can immediately swap the hero image without a server
  * round-trip.
  *
- * Architecture (guide 41 §4.6):
- *   selectedVariant ──▶ overrideImages ──▶ ProductGallery (resets to idx 0)
+ * Architecture (spec §3, §5):
+ *   selectedVariant ──▶ galleryImages ──▶ ProductGallery (resets to idx 0)
  *   selectedVariant ──▶ ProductInformation (price, stock, CTA)
+ *
+ * Image isolation rules (R1, R6):
+ *   - When variants exist: gallery ONLY ever shows variant-level images.
+ *     product.images is NEVER passed to the gallery.
+ *   - When a variant is resolved: show variant.images (empty → placeholder).
+ *   - When no variant resolved: show empty array → gallery renders placeholder.
+ *   - When product has NO variants: show product.images as the gallery.
  *
  * Incomplete-combination warning (guide 41 §4.7):
  *   Any variant whose attributeValueIds count < product.attributes.length is
@@ -44,11 +51,15 @@ export function ProductDetailIsland({
   codEnabled = false,
 }: ProductDetailIslandProps) {
   const safeVariants = (product.variants ?? []).filter(Boolean) as StorefrontVariantResponse[];
+  const hasVariants = safeVariants.length > 0;
 
+  /**
+   * selectedVariant starts as null — no pre-selection.
+   * R5: partial/no selection → price=product.price, "Select options", CTA disabled.
+   * The selector drives this via onSelect (resolved) / onPartialSelect (clear).
+   */
   const [selectedVariant, setSelectedVariant] =
-    useState<StorefrontVariantResponse | null>(
-      safeVariants.find((v) => v.canPurchase) ?? safeVariants[0] ?? null,
-    );
+    useState<StorefrontVariantResponse | null>(null);
 
   // ── Incomplete combination detection (guide 41 §4.7) ────────────────────
   const axisCount = product.attributes?.length ?? 0;
@@ -56,27 +67,26 @@ export function ProductDetailIsland({
     axisCount > 0 &&
     safeVariants.some((v) => parseIds(v.attributeValueIds).length < axisCount);
 
-  // ── Variant image override (guide 41 §4.6, §7.3) ────────────────────────
-  // Fallback chain:
-  //   1. selectedVariant.images (variant-scoped gallery)
-  //   2. product.images          (product-level gallery, shown when no variant images)
-  const variantImages: StorefrontImageResponse[] =
-    (selectedVariant?.images && selectedVariant.images.length > 0)
-      ? selectedVariant.images
-      : [];
+  // ── Gallery image source (R1, R2, R6) ────────────────────────────────────
+  // When variants exist: use selectedVariant.images ONLY (may be empty → placeholder).
+  // When no variants: use product.images.
+  const galleryImages: StorefrontImageResponse[] = hasVariants
+    ? (selectedVariant?.images ?? [])
+    : (product.images ?? []);
 
-  const galleryImages = product.images ?? [];
-  const hasGallery = galleryImages.length > 0 || variantImages.length > 0;
+  // Determine whether to show gallery or simple fallback
+  // For variant products: gallery always renders (with placeholder when empty)
+  // For simple products: fall back to primaryImageUrl only when no images
+  const showGallery = hasVariants || galleryImages.length > 0;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
       {/* Gallery — sticky on desktop */}
       <div className="lg:sticky lg:top-24">
-        {hasGallery ? (
+        {showGallery ? (
           <ProductGallery
             images={galleryImages}
             productName={product.name ?? "Product"}
-            overrideImages={variantImages.length > 0 ? variantImages : undefined}
           />
         ) : (
           <ProductGalleryFallback
@@ -112,6 +122,7 @@ export function ProductDetailIsland({
           codEnabled={codEnabled}
           selectedVariant={selectedVariant}
           onVariantChange={setSelectedVariant}
+          onVariantClear={() => setSelectedVariant(null)}
         />
       </div>
     </div>
