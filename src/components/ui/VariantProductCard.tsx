@@ -31,15 +31,27 @@ import { pendingCartItem } from "@/lib/pendingCartItem";
 
 /**
  * Image fallback chain (guide 41 §3.2):
- * 1. Variant primary image (images array)
- * 2. Variant first image (images array)
- * 3. primaryImageUrl (pre-resolved by grid endpoint)
- * 4. placeholder
+ * 1. Primary image from the images array (isPrimary flag)
+ * 2. First image from the images array
+ * 3. primaryImageUrl (top-level, pre-resolved by grid endpoint)
+ * 4. placeholder (null)
+ *
+ * The API returns `url` on GridImage; `secureUrl` is accepted as a fallback
+ * for forward compatibility if the backend ever renames the field.
  */
 function resolveImage(row: GridRow): string | null {
+  function imgSrc(img: GridRow["images"][number]): string | null {
+    return img.url ?? img.secureUrl ?? null;
+  }
   const primary = row.images.find((i) => i.isPrimary);
-  if (primary) return primary.secureUrl;
-  if (row.images.length > 0) return row.images[0].secureUrl;
+  if (primary) {
+    const src = imgSrc(primary);
+    if (src) return src;
+  }
+  for (const img of row.images) {
+    const src = imgSrc(img);
+    if (src) return src;
+  }
   return row.primaryImageUrl ?? null;
 }
 

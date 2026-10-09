@@ -218,7 +218,9 @@ export interface StorefrontImageResponse {
  */
 export interface GridImage {
   id: string;
-  secureUrl: string;
+  /** Field name from the API. Prefer `url`; `secureUrl` accepted as alias for forward compat. */
+  url?: string;
+  secureUrl?: string;
   altText: string | null;
   sortOrder: number;
   isPrimary: boolean;
