@@ -1408,15 +1408,19 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
       {/* Main header row */}
       <div className="flex items-center justify-between gap-3 px-4 sm:px-6 pb-3">
         <div className="flex items-center gap-3 min-w-0">
-          {/* Product thumbnail */}
-          {isEdit && product!.primaryImageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={product!.primaryImageUrl}
-              alt={product!.name ?? "Product"}
-              className="h-9 w-9 rounded-md object-cover bg-muted border border-border shrink-0"
-            />
-          )}
+          {/* Product thumbnail — derived from images array (admin type has no primaryImageUrl) */}
+          {isEdit && (() => {
+            const thumb = product!.images?.find((i) => i.isPrimary)?.asset?.secureUrl
+              ?? product!.images?.[0]?.asset?.secureUrl;
+            return thumb ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={thumb}
+                alt={product!.name ?? "Product"}
+                className="h-9 w-9 rounded-md object-cover bg-muted border border-border shrink-0"
+              />
+            ) : null;
+          })()}
           <h1 className="text-[17px] font-bold text-foreground truncate leading-tight">
             {isEdit ? (product!.name ?? "Edit Product") : "New Product"}
           </h1>
