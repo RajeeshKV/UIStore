@@ -1387,7 +1387,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
   // z-30 matches AdminTopBar so it sits alongside (AdminTopBar is z-30).
   // left-0 + lg:left-64 accounts for the sidebar width (256px = 64*4 in Tailwind).
   const toolbar = (
-    <div className="fixed top-14 left-0 lg:left-64 right-0 z-30 bg-background border-b border-border shadow-sm">
+    <div className="fixed top-14 left-0 lg:left-60 right-0 z-30 bg-background border-b border-border shadow-sm">
       {/* Breadcrumb row */}
       <div className="flex items-center gap-1.5 px-4 sm:px-6 pt-3 pb-1.5 text-caption text-foreground-muted">
         <span
