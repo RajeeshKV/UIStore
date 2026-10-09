@@ -1382,9 +1382,12 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
 
   const isSaving = saveState === "saving";
 
-  // ── Toolbar (sticky, rendered once at the top) ───────────────────────────
+  // ── Toolbar (fixed to viewport, below AdminTopBar) ───────────────────────
+  // Fixed positioning removes it from the main scroll flow.
+  // z-30 matches AdminTopBar so it sits alongside (AdminTopBar is z-30).
+  // left-0 + lg:left-64 accounts for the sidebar width (256px = 64*4 in Tailwind).
   const toolbar = (
-    <div className="sticky top-0 z-20 -mx-5 -mt-5 md:-mx-7 md:-mt-7 bg-background border-b border-border shadow-sm shrink-0">
+    <div className="fixed top-14 left-0 lg:left-64 right-0 z-30 bg-background border-b border-border shadow-sm">
       {/* Breadcrumb row */}
       <div className="flex items-center gap-1.5 px-4 sm:px-6 pt-3 pb-1.5 text-caption text-foreground-muted">
         <span
@@ -1485,8 +1488,8 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
   );
 
   // ── Right panel: Attribute Axes + Images (sticky alongside scrolling left) ─
-  // top-[80px] = new ProductForm toolbar height (breadcrumb ~28px + header row ~52px).
-  // max-h subtracts AdminTopBar (56px) + ProductForm toolbar (80px) + main padding (28px*2).
+  // The toolbar is fixed at top-14 (56px AdminTopBar) + ~80px of its own height = 136px from viewport top.
+  // The right panel sticks below the fixed toolbar.
   const rightPanel = isEdit && productId ? (
     <div className="hidden lg:flex flex-col gap-4 w-[300px] xl:w-[320px] shrink-0 self-start sticky top-[80px] max-h-[calc(100vh-56px-80px-56px)] overflow-y-auto pb-4">
       {/* Attribute Axes */}
@@ -1523,8 +1526,11 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
   ) : null;
 
   return (
-    <div className="flex flex-col min-h-0">
+    <>
       {toolbar}
+
+      {/* Spacer for fixed toolbar — prevents body from being hidden under it */}
+      <div className="h-[80px] shrink-0" aria-hidden="true" />
 
       {/* ── Two-panel body ─────────────────────────────────────────────────── */}
       {/* Left scrolls freely; right panel is sticky inside the shell's scroll */}
