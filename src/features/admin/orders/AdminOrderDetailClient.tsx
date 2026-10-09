@@ -154,18 +154,40 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
             <div className="divide-y divide-border">
               {order.items?.map((item) => (
                 <div key={item.id} className="flex items-start gap-4 px-5 py-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted">
-                    <Package className="size-5 text-foreground-muted" />
+                  {/* Item image */}
+                  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden border border-border">
+                    {item.primaryImageUrl ? (
+                      <img
+                        src={item.primaryImageUrl}
+                        alt={item.productName ?? "Product"}
+                        className="h-full w-full object-contain p-1"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <Package className="size-5 text-foreground-muted" />
+                    )}
                   </div>
+
                   <div className="flex-1 min-w-0">
                     <p className="text-body-sm font-medium text-foreground">{item.productName ?? "Product"}</p>
+
+                    {/* Variant description — human-readable label e.g. "Orange / 256GB" */}
                     {item.variantDescription && (
-                      <p className="text-caption text-foreground-muted">{item.variantDescription}</p>
+                      <p className="text-caption text-foreground-muted mt-0.5">{item.variantDescription}</p>
                     )}
+
+                    {/* Structured variant attributes — Color: Orange, Storage: 256GB */}
+                    {!item.variantDescription && item.variantAttributes && item.variantAttributes.length > 0 && (
+                      <p className="text-caption text-foreground-muted mt-0.5">
+                        {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
+                      </p>
+                    )}
+
                     {item.sku && (
                       <p className="text-caption text-foreground-muted">SKU: {item.sku}</p>
                     )}
                   </div>
+
                   <div className="text-right shrink-0">
                     <p className="text-body-sm text-foreground-muted">
                       {formatPrice(item.unitPrice, currency)} × {item.quantity}

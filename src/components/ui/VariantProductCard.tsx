@@ -218,10 +218,10 @@ export function VariantProductCard({
           </svg>
         </button>
 
-        {/* Product image — links to PDP */}
+        {/* Product image — links to PDP with variant pre-selected */}
         <Link
-          href={`/products/${row.slug}`}
-          aria-label={`View ${row.name}`}
+          href={row.variantId ? `/products/${row.slug}?variant=${row.variantId}` : `/products/${row.slug}`}
+          aria-label={`View ${row.name}${row.variantDescription ? ` — ${row.variantDescription}` : ""}`}
           className="block w-full h-full"
         >
           {imageUrl ? (
@@ -247,11 +247,18 @@ export function VariantProductCard({
 
         {/* Name */}
         <Link
-          href={`/products/${row.slug}`}
+          href={row.variantId ? `/products/${row.slug}?variant=${row.variantId}` : `/products/${row.slug}`}
           className="text-[13px] font-semibold text-[#191c1e] leading-snug line-clamp-2 hover:text-[#0D0D0D]/70 transition-colors"
         >
           {row.name}
         </Link>
+
+        {/* Variant label — e.g. "Orange / 256GB" */}
+        {row.variantDescription && (
+          <p className="text-[11px] text-[#5A6578] leading-tight -mt-1">
+            {row.variantDescription}
+          </p>
+        )}
 
         {/* Star rating */}
         {row.ratingCount > 0 && (

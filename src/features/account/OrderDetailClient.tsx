@@ -209,7 +209,14 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
                   <p className="text-body-sm font-medium text-foreground line-clamp-2">
                     {item.productName}
                   </p>
-                  {item.variantDescription && <p className="text-caption text-foreground-muted">{item.variantDescription}</p>}
+                  {/* Prefer structured attributes; fall back to plain description */}
+                  {item.variantAttributes && item.variantAttributes.length > 0 ? (
+                    <p className="text-caption text-foreground-muted">
+                      {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
+                    </p>
+                  ) : item.variantDescription ? (
+                    <p className="text-caption text-foreground-muted">{item.variantDescription}</p>
+                  ) : null}
                   {item.sku && <p className="text-caption text-foreground-muted">SKU: {item.sku}</p>}
                 </div>
                 <div className="text-right shrink-0">

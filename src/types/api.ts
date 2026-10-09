@@ -237,6 +237,8 @@ export interface GridRow {
   productId: string;
   slug: string;
   name: string;
+  /** Human-readable variant label, e.g. "Orange / 256GB". Null for simple products. */
+  variantDescription: string | null;
   sku: string | null;
   effectivePrice: number;
   currency: string;

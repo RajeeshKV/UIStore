@@ -37,6 +37,11 @@ interface ProductDetailIslandProps {
   currency: string;
   locale: string;
   codEnabled?: boolean;
+  /**
+   * Variant ID from ?variant= URL param. When present, the matching variant
+   * is pre-selected so the user lands with the right combination already active.
+   */
+  initialVariantId?: string;
 }
 
 function parseIds(csv: string | null | undefined): string[] {
@@ -49,17 +54,27 @@ export function ProductDetailIsland({
   currency,
   locale,
   codEnabled = false,
+  initialVariantId,
 }: ProductDetailIslandProps) {
   const safeVariants = (product.variants ?? []).filter(Boolean) as StorefrontVariantResponse[];
   const hasVariants = safeVariants.length > 0;
 
   /**
-   * selectedVariant starts as null — no pre-selection.
-   * R5: partial/no selection → price=product.price, "Select options", CTA disabled.
-   * The selector drives this via onSelect (resolved) / onPartialSelect (clear).
+   * Pre-select logic:
+   * 1. If ?variant= param provided, find that exact variant.
+   * 2. Otherwise fall back to first purchasable variant (so the user sees a
+   *    real image and price immediately, not a blank gallery).
+   * 3. null only when the product has no variants at all.
    */
   const [selectedVariant, setSelectedVariant] =
-    useState<StorefrontVariantResponse | null>(null);
+    useState<StorefrontVariantResponse | null>(() => {
+      if (!hasVariants) return null;
+      if (initialVariantId) {
+        const match = safeVariants.find((v) => v.id === initialVariantId);
+        if (match) return match;
+      }
+      return safeVariants.find((v) => v.canPurchase) ?? safeVariants[0] ?? null;
+    });
 
   // ── Incomplete combination detection (guide 41 §4.7) ────────────────────
   const axisCount = product.attributes?.length ?? 0;

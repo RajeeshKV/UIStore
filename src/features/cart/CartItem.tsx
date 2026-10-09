@@ -68,9 +68,14 @@ export function CartItem({ item, currency, locale, isMutating, onUpdateQuantity,
           {item.productName}
         </Link>
 
-        {item.variantDescription && (
+        {/* Variant display: prefer structured attributes, fall back to plain description */}
+        {item.variantAttributes && item.variantAttributes.length > 0 ? (
+          <p className="text-[12px] text-[#5A6578] leading-relaxed">
+            {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
+          </p>
+        ) : item.variantDescription ? (
           <p className="text-[12px] text-[#5A6578]">{item.variantDescription}</p>
-        )}
+        ) : null}
 
         {item.sku && (
           <p className="text-[11px] text-[#747878]">SKU: {item.sku}</p>

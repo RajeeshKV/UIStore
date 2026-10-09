@@ -11,9 +11,10 @@ import { env } from "@/config/env";
 
 export const dynamic = "force-dynamic";
 
-// Next.js 16: params is a Promise
+// Next.js 16: params and searchParams are Promises
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ variant?: string }>;
 }
 
 export async function generateMetadata({
@@ -70,8 +71,9 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params, searchParams }: ProductPageProps) {
   const { slug } = await params;
+  const { variant: initialVariantId } = await searchParams;
 
   const [settingsRes, policiesRes, productRes, relatedRes] =
     await Promise.allSettled([
@@ -119,6 +121,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             currency={currency}
             locale={locale}
             codEnabled={codEnabled}
+            initialVariantId={initialVariantId}
           />
         </div>
 
