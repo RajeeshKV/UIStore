@@ -1384,10 +1384,37 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
 
   // ── Toolbar (sticky, rendered once at the top) ───────────────────────────
   const toolbar = (
-    <div className="sticky top-0 z-20 bg-background border-b border-border shadow-sm shrink-0">
-      <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3">
+    <div className="sticky top-0 z-20 -mx-5 -mt-5 md:-mx-7 md:-mt-7 bg-background border-b border-border shadow-sm shrink-0">
+      {/* Breadcrumb row */}
+      <div className="flex items-center gap-1.5 px-4 sm:px-6 pt-3 pb-1.5 text-caption text-foreground-muted">
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push("/admin/products")}
+          onKeyDown={(e) => e.key === "Enter" && router.push("/admin/products")}
+          className="hover:text-foreground transition-colors cursor-pointer"
+        >
+          Products
+        </span>
+        <span aria-hidden="true" className="text-border">›</span>
+        <span className="text-foreground font-medium truncate">
+          {isEdit ? (product!.name ?? "Edit Product") : "New Product"}
+        </span>
+      </div>
+
+      {/* Main header row */}
+      <div className="flex items-center justify-between gap-3 px-4 sm:px-6 pb-3">
         <div className="flex items-center gap-3 min-w-0">
-          <h1 className="text-body-sm font-semibold text-foreground truncate">
+          {/* Product thumbnail */}
+          {isEdit && product!.primaryImageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={product!.primaryImageUrl}
+              alt={product!.name ?? "Product"}
+              className="h-9 w-9 rounded-md object-cover bg-muted border border-border shrink-0"
+            />
+          )}
+          <h1 className="text-[17px] font-bold text-foreground truncate leading-tight">
             {isEdit ? (product!.name ?? "Edit Product") : "New Product"}
           </h1>
           {isEdit && <AdminStatusBadge status={productStatus} />}
@@ -1458,10 +1485,10 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
   );
 
   // ── Right panel: Attribute Axes + Images (sticky alongside scrolling left) ─
-  // top-[49px] = ProductForm toolbar height (~49px) so panel sticks below it.
-  // max-h subtracts AdminTopBar (56px) + ProductForm toolbar (49px) + main padding (28px*2).
+  // top-[80px] = new ProductForm toolbar height (breadcrumb ~28px + header row ~52px).
+  // max-h subtracts AdminTopBar (56px) + ProductForm toolbar (80px) + main padding (28px*2).
   const rightPanel = isEdit && productId ? (
-    <div className="hidden lg:flex flex-col gap-4 w-[300px] xl:w-[320px] shrink-0 self-start sticky top-[49px] max-h-[calc(100vh-56px-49px-56px)] overflow-y-auto pb-4">
+    <div className="hidden lg:flex flex-col gap-4 w-[300px] xl:w-[320px] shrink-0 self-start sticky top-[80px] max-h-[calc(100vh-56px-80px-56px)] overflow-y-auto pb-4">
       {/* Attribute Axes */}
       <Card title="Attribute Axes">
         <p className="text-caption text-foreground-muted -mt-1">
