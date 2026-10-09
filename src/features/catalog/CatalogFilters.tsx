@@ -25,7 +25,8 @@ interface CatalogFiltersProps {
 
 function FilterPanel({ params, categories, brands, loading, onParamChange, onReset }: CatalogFiltersProps) {
   const hasActiveFilters = !!(
-    params.CategorySlug || params.BrandSlug || params.InStockOnly ||
+    params.CategorySlug || params.BrandSlug ||
+    params.InStockOnly === false ||
     params.MinPrice != null || params.MaxPrice != null
   );
 
@@ -102,10 +103,12 @@ function FilterPanel({ params, categories, brands, loading, onParamChange, onRes
       {/* Availability */}
       <FilterSection title="Availability" defaultOpen>
         <FilterCheckbox
-          id="in-stock"
-          label="In Stock Only"
-          checked={!!params.InStockOnly}
-          onChange={(checked) => onParamChange({ InStockOnly: checked || undefined, Page: 1 })}
+          id="show-out-of-stock"
+          label="Show Out of Stock"
+          checked={params.InStockOnly === false}
+          onChange={(checked) =>
+            onParamChange({ InStockOnly: checked ? false : true, Page: 1 })
+          }
         />
       </FilterSection>
     </div>

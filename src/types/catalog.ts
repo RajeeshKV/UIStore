@@ -58,10 +58,13 @@ export function parseCatalogParams(sp: URLSearchParams): CatalogParams {
   if (sp.get("brand"))     p.BrandSlug     = sp.get("brand")!;
   if (sp.get("page"))      p.Page          = Math.max(1, parseInt(sp.get("page")!, 10) || 1);
   if (sp.get("pageSize"))  p.PageSize      = Math.min(48, parseInt(sp.get("pageSize")!, 10) || DEFAULT_PAGE_SIZE);
-  if (sp.get("inStock") === "true") p.InStockOnly = true;
   if (sp.get("featured") === "true") p.IsFeatured  = true;
   if (sp.get("minPrice"))  p.MinPrice      = parseFloat(sp.get("minPrice")!);
   if (sp.get("maxPrice"))  p.MaxPrice      = parseFloat(sp.get("maxPrice")!);
+
+  // Default: show in-stock items only.
+  // URL param "inStock=false" explicitly opts in to showing out-of-stock items.
+  p.InStockOnly = sp.get("inStock") !== "false";
 
   const sortVal = sp.get("sort");
   if (sortVal) {
@@ -83,7 +86,7 @@ export function buildCatalogUrl(params: CatalogParams, baseSlug?: string): strin
   if (params.Page && params.Page > 1)  sp.set("page", String(params.Page));
   if (params.PageSize && params.PageSize !== DEFAULT_PAGE_SIZE)
     sp.set("pageSize", String(params.PageSize));
-  if (params.InStockOnly)   sp.set("inStock",   "true");
+  if (params.InStockOnly === false) sp.set("inStock", "false");
   if (params.IsFeatured)    sp.set("featured",  "true");
   if (params.MinPrice != null) sp.set("minPrice", String(params.MinPrice));
   if (params.MaxPrice != null) sp.set("maxPrice", String(params.MaxPrice));

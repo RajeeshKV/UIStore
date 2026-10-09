@@ -103,7 +103,7 @@ export function CatalogShell({
   );
 
   const handleReset = useCallback(() => {
-    const next: CatalogParams = { Page: 1, PageSize: params.PageSize ?? DEFAULT_PAGE_SIZE };
+    const next: CatalogParams = { Page: 1, PageSize: params.PageSize ?? DEFAULT_PAGE_SIZE, InStockOnly: true };
     if (lockedCategory) next.CategorySlug = lockedCategory;
     if (lockedBrand)    next.BrandSlug    = lockedBrand;
     applyParams(next);
