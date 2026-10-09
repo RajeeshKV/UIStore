@@ -1754,6 +1754,6 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
         {/* ── Right: sticky attribute + image panel ──────────────────────── */}
         {rightPanel}
       </div>
-    </div>
+    </>
   );
 }
