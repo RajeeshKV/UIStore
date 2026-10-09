@@ -233,7 +233,13 @@ export function VariantProductCard({
         {/* Product image — links to PDP with variant pre-selected */}
         <Link
           href={row.variantId ? `/products/${row.slug}?variant=${row.variantId}` : `/products/${row.slug}`}
-          aria-label={`View ${row.name}${row.variantDescription ? ` — ${row.variantDescription}` : ""}`}
+          aria-label={`View ${row.name}${
+            row.variantAttributes && row.variantAttributes.length > 0
+              ? ` — ${row.variantAttributes.map((a) => a.value).join(", ")}`
+              : row.variantDescription
+              ? ` — ${row.variantDescription}`
+              : ""
+          }`}
           className="block w-full h-full"
         >
           {imageUrl ? (
@@ -265,12 +271,25 @@ export function VariantProductCard({
           {row.name}
         </Link>
 
-        {/* Variant label — e.g. "Orange / 256GB" */}
-        {row.variantDescription && (
-          <p className="text-[11px] text-[#5A6578] leading-tight -mt-1">
-            {row.variantDescription}
-          </p>
-        )}
+        {/* Variant label — attribute values only, e.g. "Orange · 256GB" */}
+        {(() => {
+          // Prefer structured attributes (new API); fall back to legacy variantDescription
+          if (row.variantAttributes && row.variantAttributes.length > 0) {
+            return (
+              <p className="text-[11px] text-[#5A6578] leading-tight -mt-1 truncate">
+                {row.variantAttributes.map((a) => a.value).join(" · ")}
+              </p>
+            );
+          }
+          if (row.variantDescription) {
+            return (
+              <p className="text-[11px] text-[#5A6578] leading-tight -mt-1 truncate">
+                {row.variantDescription}
+              </p>
+            );
+          }
+          return null;
+        })()}
 
         {/* Star rating */}
         {row.ratingCount > 0 && (

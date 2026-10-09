@@ -259,6 +259,12 @@ export interface GridRow {
   ratingCount: number;
   compareAtPrice?: number;
   images: GridImage[];
+  /**
+   * Resolved variant attribute values for this row.
+   * Null for simple products (variantId === null).
+   * Use for display in product cards and grids — e.g. "Orange · 256GB".
+   */
+  variantAttributes: VariantAttributeValueResponse[] | null;
 }
 
 export interface GridRowPagedResponse {
