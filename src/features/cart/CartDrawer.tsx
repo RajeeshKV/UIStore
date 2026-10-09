@@ -23,14 +23,13 @@ export function CartDrawer({ currency, locale }: CartDrawerProps) {
 
   const footer = (
     <div className="flex flex-col gap-3">
-      {/* Subtotal */}
-      <div className="flex items-center justify-between py-2 border-t border-[#e1e2e4]">
-        <span className="text-[13px] text-[#444748]">Subtotal</span>
-        <span className="text-[16px] font-extrabold text-[#0D0D0D] tabular-nums">
+      <div className="flex items-center justify-between py-2 border-t border-border">
+        <span className="text-[13px] text-foreground-muted">Subtotal</span>
+        <span className="text-[16px] font-extrabold text-foreground tabular-nums">
           {formatPrice(subtotal, effectiveCurrency, locale)}
         </span>
       </div>
-      <p className="text-[11px] text-[#5A6578] leading-relaxed">
+      <p className="text-[11px] text-foreground-muted leading-relaxed">
         Shipping, taxes and discounts calculated at checkout.
       </p>
       <Link href="/cart" onClick={closeDrawer}>
@@ -86,12 +85,12 @@ export function CartDrawer({ currency, locale }: CartDrawerProps) {
 function EmptyCartDrawer({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
-      <div className="rounded-2xl bg-[#f3f4f6] border border-[#e1e2e4] p-5">
-        <ShoppingBag className="size-8 text-[#5A6578]" aria-hidden="true" />
+      <div className="rounded-2xl bg-muted border border-border p-5">
+        <ShoppingBag className="size-8 text-foreground-muted" aria-hidden="true" />
       </div>
       <div>
-        <p className="text-[14px] font-bold text-[#191c1e]">Your cart is empty</p>
-        <p className="text-[13px] text-[#444748] mt-1 leading-relaxed">
+        <p className="text-[14px] font-bold text-foreground">Your cart is empty</p>
+        <p className="text-[13px] text-foreground-muted mt-1 leading-relaxed">
           Add some products to get started.
         </p>
       </div>
@@ -108,7 +107,7 @@ function CartDrawerSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="flex gap-3.5 py-3.5 border-b border-[#e1e2e4]">
+        <div key={i} className="flex gap-3.5 py-3.5 border-b border-border">
           <Skeleton className="h-16 w-16 rounded-xl shrink-0" />
           <div className="flex-1 flex flex-col gap-2">
             <Skeleton className="h-4 w-full" />

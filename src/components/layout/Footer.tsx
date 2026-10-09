@@ -18,13 +18,12 @@ export function Footer({ settings, policies }: FooterProps) {
   const policyList = policies ?? [];
 
   return (
-    <footer className="border-t border-[#e1e2e4] bg-[#f3f4f6] mt-auto" aria-label="Site footer">
+    <footer className="border-t border-border bg-muted mt-auto" aria-label="Site footer">
       <div className="px-5 md:px-8 lg:px-10 pt-10 pb-8 md:pt-14 md:pb-12">
 
-        {/* Single 4-column grid on desktop, stacked on mobile */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-10">
 
-          {/* ── Brand column ───────────────────────────────────────────────── */}
+          {/* ── Brand column ─────────────────────────────────────────────── */}
           <div className="flex flex-col gap-4">
             <Link href="/" className="w-fit">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -35,11 +34,11 @@ export function Footer({ settings, policies }: FooterProps) {
               />
             </Link>
 
-            <p className="text-[13px] text-[#444748] leading-relaxed">
+            <p className="text-[13px] text-foreground-muted leading-relaxed">
               Premium products for a smarter, better tomorrow.
             </p>
 
-            <div className="flex flex-col gap-1.5 text-[12px] text-[#444748]">
+            <div className="flex flex-col gap-1.5 text-[12px] text-foreground-muted">
               {settings?.address && (
                 <span className="flex items-start gap-2 leading-relaxed">
                   <svg className="size-3.5 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -49,13 +48,13 @@ export function Footer({ settings, policies }: FooterProps) {
                 </span>
               )}
               {settings?.supportPhone && (
-                <a href={`tel:${settings.supportPhone}`} className="flex items-center gap-2 hover:text-[#191c1e] transition-colors">
+                <a href={`tel:${settings.supportPhone}`} className="flex items-center gap-2 hover:text-foreground transition-colors">
                   <Phone className="size-3.5 shrink-0" />
                   {settings.supportPhone}
                 </a>
               )}
               {settings?.supportEmail && (
-                <a href={`mailto:${settings.supportEmail}`} className="flex items-center gap-2 hover:text-[#191c1e] transition-colors">
+                <a href={`mailto:${settings.supportEmail}`} className="flex items-center gap-2 hover:text-foreground transition-colors">
                   <Mail className="size-3.5 shrink-0" />
                   {settings.supportEmail}
                 </a>
@@ -65,9 +64,9 @@ export function Footer({ settings, policies }: FooterProps) {
             <SocialIcons settings={settings} />
           </div>
 
-          {/* ── Shop ───────────────────────────────────────────────────────── */}
+          {/* ── Shop ────────────────────────────────────────────────────── */}
           <div className="md:block hidden">
-            <h3 className="text-[12px] font-bold text-[#191c1e] uppercase tracking-wider mb-4">Shop</h3>
+            <h3 className="text-[12px] font-bold text-foreground uppercase tracking-wider mb-4">Shop</h3>
             <div className="flex flex-col gap-3">
               <FooterLink href="/shop">All Products</FooterLink>
               <FooterLink href="/categories">Categories</FooterLink>
@@ -77,9 +76,9 @@ export function Footer({ settings, policies }: FooterProps) {
             </div>
           </div>
 
-          {/* ── Support ────────────────────────────────────────────────────── */}
+          {/* ── Support ─────────────────────────────────────────────────── */}
           <div className="md:block hidden">
-            <h3 className="text-[12px] font-bold text-[#191c1e] uppercase tracking-wider mb-4">Support</h3>
+            <h3 className="text-[12px] font-bold text-foreground uppercase tracking-wider mb-4">Support</h3>
             <div className="flex flex-col gap-3">
               <FooterLink href="/account/orders">Track Order</FooterLink>
               {policyList.map((policy) => (
@@ -90,9 +89,9 @@ export function Footer({ settings, policies }: FooterProps) {
             </div>
           </div>
 
-          {/* ── Account ────────────────────────────────────────────────────── */}
+          {/* ── Account ─────────────────────────────────────────────────── */}
           <div className="md:block hidden">
-            <h3 className="text-[12px] font-bold text-[#191c1e] uppercase tracking-wider mb-4">Account</h3>
+            <h3 className="text-[12px] font-bold text-foreground uppercase tracking-wider mb-4">Account</h3>
             <div className="flex flex-col gap-3">
               <FooterLink href="/account">My Account</FooterLink>
               <FooterLink href="/account/orders">My Orders</FooterLink>
@@ -101,7 +100,7 @@ export function Footer({ settings, policies }: FooterProps) {
             </div>
           </div>
 
-          {/* ── Mobile accordions (full width, spans all cols on mobile) ───── */}
+          {/* ── Mobile accordions ────────────────────────────────────────── */}
           <div className="md:hidden col-span-1 flex flex-col">
             <FooterSectionMobile title="Shop">
               <FooterLink href="/shop">All Products</FooterLink>
@@ -130,13 +129,13 @@ export function Footer({ settings, policies }: FooterProps) {
       </div>
 
       {/* ── Bottom bar ───────────────────────────────────────────────────── */}
-      <div className="border-t border-[#e1e2e4]">
+      <div className="border-t border-border">
         <div className="px-5 md:px-8 lg:px-10 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-[12px] text-[#747878]">&copy; {year} {name}. All rights reserved.</p>
+          <p className="text-[12px] text-foreground-muted">&copy; {year} {name}. All rights reserved.</p>
           {policyList.length > 0 && (
             <nav aria-label="Policy links" className="flex flex-wrap gap-x-4 gap-y-1 justify-center sm:justify-end">
               {policyList.map((p) => (
-                <Link key={p.id} href={`/policies/${(p.policyType ?? "policy").toLowerCase()}`} className="text-[12px] text-[#747878] hover:text-[#191c1e] transition-colors">
+                <Link key={p.id} href={`/policies/${(p.policyType ?? "policy").toLowerCase()}`} className="text-[12px] text-foreground-muted hover:text-foreground transition-colors">
                   {p.title ?? p.policyType}
                 </Link>
               ))}
@@ -148,21 +147,21 @@ export function Footer({ settings, policies }: FooterProps) {
   );
 }
 
-// ── Mobile accordion section ───────────────────────────────────────────────────
+// ── Mobile accordion section ──────────────────────────────────────────────────
 
 function FooterSectionMobile({ title, children }: { title: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-[#e1e2e4] last:border-none">
+    <div className="border-b border-border last:border-none">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="w-full flex items-center justify-between py-3.5 text-[12px] font-bold text-[#191c1e] uppercase tracking-wider"
+        className="w-full flex items-center justify-between py-3.5 text-[12px] font-bold text-foreground uppercase tracking-wider"
       >
         {title}
         <ChevronDown
-          className={cn("size-4 text-[#444748] transition-transform duration-200", open && "rotate-180")}
+          className={cn("size-4 text-foreground-muted transition-transform duration-200", open && "rotate-180")}
           aria-hidden="true"
         />
       </button>
@@ -183,7 +182,7 @@ function FooterSectionMobile({ title, children }: { title: string; children: Rea
   );
 }
 
-// ── FooterLink — no active state, footer links are plain ──────────────────────
+// ── FooterLink ────────────────────────────────────────────────────────────────
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   const isSale = href === "/shop?sale=true";
@@ -194,8 +193,8 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
       className={cn(
         "text-[13px] transition-colors w-fit",
         isSale
-          ? "font-semibold text-[#ba0918] hover:opacity-80"
-          : "text-[#444748] hover:text-[#191c1e]",
+          ? "font-semibold text-secondary hover:opacity-80"
+          : "text-foreground-muted hover:text-foreground",
       )}
     >
       {children}
@@ -203,7 +202,7 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
   );
 }
 
-// ── Social icons ───────────────────────────────────────────────────────────────
+// ── Social icons ──────────────────────────────────────────────────────────────
 
 interface SocialItem { href: string; label: string; icon: React.ReactNode; }
 
@@ -226,7 +225,7 @@ function SocialIcons({ settings }: { settings?: PublicBusinessSettingsResponse |
           target={item.href.startsWith("http") ? "_blank" : undefined}
           rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
           aria-label={item.label} title={item.label}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e1e2e4] bg-white text-[#444748] hover:bg-[#0D0D0D] hover:border-[#0D0D0D] hover:text-white transition-all duration-150"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-elevated text-foreground-muted hover:bg-primary hover:border-primary hover:text-primary-foreground transition-all duration-150"
         >
           {item.icon}
         </a>

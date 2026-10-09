@@ -6,6 +6,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { StoreProvider } from "@/features/store/StoreContext";
 import { storeApi } from "@/services/api/store";
 import { ScrollResetter } from "@/components/layout/NavigationEvents";
+import { DevThemeSwitcher } from "@/components/dev/ThemeSwitcher";
 import type { PublicBusinessSettingsResponse } from "@/types/api";
 
 const geistSans = Geist({
@@ -81,6 +82,8 @@ export default async function RootLayout({
             {children}
           </ToastProvider>
         </StoreProvider>
+        {/* Dev-only theme switcher — eliminated from production builds */}
+        <DevThemeSwitcher />
       </body>
     </html>
   );

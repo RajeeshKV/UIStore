@@ -2,12 +2,7 @@
 
 /**
  * QuickAddDrawer — shown when a product grid card needs variant selection.
- *
- * Triggered by clicking "Choose Options" on a ProductCard. Fetches the full
- * StorefrontProductResponse (including attributes + variants) on demand, then
- * renders the ProductVariantSelector and an Add to Cart button.
- *
- * API used: GET /api/v1/store/products/{slug}
+ * Fetches full StorefrontProductResponse on demand, renders variant selector + add to cart.
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -56,7 +51,6 @@ export function QuickAddDrawer({
     if (res.ok) {
       const data = res.data;
       setDetail(data);
-      // Pre-select first purchasable variant
       const safeVariants = (data.variants ?? []).filter(Boolean) as StorefrontVariantResponse[];
       const initial = safeVariants.find((v) => v.canPurchase) ?? safeVariants[0] ?? null;
       setSelectedVariant(initial);
@@ -65,12 +59,10 @@ export function QuickAddDrawer({
     }
   }, [product.slug]);
 
-  // Fetch only when drawer opens, and only once per open session
   useEffect(() => {
     if (open && !detail && !loading) void fetchDetail();
   }, [open, detail, loading, fetchDetail]);
 
-  // Reset selection when drawer closes
   useEffect(() => {
     if (!open) {
       setAdded(false);
@@ -78,7 +70,6 @@ export function QuickAddDrawer({
     }
   }, [open]);
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -127,7 +118,7 @@ export function QuickAddDrawer({
             aria-hidden="true"
           />
 
-          {/* Sheet — slides up from bottom on mobile, anchors right on desktop */}
+          {/* Sheet */}
           <motion.div
             key="drawer"
             role="dialog"
@@ -138,24 +129,22 @@ export function QuickAddDrawer({
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              "fixed z-50 bg-white shadow-2xl",
-              // Mobile: full-width bottom sheet
+              "fixed z-50 bg-surface-elevated shadow-2xl",
               "bottom-0 left-0 right-0 rounded-t-2xl",
-              // Desktop: right-anchored panel
               "md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:right-6 md:left-auto md:w-[380px] md:rounded-2xl",
             )}
           >
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-[#E5E7EB]">
+            <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-border">
               <div className="min-w-0">
-                <p className="text-[15px] font-bold text-[#191c1e] leading-snug line-clamp-2">{product.name}</p>
-                <p className="text-[16px] font-extrabold text-[#0D0D0D] mt-1 tabular-nums">{priceStr}</p>
+                <p className="text-[15px] font-bold text-foreground leading-snug line-clamp-2">{product.name}</p>
+                <p className="text-[16px] font-extrabold text-foreground mt-1 tabular-nums">{priceStr}</p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full border border-[#E5E7EB] text-[#5A6578] hover:text-[#191c1e] transition-colors"
+                className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full border border-border text-foreground-muted hover:text-foreground transition-colors"
               >
                 <X className="size-4" />
               </button>
@@ -164,7 +153,7 @@ export function QuickAddDrawer({
             {/* Body */}
             <div className="px-5 py-4 flex flex-col gap-4">
               {loading && (
-                <div className="flex items-center justify-center py-8 gap-2 text-[#5A6578]">
+                <div className="flex items-center justify-center py-8 gap-2 text-foreground-muted">
                   <Loader2 className="size-5 animate-spin" aria-hidden="true" />
                   <span className="text-[13px]">Loading options…</span>
                 </div>
@@ -187,10 +176,9 @@ export function QuickAddDrawer({
                       onSelect={setSelectedVariant}
                     />
                   ) : (
-                    <p className="text-[13px] text-[#5A6578]">No options to select.</p>
+                    <p className="text-[13px] text-foreground-muted">No options to select.</p>
                   )}
 
-                  {/* Selected variant stock status */}
                   {selectedVariant && !selectedVariant.canPurchase && (
                     <p className="text-[12px] text-danger font-medium">
                       This combination is out of stock.

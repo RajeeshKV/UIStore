@@ -9,8 +9,6 @@ import { transitions } from "@/lib/motion";
 import type { StorefrontImageResponse } from "@/types/api";
 
 interface ProductGalleryProps {
-  /** Images to display. Caller is responsible for selecting the correct source
-   * (variant images vs product images). This component never mixes sources. */
   images: StorefrontImageResponse[];
   productName: string;
 }
@@ -29,7 +27,6 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [direction, setDirection]       = useState<1 | -1>(1);
 
-  // Reset to first image whenever the image set changes (variant switch)
   useEffect(() => {
     setActiveIdx(0);
     setDirection(1);
@@ -63,8 +60,8 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
 
   if (sorted.length === 0) {
     return (
-      <div className="aspect-square w-full rounded-2xl bg-[#F4F5F7] flex items-center justify-center border border-[#E5E7EB]">
-        <span className="text-[#5A6578] text-[13px]">No image available</span>
+      <div className="aspect-square w-full rounded-2xl bg-surface-container flex items-center justify-center border border-border">
+        <span className="text-foreground-muted text-[13px]">No image available</span>
       </div>
     );
   }
@@ -77,8 +74,8 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Main image — design: rounded-2xl, white bg, hover zoom arrows */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#F4F5F7] border border-[#E5E7EB] group">
+      {/* Main image */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-surface-container border border-border group">
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
             key={activeIdx}
@@ -101,7 +98,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Prev / Next — circular white buttons, float on hover */}
+        {/* Prev / Next */}
         {total > 1 && (
           <>
             <button
@@ -111,7 +108,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               className={cn(
                 "absolute left-3 top-1/2 -translate-y-1/2 z-10",
                 "flex h-10 w-10 items-center justify-center rounded-full",
-                "bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-[#191c1e]",
+                "bg-surface-elevated border border-border shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-foreground",
                 "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
                 "hover:scale-105 active:scale-95 transition-all duration-150",
                 "disabled:opacity-0 disabled:pointer-events-none",
@@ -126,7 +123,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               className={cn(
                 "absolute right-3 top-1/2 -translate-y-1/2 z-10",
                 "flex h-10 w-10 items-center justify-center rounded-full",
-                "bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-[#191c1e]",
+                "bg-surface-elevated border border-border shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-foreground",
                 "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
                 "hover:scale-105 active:scale-95 transition-all duration-150",
                 "disabled:opacity-0 disabled:pointer-events-none",
@@ -144,9 +141,9 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           className={cn(
             "absolute bottom-3 right-3 z-10",
             "flex h-9 w-9 items-center justify-center rounded-full",
-            "bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-[#444748]",
+            "bg-surface-elevated border border-border shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-foreground-muted",
             "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
-            "hover:text-[#191c1e] transition-all duration-150",
+            "hover:text-foreground transition-all duration-150",
           )}
         >
           <ZoomIn className="size-4" />
@@ -162,7 +159,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 aria-label={`Go to image ${i + 1}`}
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-300",
-                  i === activeIdx ? "w-5 bg-[#0D0D0D]" : "w-1.5 bg-[#0D0D0D]/25 hover:bg-[#0D0D0D]/50",
+                  i === activeIdx ? "w-5 bg-primary" : "w-1.5 bg-primary/25 hover:bg-primary/50",
                 )}
               />
             ))}
@@ -170,7 +167,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         )}
       </div>
 
-      {/* Thumbnails — design: square, border, active=obsidian border */}
+      {/* Thumbnails */}
       {total > 1 && (
         <div role="group" aria-label="Product image thumbnails" className="flex gap-2 overflow-x-auto pb-1">
           {sorted.map((img, i) => (
@@ -183,9 +180,9 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 "relative shrink-0 aspect-square w-16 overflow-hidden rounded-xl",
                 "border-2 transition-all duration-150",
                 i === activeIdx
-                  ? "border-[#0D0D0D]"
-                  : "border-[#E5E7EB] hover:border-[#c4c7c7]",
-                "bg-[#F4F5F7]",
+                  ? "border-primary"
+                  : "border-border hover:border-border-strong",
+                "bg-surface-container",
               )}
             >
               <Image
@@ -262,13 +259,13 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
 export function ProductGalleryFallback({ imageUrl, productName }: { imageUrl?: string | null; productName: string }) {
   if (!imageUrl) {
     return (
-      <div className="aspect-square w-full rounded-2xl bg-[#F4F5F7] border border-[#E5E7EB] flex items-center justify-center">
-        <span className="text-[#5A6578] text-[13px]">No image available</span>
+      <div className="aspect-square w-full rounded-2xl bg-surface-container border border-border flex items-center justify-center">
+        <span className="text-foreground-muted text-[13px]">No image available</span>
       </div>
     );
   }
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#F4F5F7] border border-[#E5E7EB]">
+    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-surface-container border border-border">
       <Image src={imageUrl} alt={productName} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-contain p-4" priority />
     </div>
   );

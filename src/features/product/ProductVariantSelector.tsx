@@ -9,28 +9,19 @@ interface ProductVariantSelectorProps {
   attributes?: ProductAttributeDto[];
   selectedVariantId: string | null;
   onSelect: (variant: StorefrontVariantResponse) => void;
-  /**
-   * Called whenever the selection changes but does NOT yet resolve a full variant.
-   * The parent should clear its selectedVariant state so price/stock/gallery
-   * reflect "partial selection" rather than the previously resolved variant.
-   */
   onPartialSelect?: () => void;
 }
 
-// ── Core matching logic (§6 of the guide) ─────────────────────────────────────
+// ── Core matching logic ────────────────────────────────────────────────────────
 
 function parseIds(csv: string | null | undefined): string[] {
   if (!csv) return [];
   return csv.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
-/**
- * Finds the variant whose attribute-value set exactly matches the selection.
- * Order-independent set equality.
- */
 function findVariant(
   variants: StorefrontVariantResponse[],
-  selected: Record<string, string>, // axisId → valueId
+  selected: Record<string, string>,
 ): StorefrontVariantResponse | undefined {
   const wanted = Object.values(selected).sort();
   return variants.find((v) => {
@@ -40,11 +31,6 @@ function findVariant(
   });
 }
 
-/**
- * Returns true if `valueId` is reachable given the rest of the current selection.
- * A value is available when some purchasable variant contains it AND, for every
- * OTHER axis already chosen, that variant agrees with the choice.
- */
 function isValueAvailable(
   variants: StorefrontVariantResponse[],
   selected: Record<string, string>,
@@ -55,7 +41,6 @@ function isValueAvailable(
     if (!v) return false;
     const ids = parseIds(v.attributeValueIds);
     if (!ids.includes(valueId) || !v.canPurchase) return false;
-    // Check all OTHER axes that have a current selection agree
     return Object.entries(selected)
       .filter(([sid]) => sid !== axisId)
       .every(([, id]) => ids.includes(id));
@@ -71,12 +56,9 @@ export function ProductVariantSelector({
   onSelect,
   onPartialSelect,
 }: ProductVariantSelectorProps) {
-  // Guard: filter out any null/undefined entries the API might return
   const safeVariants = variants.filter(Boolean) as StorefrontVariantResponse[];
 
-  // selection: axisId → valueId
   const [selection, setSelection] = useState<Record<string, string>>(() => {
-    // Pre-select from the initial selectedVariantId if given
     const initial = safeVariants.find((v) => v.id === selectedVariantId);
     if (!initial || !attributes) return {};
     const ids = parseIds(initial.attributeValueIds);
@@ -90,7 +72,6 @@ export function ProductVariantSelector({
 
   if (!safeVariants.length) return null;
 
-  // No attributes configured → simple fallback list
   if (!attributes || attributes.length === 0) {
     return (
       <SimpleVariantList
@@ -109,27 +90,22 @@ export function ProductVariantSelector({
     const next = { ...selection, [axisId]: valueId };
     setSelection(next);
 
-    // Attempt full resolution only when every axis has a value
     if (Object.keys(next).length === sortedAxes.length) {
       const v = findVariant(safeVariants, next);
       if (v) {
         onSelect(v);
       } else {
-        // All axes chosen but no matching variant — treat as unresolved
         onPartialSelect?.();
       }
     } else {
-      // Fewer axes chosen than exist — partial selection, clear resolved state
       onPartialSelect?.();
     }
   }
 
-  // Current resolved variant (may be undefined if selection is partial)
   const resolved = Object.keys(selection).length === sortedAxes.length
     ? findVariant(safeVariants, selection)
     : undefined;
 
-  // Sync: if the parent changed selectedVariantId externally, also highlight
   const activeVariantId = resolved?.id ?? selectedVariantId;
 
   return (
@@ -145,12 +121,12 @@ export function ProductVariantSelector({
 
         return (
           <div key={axis.id}>
-            <p className="text-[13px] font-bold text-[#191c1e] mb-2.5">
+            <p className="text-[13px] font-bold text-foreground mb-2.5">
               {axis.name}
               {selectedValueId && (() => {
                 const label = sortedValues.find((v) => v.id === selectedValueId)?.value;
                 return label ? (
-                  <span className="ml-2 font-normal text-[#444748]">{label}</span>
+                  <span className="ml-2 font-normal text-foreground-muted">{label}</span>
                 ) : null;
               })()}
             </p>
@@ -170,20 +146,19 @@ export function ProductVariantSelector({
                     className={cn(
                       "h-10 min-w-10 px-4 rounded-lg border text-[13px] font-semibold relative",
                       "transition-all duration-150",
-                      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D]",
+                      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                       isSelected
-                        ? "border-[#0D0D0D] bg-[#0D0D0D] text-white shadow-sm"
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
                         : available
-                        ? "border-[#E5E7EB] text-[#191c1e] bg-white hover:border-[#0D0D0D]"
-                        : "border-[#E5E7EB] text-[#c4c7c7] bg-[#F4F5F7] cursor-pointer",
+                        ? "border-border text-foreground bg-surface-elevated hover:border-primary"
+                        : "border-border text-border-strong bg-surface-container cursor-pointer",
                     )}
                   >
                     {val.value}
-                    {/* Diagonal strikethrough for unavailable (not selected) */}
                     {!available && !isSelected && (
                       <span
                         aria-hidden="true"
-                        className="absolute inset-x-1 top-1/2 border-t border-[#c4c7c7] rotate-[-12deg] pointer-events-none"
+                        className="absolute inset-x-1 top-1/2 border-t border-border-strong rotate-[-12deg] pointer-events-none"
                       />
                     )}
                   </button>
@@ -194,18 +169,17 @@ export function ProductVariantSelector({
         );
       })}
 
-      {/* Show selected variant SKU for reference */}
       {activeVariantId && (() => {
         const v = safeVariants.find((v) => v.id === activeVariantId);
         return v?.sku ? (
-          <p className="text-[11px] text-[#5A6578]">SKU: {v.sku}</p>
+          <p className="text-[11px] text-foreground-muted">SKU: {v.sku}</p>
         ) : null;
       })()}
     </div>
   );
 }
 
-// ── Fallback: no attribute axes configured ─────────────────────────────────────
+// ── Fallback: no attribute axes configured ────────────────────────────────────
 
 function SimpleVariantList({
   variants,
@@ -219,7 +193,7 @@ function SimpleVariantList({
   const safeVariants = variants.filter(Boolean) as StorefrontVariantResponse[];
   return (
     <div>
-      <p className="text-[13px] font-bold text-[#191c1e] mb-2.5">Option</p>
+      <p className="text-[13px] font-bold text-foreground mb-2.5">Option</p>
       <div role="group" aria-label="Select variant" className="flex flex-wrap gap-2">
         {safeVariants.map((v, i) => {
           const isSelected = v.id === selectedVariantId;
@@ -233,12 +207,12 @@ function SimpleVariantList({
               aria-label={`Option ${i + 1}${v.sku ? ` (${v.sku})` : ""}${isUnavailable ? " — unavailable" : ""}`}
               className={cn(
                 "h-10 px-4 rounded-lg border text-[13px] font-semibold transition-all duration-150",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D]",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                 isSelected
-                  ? "border-[#0D0D0D] bg-[#0D0D0D] text-white"
+                  ? "border-primary bg-primary text-primary-foreground"
                   : isUnavailable
-                  ? "border-[#E5E7EB] text-[#c4c7c7] bg-[#F4F5F7]"
-                  : "border-[#E5E7EB] text-[#191c1e] bg-white hover:border-[#0D0D0D]",
+                  ? "border-border text-border-strong bg-surface-container"
+                  : "border-border text-foreground bg-surface-elevated hover:border-primary",
               )}
             >
               {v.sku ?? `Option ${i + 1}`}

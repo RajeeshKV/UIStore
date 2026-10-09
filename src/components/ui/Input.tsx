@@ -72,12 +72,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             }
             aria-invalid={!!error}
             className={cn(
-              // Base — matches design: rounded-md, surface-container fill, clean border
-              "w-full rounded-md border border-border bg-[#F4F5F7]",
-              "h-11 px-3 text-[14px] text-foreground",
-              "placeholder:text-[#5A6578]",
-              "transition-colors duration-150",
-              "focus:outline-none focus:bg-white focus:border-[#0D0D0D]/40 focus:ring-1 focus:ring-[#0D0D0D]/10",
+              "w-full rounded-md border border-border bg-surface-container",
+            "h-11 px-3 text-[14px] text-foreground",
+            "placeholder:text-foreground-muted",
+            "transition-colors duration-150",
+            "focus:outline-none focus:bg-surface-elevated focus:border-primary/40 focus:ring-1 focus:ring-primary/10",
               "disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-muted",
               error && "border-danger focus:border-danger focus:ring-danger/10",
               iconLeft != null && "pl-10",

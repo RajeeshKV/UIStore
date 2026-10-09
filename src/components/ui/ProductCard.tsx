@@ -6,19 +6,16 @@ import { ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
-import { formatPrice, discountPercent } from "@/lib/utils";
-import type { StorefrontProductSummaryResponse } from "@/types/api";
+import { cn, formatPrice, discountPercent } from "@/lib/utils";
 import { normalizeStock } from "@/types/api";
+import type { StorefrontProductSummaryResponse } from "@/types/api";
 import { useWishlist } from "@/features/wishlist/WishlistContext";
 import { useAuth } from "@/features/auth/AuthContext";
 
-// ── Star rating display ───────────────────────────────────────────────────────
+// ── Star rating ───────────────────────────────────────────────────────────────
 
 function StarRating({ average, count }: { average: number; count: number }) {
-  // Don't show when no reviews
-  if (!count || count === 0) return null;
-
+  if (!count) return null;
   const filled = Math.round(average);
   return (
     <div className="flex items-center gap-1">
@@ -28,14 +25,14 @@ function StarRating({ average, count }: { average: number; count: number }) {
             key={i}
             className={cn(
               "size-3 shrink-0",
-              i <= filled ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-[#D1D5DB]",
+              i <= filled ? "fill-warning text-warning" : "fill-none text-border",
             )}
             aria-hidden="true"
           />
         ))}
       </div>
-      <span className="text-[11px] text-[#5A6578] tabular-nums">
-        {average.toFixed(1)} <span className="text-[#c4c7c7]">({count})</span>
+      <span className="text-[11px] text-foreground-muted tabular-nums">
+        {average.toFixed(1)} <span className="text-border-strong">({count})</span>
       </span>
     </div>
   );
@@ -113,23 +110,23 @@ export function ProductCard({
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "group relative flex flex-col rounded-2xl overflow-hidden border border-[#E5E7EB] bg-white",
+        "group relative flex flex-col rounded-2xl overflow-hidden border border-border bg-surface-elevated",
         "hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.06)] transition-shadow duration-200",
         isOutOfStock && "opacity-70",
         className,
       )}
     >
       {/* ── Image area ───────────────────────────────────────────────────── */}
-      <div className="relative aspect-square w-full bg-[#F4F5F7] overflow-hidden">
+      <div className="relative aspect-square w-full bg-surface-container overflow-hidden">
         {/* Discount badge */}
         {discount > 0 && !isOutOfStock && (
-          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-[#E02E2E] px-1.5 py-0.5 text-[9px] font-bold text-white leading-none uppercase tracking-wide pointer-events-none">
+          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-secondary px-1.5 py-0.5 text-[9px] font-bold text-secondary-foreground leading-none uppercase tracking-wide pointer-events-none">
             -{discount}%
           </span>
         )}
         {/* Out of stock badge */}
         {isOutOfStock && (
-          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-[#0D0D0D]/70 px-1.5 py-0.5 text-[9px] font-bold text-white leading-none pointer-events-none">
+          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-primary/70 px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground leading-none pointer-events-none">
             Out of stock
           </span>
         )}
@@ -140,7 +137,7 @@ export function ProductCard({
           </span>
         )}
 
-        {/* Wishlist — top-right, wired to WishlistContext */}
+        {/* Wishlist */}
         <button
           type="button"
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -149,9 +146,9 @@ export function ProductCard({
           className={cn(
             "absolute top-2.5 right-2.5 z-10",
             "flex h-8 w-8 items-center justify-center rounded-full",
-            "bg-white border shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
-            "hover:border-[#D1D5DB] transition-all duration-150",
-            isWishlisted ? "border-[#E02E2E]" : "border-[#E5E7EB]",
+            "bg-surface-elevated border shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
+            "hover:border-border transition-all duration-150",
+            isWishlisted ? "border-secondary" : "border-border",
           )}
         >
           <svg
@@ -159,8 +156,8 @@ export function ProductCard({
             className={cn(
               "size-3.5 transition-all duration-150",
               isWishlisted
-                ? "fill-[#E02E2E] stroke-[#E02E2E]"
-                : "fill-none stroke-[#5A6578]",
+                ? "fill-secondary stroke-secondary"
+                : "fill-none stroke-foreground-muted",
             )}
             strokeWidth={2}
             strokeLinecap="round"
@@ -185,7 +182,7 @@ export function ProductCard({
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <ShoppingBag className="size-8 text-[#D1D5DB]" aria-hidden="true" />
+              <ShoppingBag className="size-8 text-border" aria-hidden="true" />
             </div>
           )}
         </Link>
@@ -193,15 +190,15 @@ export function ProductCard({
 
       {/* ── Info area ────────────────────────────────────────────────────── */}
       <div className="flex flex-col flex-1 px-3 pt-3 pb-3 gap-2">
-        {/* Name — 2-line clamp */}
+        {/* Name */}
         <Link
           href={`/products/${product.slug}`}
-          className="text-[13px] font-semibold text-[#191c1e] leading-snug line-clamp-2 hover:text-[#0D0D0D]/70 transition-colors"
+          className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 hover:text-foreground/70 transition-colors"
         >
           {product.name}
         </Link>
 
-        {/* Star rating — only when hasRatings or ratingCount > 0 */}
+        {/* Star rating */}
         {(product.hasRatings || (product.ratingCount ?? 0) > 0) && (
           <StarRating
             average={product.ratingAverage ?? 0}
@@ -211,18 +208,17 @@ export function ProductCard({
 
         {/* Price row */}
         <div className="flex items-baseline gap-1.5 flex-wrap">
-          <span className="text-[15px] font-extrabold text-[#0D0D0D] leading-none">{priceStr}</span>
+          <span className="text-[15px] font-extrabold text-foreground leading-none">{priceStr}</span>
           {comparePriceStr && (
-            <span className="text-[12px] text-[#5A6578] line-through">{comparePriceStr}</span>
+            <span className="text-[12px] text-foreground-muted line-through">{comparePriceStr}</span>
           )}
         </div>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Add to Cart / Choose Options / Out of Stock */}
+        {/* CTA */}
         {isOutOfStock ? (
-          <p className="mt-0.5 text-[11px] text-center text-[#5A6578] py-1">Out of stock</p>
+          <p className="mt-0.5 text-[11px] text-center text-foreground-muted py-1">Out of stock</p>
         ) : onChooseOptions && product.canPurchase ? (
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onChooseOptions(product); }}
@@ -230,8 +226,8 @@ export function ProductCard({
             className={cn(
               "mt-0.5 w-full flex items-center justify-center gap-1.5",
               "h-9 rounded-lg text-[12px] font-bold",
-              "bg-[#0D0D0D] text-white",
-              "hover:bg-[#262626] active:scale-[0.98] transition-all duration-150",
+              "bg-primary text-primary-foreground",
+              "hover:bg-primary/90 active:scale-[0.98] transition-all duration-150",
             )}
           >
             Choose Options
@@ -244,8 +240,8 @@ export function ProductCard({
             className={cn(
               "mt-0.5 w-full flex items-center justify-center gap-1.5",
               "h-9 rounded-lg text-[12px] font-bold",
-              "bg-[#0D0D0D] text-white",
-              "hover:bg-[#262626] active:scale-[0.98] transition-all duration-150",
+              "bg-primary text-primary-foreground",
+              "hover:bg-primary/90 active:scale-[0.98] transition-all duration-150",
               "disabled:opacity-60",
             )}
           >

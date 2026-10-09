@@ -40,7 +40,7 @@ function StarDisplay({ rating, max = 5, size = "sm" }: { rating: number; max?: n
       {Array.from({ length: max }).map((_, i) => (
         <Star
           key={i}
-          className={cn(iconClass, i < Math.round(rating) ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-[#e1e2e4]")}
+          className={cn(iconClass, i < Math.round(rating) ? "fill-warning text-warning" : "fill-none text-border")}
           aria-hidden="true"
         />
       ))}
@@ -68,7 +68,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
           <Star
             className={cn(
               "size-7 transition-colors",
-              i < display ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-[#c4c7c7] hover:text-[#F59E0B]",
+              i < display ? "fill-warning text-warning" : "fill-none text-border hover:text-warning",
             )}
           />
         </button>
@@ -83,15 +83,11 @@ function RatingBar({ label, count, total }: { label: string; count: number; tota
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-center gap-2 text-[12px]">
-      <span className="w-8 shrink-0 text-right text-[#5A6578]">{label}</span>
-      <div className="flex-1 h-1.5 rounded-full bg-[#f3f4f6] overflow-hidden">
-        <div
-          className="h-full rounded-full bg-[#F59E0B] transition-all duration-500"
-          style={{ width: `${pct}%` }}
-          aria-hidden="true"
-        />
+      <span className="w-8 shrink-0 text-right text-foreground-muted">{label}</span>
+      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className="h-full rounded-full bg-warning transition-all duration-500" style={{ width: `${pct}%` }} aria-hidden="true" />
       </div>
-      <span className="w-6 shrink-0 text-[#5A6578]">{count}</span>
+      <span className="w-6 shrink-0 text-foreground-muted">{count}</span>
     </div>
   );
 }
@@ -124,15 +120,15 @@ function ReviewCard({
     : new Date(review.createdAtUtc).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
 
   return (
-    <div className="border-b border-[#f3f4f6] pb-6 last:border-none">
+    <div className="border-b border-border/40 pb-6 last:border-none">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0D0D0D] text-white text-[12px] font-bold shrink-0">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-[12px] font-bold shrink-0">
             {(review.authorName?.[0] ?? "A").toUpperCase()}
           </span>
           <div>
-            <p className="text-[13px] font-semibold text-[#191c1e]">{review.authorName ?? "Customer"}</p>
+            <p className="text-[13px] font-semibold text-foreground">{review.authorName ?? "Customer"}</p>
             {review.isVerifiedPurchase && (
               <span className="text-[10px] font-bold text-success uppercase tracking-wide">
                 ✓ Verified Purchase
@@ -142,16 +138,16 @@ function ReviewCard({
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <StarDisplay rating={review.rating} size="sm" />
-          <span className="text-[11px] text-[#5A6578]">{date}</span>
+          <span className="text-[11px] text-foreground-muted">{date}</span>
         </div>
       </div>
 
       {/* Content */}
       {review.title && (
-        <p className="text-[14px] font-bold text-[#191c1e] mb-1">{review.title}</p>
+        <p className="text-[14px] font-bold text-foreground mb-1">{review.title}</p>
       )}
       {review.body && (
-        <p className="text-[13px] text-[#444748] leading-relaxed">{review.body}</p>
+        <p className="text-[13px] text-foreground-muted leading-relaxed">{review.body}</p>
       )}
 
       {/* Images */}
@@ -163,7 +159,7 @@ function ReviewCard({
               key={img.id}
               src={img.url}
               alt="Review photo"
-              className="h-16 w-16 rounded-lg object-cover bg-[#f3f4f6] border border-[#e1e2e4]"
+              className="h-16 w-16 rounded-lg object-cover bg-muted border border-border"
               loading="lazy"
             />
           ))}
@@ -175,7 +171,7 @@ function ReviewCard({
         type="button"
         onClick={handleHelpful}
         disabled={voting}
-        className="mt-3 flex items-center gap-1.5 text-[12px] text-[#5A6578] hover:text-[#191c1e] transition-colors disabled:opacity-50"
+        className="mt-3 flex items-center gap-1.5 text-[12px] text-foreground-muted hover:text-foreground transition-colors disabled:opacity-50"
       >
         <ThumbsUp className="size-3.5" aria-hidden="true" />
         Helpful {helpfulCount > 0 && `(${helpfulCount})`}
@@ -251,10 +247,10 @@ function WriteReviewForm({ productId, onSubmitted, onCancel }: WriteReviewFormPr
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="rounded-2xl border border-[#e1e2e4] bg-white p-5 flex flex-col gap-4">
+    <form onSubmit={handleSubmit} noValidate className="rounded-2xl border border-border bg-surface-elevated p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-[15px] font-bold text-[#191c1e]">Write a Review</h3>
-        <button type="button" onClick={onCancel} className="text-[#5A6578] hover:text-[#191c1e]">
+        <h3 className="text-[15px] font-bold text-foreground">Write a Review</h3>
+        <button type="button" onClick={onCancel} className="text-foreground-muted hover:text-foreground">
           <X className="size-4" />
         </button>
       </div>
@@ -267,7 +263,7 @@ function WriteReviewForm({ productId, onSubmitted, onCancel }: WriteReviewFormPr
 
       {/* Star rating */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[12px] font-semibold text-[#191c1e] uppercase tracking-wide">
+        <label className="text-[12px] font-semibold text-foreground uppercase tracking-wide">
           Your Rating <span className="text-danger">*</span>
         </label>
         <StarPicker value={rating} onChange={setRating} />
@@ -275,7 +271,7 @@ function WriteReviewForm({ productId, onSubmitted, onCancel }: WriteReviewFormPr
 
       {/* Title */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="review-title" className="text-[12px] font-semibold text-[#191c1e] uppercase tracking-wide">
+        <label htmlFor="review-title" className="text-[12px] font-semibold text-foreground uppercase tracking-wide">
           Review Title
         </label>
         <input
@@ -285,13 +281,13 @@ function WriteReviewForm({ productId, onSubmitted, onCancel }: WriteReviewFormPr
           onChange={(e) => setTitle(e.target.value)}
           maxLength={200}
           placeholder="Sum up your experience"
-          className="w-full h-9 px-3 rounded-lg border border-[#e1e2e4] bg-white text-[13px] text-[#191c1e] placeholder:text-[#c4c7c7] focus:outline-none focus:ring-2 focus:ring-[#0D0D0D]/20"
+          className="w-full h-9 px-3 rounded-lg border border-border bg-surface-container text-[13px] text-foreground placeholder:text-foreground-muted focus:outline-none focus:bg-surface-elevated focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
       {/* Body */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="review-body" className="text-[12px] font-semibold text-[#191c1e] uppercase tracking-wide">
+        <label htmlFor="review-body" className="text-[12px] font-semibold text-foreground uppercase tracking-wide">
           Your Review
         </label>
         <textarea
@@ -300,20 +296,20 @@ function WriteReviewForm({ productId, onSubmitted, onCancel }: WriteReviewFormPr
           onChange={(e) => setBody(e.target.value)}
           rows={4}
           placeholder="Tell others what you think about this product…"
-          className="w-full px-3 py-2 rounded-lg border border-[#e1e2e4] bg-white text-[13px] text-[#191c1e] placeholder:text-[#c4c7c7] focus:outline-none focus:ring-2 focus:ring-[#0D0D0D]/20 resize-none"
+          className="w-full px-3 py-2 rounded-lg border border-border bg-surface-container text-[13px] text-foreground placeholder:text-foreground-muted focus:outline-none focus:bg-surface-elevated focus:ring-2 focus:ring-primary/20 resize-none"
         />
       </div>
 
       {/* Image upload */}
       <div className="flex flex-col gap-2">
-        <label className="text-[12px] font-semibold text-[#191c1e] uppercase tracking-wide">
+        <label className="text-[12px] font-semibold text-foreground uppercase tracking-wide">
           Photos (optional, up to 5)
         </label>
         <div className="flex flex-wrap gap-2">
           {uploadedImages.map((img) => (
             <div key={img.publicId} className="relative group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt="Review upload" className="h-14 w-14 rounded-lg object-cover border border-[#e1e2e4]" />
+              <img src={img.url} alt="Review upload" className="h-14 w-14 rounded-lg object-cover border border-border" />
               <button
                 type="button"
                 onClick={() => removeImage(img.publicId)}
@@ -327,14 +323,14 @@ function WriteReviewForm({ productId, onSubmitted, onCancel }: WriteReviewFormPr
           {uploadedImages.length < 5 && (
             <label
               className={cn(
-                "flex h-14 w-14 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-[#e1e2e4] text-[#c4c7c7]",
-                "hover:border-[#0D0D0D] hover:text-[#5A6578] transition-colors",
+                "flex h-14 w-14 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-border text-border",
+                "hover:border-primary hover:text-foreground-muted transition-colors",
                 uploading && "opacity-50 pointer-events-none",
               )}
               aria-label="Upload photo"
             >
               {uploading ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#0D0D0D] border-t-transparent" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               ) : (
                 <ImagePlus className="size-4" />
               )}
@@ -414,21 +410,21 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
   const breakdown = data?.breakdown?.byRating ?? {};
 
   return (
-    <section aria-labelledby="reviews-heading" className="mt-12 border-t border-[#e1e2e4] pt-10">
-      <h2 id="reviews-heading" className="text-[20px] font-extrabold text-[#191c1e] mb-6">
+    <section aria-labelledby="reviews-heading" className="mt-12 border-t border-border pt-10">
+      <h2 id="reviews-heading" className="text-[20px] font-extrabold text-foreground mb-6">
         Customer Reviews
       </h2>
 
       {/* Rating summary */}
       {ratingCount > 0 && (
-        <div className="flex flex-col sm:flex-row gap-6 mb-8 p-5 rounded-2xl bg-[#f8f9fb] border border-[#e1e2e4]">
+        <div className="flex flex-col sm:flex-row gap-6 mb-8 p-5 rounded-2xl bg-background border border-border">
           {/* Average */}
-          <div className="flex flex-col items-center gap-1 sm:border-r sm:border-[#e1e2e4] sm:pr-6 shrink-0">
-            <span className="text-[48px] font-extrabold text-[#191c1e] leading-none tabular-nums">
+          <div className="flex flex-col items-center gap-1 sm:border-r sm:border-border sm:pr-6 shrink-0">
+            <span className="text-[48px] font-extrabold text-foreground leading-none tabular-nums">
               {ratingAvg.toFixed(1)}
             </span>
             <StarDisplay rating={ratingAvg} size="md" />
-            <span className="text-[12px] text-[#5A6578]">{ratingCount} review{ratingCount !== 1 ? "s" : ""}</span>
+            <span className="text-[12px] text-foreground-muted">{ratingCount} review{ratingCount !== 1 ? "s" : ""}</span>
           </div>
           {/* Breakdown bars */}
           <div className="flex-1 flex flex-col gap-1.5 justify-center">
@@ -466,8 +462,8 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
               Write a Review
             </Button>
           ) : (
-            <p className="text-[13px] text-[#5A6578]">
-              <a href="/auth/login" className="underline underline-offset-2 text-[#191c1e] font-medium hover:opacity-70">
+            <p className="text-[13px] text-foreground-muted">
+              <a href="/auth/login" className="underline underline-offset-2 text-foreground font-medium hover:opacity-70">
                 Sign in
               </a>{" "}
               to write a review for {productName}.
@@ -496,26 +492,26 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
       {(ratingCount > 0 || !loading) && (
         <div className="flex items-center gap-3 mb-5 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <label htmlFor="review-sort" className="text-[12px] text-[#5A6578] font-medium">Sort:</label>
+            <label htmlFor="review-sort" className="text-[12px] text-foreground-muted font-medium">Sort:</label>
             <div className="relative">
               <select
                 id="review-sort"
                 value={sort}
                 onChange={(e) => handleSortChange(e.target.value as "recent" | "helpful" | "rating")}
-                className="appearance-none h-8 pl-3 pr-8 rounded-lg border border-[#e1e2e4] bg-white text-[12px] text-[#191c1e] focus:outline-none focus:ring-2 focus:ring-[#0D0D0D]/20"
+                className="appearance-none h-8 pl-3 pr-8 rounded-lg border border-border bg-surface-container text-[12px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="recent">Most Recent</option>
                 <option value="helpful">Most Helpful</option>
                 <option value="rating">Highest Rated</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 size-3.5 text-[#5A6578]" />
+              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted" />
             </div>
           </div>
           {ratingFilter !== undefined && (
             <button
               type="button"
               onClick={() => handleRatingFilter(undefined)}
-              className="flex items-center gap-1.5 text-[12px] text-[#5A6578] hover:text-danger border border-[#e1e2e4] rounded-full px-3 py-1 transition-colors"
+              className="flex items-center gap-1.5 text-[12px] text-foreground-muted hover:text-danger border border-border rounded-full px-3 py-1 transition-colors"
             >
               {ratingFilter}★ filter <X className="size-3" />
             </button>
@@ -530,10 +526,8 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
         <p className="text-[13px] text-danger">{error}</p>
       ) : reviews.length === 0 ? (
         <div className="py-10 text-center">
-          <p className="text-[14px] text-[#5A6578]">
-            {ratingFilter
-              ? `No ${ratingFilter}-star reviews yet.`
-              : "No reviews yet. Be the first to review this product."}
+          <p className="text-[14px] text-foreground-muted">
+            {ratingFilter ? `No ${ratingFilter}-star reviews yet.` : "No reviews yet. Be the first to review this product."}
           </p>
         </div>
       ) : (
@@ -544,24 +538,10 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4 border-t border-[#f3f4f6]">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => load(page - 1, sort, ratingFilter)}
-              >
-                Previous
-              </Button>
-              <span className="text-[13px] text-[#5A6578]">Page {page} of {totalPages}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => load(page + 1, sort, ratingFilter)}
-              >
-                Next
-              </Button>
+            <div className="flex items-center justify-center gap-2 pt-4 border-t border-border">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => load(page - 1, sort, ratingFilter)}>Previous</Button>
+              <span className="text-[13px] text-foreground-muted">Page {page} of {totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => load(page + 1, sort, ratingFilter)}>Next</Button>
             </div>
           )}
         </div>
@@ -574,7 +554,7 @@ function ReviewsSkeleton() {
   return (
     <div className="flex flex-col gap-6" aria-hidden="true">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="border-b border-[#f3f4f6] pb-6 flex flex-col gap-3">
+        <div key={i} className="border-b border-border/40 pb-6 flex flex-col gap-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
               <Skeleton className="h-8 w-8 rounded-full" />

@@ -23,19 +23,19 @@ export function CatalogSort({ value, onChange, className }: CatalogSortProps) {
         <button
           className={cn(
             "flex items-center gap-2 h-11 px-5 rounded-full",
-            "bg-white border border-[#e1e2e4] shadow-sm",
-            "text-[13px] font-medium text-[#191c1e]",
+            "bg-surface-elevated border border-border shadow-sm",
+            "text-[13px] font-medium text-foreground",
             "hover:shadow-md transition-all duration-150",
-            "focus-visible:outline-2 focus-visible:outline-[#0D0D0D]",
+            "focus-visible:outline-2 focus-visible:outline-primary",
             className,
           )}
           aria-label="Sort products"
         >
-          <span className="text-[#444748]">Sort:</span>
-          <span className="font-bold text-[#0D0D0D]">{selected.label}</span>
+          <span className="text-foreground-muted">Sort:</span>
+          <span className="font-bold text-foreground">{selected.label}</span>
           <ChevronDown
             className={cn(
-              "size-4 text-[#444748] transition-transform duration-200",
+              "size-4 text-foreground-muted transition-transform duration-200",
               open && "rotate-180",
             )}
             aria-hidden="true"
@@ -48,7 +48,7 @@ export function CatalogSort({ value, onChange, className }: CatalogSortProps) {
           <DropdownMenu.Portal forceMount>
             <DropdownMenu.Content asChild align="end" sideOffset={6}>
               <motion.div
-                className="z-50 w-52 rounded-2xl bg-white border border-[#e1e2e4] shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5 overflow-hidden"
+                className="z-50 w-52 rounded-2xl bg-surface-elevated border border-border shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5 overflow-hidden"
                 initial={{ opacity: 0, y: -6, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.97 }}
@@ -62,13 +62,13 @@ export function CatalogSort({ value, onChange, className }: CatalogSortProps) {
                       "flex items-center justify-between px-4 py-2.5 cursor-pointer outline-none",
                       "text-[13px] transition-colors",
                       opt.value === value
-                        ? "text-[#0D0D0D] font-bold bg-[#f3f4f6]"
-                        : "text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e]",
+                        ? "text-foreground font-bold bg-muted"
+                        : "text-foreground-muted hover:bg-muted hover:text-foreground",
                     )}
                   >
                     {opt.label}
                     {opt.value === value && (
-                      <Check className="size-3.5 text-[#0D0D0D] shrink-0" aria-hidden="true" />
+                      <Check className="size-3.5 text-foreground shrink-0" aria-hidden="true" />
                     )}
                   </DropdownMenu.Item>
                 ))}

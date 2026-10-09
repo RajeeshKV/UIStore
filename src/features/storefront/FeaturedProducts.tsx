@@ -36,18 +36,18 @@ export function FeaturedProducts({
   return (
     <section
       aria-labelledby="featured-heading"
-      className="py-8 md:py-12 bg-white border-t border-[#e1e2e4]"
+      className="py-8 md:py-12 bg-surface-elevated border-t border-border"
     >
       <div className="px-5 md:px-8 lg:px-10">
         {/* Section header */}
         <div className="flex items-end justify-between mb-6 md:mb-8">
           <div>
-            <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#ba0918] mb-1.5">
+            <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-secondary mb-1.5">
               Hand-picked
             </p>
             <h2
               id="featured-heading"
-              className="text-[26px] md:text-[32px] font-extrabold text-[#191c1e] tracking-tight leading-none"
+              className="text-[26px] md:text-[32px] font-extrabold text-foreground tracking-tight leading-none"
             >
               Featured Products
             </h2>
@@ -56,9 +56,9 @@ export function FeaturedProducts({
             href="/shop?featured=true"
             className={cn(
               "hidden sm:inline-flex items-center gap-1.5",
-              "h-9 px-5 rounded-full border border-[#D1D5DB] bg-white",
-              "text-[13px] font-semibold text-[#191c1e]",
-              "hover:border-[#0D0D0D] transition-colors",
+              "h-9 px-5 rounded-full border border-border bg-surface-elevated",
+              "text-[13px] font-semibold text-foreground",
+              "hover:border-primary transition-colors",
             )}
           >
             View All <ArrowRight className="size-3.5" aria-hidden="true" />
@@ -85,8 +85,8 @@ export function FeaturedProducts({
             href="/shop?featured=true"
             className={cn(
               "inline-flex items-center gap-1.5",
-              "h-9 px-5 rounded-full border border-[#D1D5DB] bg-white",
-              "text-[13px] font-semibold text-[#191c1e]",
+              "h-9 px-5 rounded-full border border-border bg-surface-elevated",
+              "text-[13px] font-semibold text-foreground",
             )}
           >
             View All <ArrowRight className="size-3.5" aria-hidden="true" />

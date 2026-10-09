@@ -40,7 +40,7 @@ export function Pagination({ page, totalPages, onPageChange, className }: Pagina
               "flex h-9 min-w-[36px] items-center justify-center rounded-lg",
               "text-[13px] font-medium transition-colors duration-150 px-2",
               p === page
-                ? "bg-[#0D0D0D] text-white border border-[#0D0D0D]"
+                ? "bg-primary text-primary-foreground border border-primary"
                 : "border border-border text-foreground hover:bg-surface-container",
             )}
           >

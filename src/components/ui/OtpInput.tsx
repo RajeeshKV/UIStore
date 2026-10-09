@@ -105,10 +105,10 @@ export function OtpInput({ value, onChange, disabled, error, autoFocus }: OtpInp
               "focus:outline-none focus:ring-0",
               // States
               error
-                ? "border-red-400 bg-red-50 text-red-600 focus:border-red-500"
+                ? "border-danger bg-danger/5 text-danger focus:border-danger"
                 : filled
-                  ? "border-gray-900 bg-white text-gray-900 shadow-sm"
-                  : "border-gray-200 bg-gray-50 text-gray-900 focus:border-gray-900 focus:bg-white focus:shadow-sm",
+                  ? "border-border-strong bg-surface-elevated text-foreground shadow-sm"
+                  : "border-border bg-muted text-foreground focus:border-border-strong focus:bg-surface-elevated focus:shadow-sm",
               disabled && "opacity-40 cursor-not-allowed",
             )}
           />

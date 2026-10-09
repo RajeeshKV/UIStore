@@ -32,12 +32,11 @@ function FilterPanel({ params, categories, brands, loading, onParamChange, onRes
 
   return (
     <div className="flex flex-col gap-0.5">
-      {/* Clear all */}
       {hasActiveFilters && (
-        <div className="pb-3 mb-2 border-b border-[#e1e2e4]">
+        <div className="pb-3 mb-2 border-b border-border">
           <button
             onClick={onReset}
-            className="flex items-center gap-1.5 text-[13px] text-[#191c1e] font-semibold hover:text-[#444748] transition-colors"
+            className="flex items-center gap-1.5 text-[13px] text-foreground font-semibold hover:text-foreground-muted transition-colors"
           >
             <X className="size-3.5" aria-hidden="true" />
             Clear all filters
@@ -45,7 +44,6 @@ function FilterPanel({ params, categories, brands, loading, onParamChange, onRes
         </div>
       )}
 
-      {/* Categories */}
       <FilterSection title="Category" defaultOpen>
         {loading ? (
           <FilterSkeleton rows={5} />
@@ -68,7 +66,6 @@ function FilterPanel({ params, categories, brands, loading, onParamChange, onRes
         )}
       </FilterSection>
 
-      {/* Brands */}
       <FilterSection title="Brand" defaultOpen={brands.length <= 8}>
         {loading ? (
           <FilterSkeleton rows={4} />
@@ -91,7 +88,6 @@ function FilterPanel({ params, categories, brands, loading, onParamChange, onRes
         )}
       </FilterSection>
 
-      {/* Price range */}
       <FilterSection title="Price Range">
         <PriceRangeFilter
           min={params.MinPrice}
@@ -100,7 +96,6 @@ function FilterPanel({ params, categories, brands, loading, onParamChange, onRes
         />
       </FilterSection>
 
-      {/* Availability */}
       <FilterSection title="Availability" defaultOpen>
         <FilterCheckbox
           id="show-out-of-stock"
@@ -120,7 +115,7 @@ function FilterPanel({ params, categories, brands, loading, onParamChange, onRes
 export function CatalogFilterSidebar(props: CatalogFiltersProps) {
   return (
     <aside aria-label="Product filters" className="hidden lg:block w-56 shrink-0 pt-2">
-      <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#444748] mb-5">
+      <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-foreground-muted mb-5">
         Filters
       </p>
       <FilterPanel {...props} />
@@ -169,16 +164,16 @@ function FilterSection({
   if (!children) return null;
 
   return (
-    <div className="border-b border-[#e1e2e4] pb-1 mb-1 last:border-none">
+    <div className="border-b border-border pb-1 mb-1 last:border-none">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between py-3 text-[13px] font-bold text-[#191c1e] hover:text-[#444748] transition-colors"
+        className="flex w-full items-center justify-between py-3 text-[13px] font-bold text-foreground hover:text-foreground-muted transition-colors"
       >
         {title}
         <ChevronDown
           className={cn(
-            "size-3.5 text-[#444748] transition-transform duration-200",
+            "size-3.5 text-foreground-muted transition-transform duration-200",
             open && "rotate-180",
           )}
           aria-hidden="true"
@@ -202,7 +197,7 @@ function FilterSection({
   );
 }
 
-// ── Radix-powered filter checkbox ─────────────────────────────────────────────
+// ── Filter checkbox ───────────────────────────────────────────────────────────
 
 interface FilterCheckboxProps {
   id: string;
@@ -216,9 +211,8 @@ function FilterCheckbox({ id, label, sublabel, checked, onChange }: FilterCheckb
   return (
     <label
       htmlFor={id}
-      className="flex items-center gap-2.5 py-1.5 px-1 rounded-lg cursor-pointer hover:bg-[#f3f4f6] transition-colors duration-100 group"
+      className="flex items-center gap-2.5 py-1.5 px-1 rounded-lg cursor-pointer hover:bg-muted transition-colors duration-100 group"
     >
-      {/* Radix Checkbox — design: 18×18 rounded-sm, checked=obsidian fill+white check */}
       <Checkbox.Root
         id={id}
         checked={checked}
@@ -227,19 +221,19 @@ function FilterCheckbox({ id, label, sublabel, checked, onChange }: FilterCheckb
           "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded",
           "border transition-colors duration-150",
           checked
-            ? "bg-[#0D0D0D] border-[#0D0D0D]"
-            : "bg-white border-[#D1D5DB] group-hover:border-[#0D0D0D]",
-          "focus-visible:outline-2 focus-visible:outline-[#0D0D0D]",
+            ? "bg-primary border-primary"
+            : "bg-surface-elevated border-border group-hover:border-primary",
+          "focus-visible:outline-2 focus-visible:outline-primary",
         )}
       >
         <Checkbox.Indicator>
-          <Check className="size-3 text-white" aria-hidden="true" strokeWidth={3} />
+          <Check className="size-3 text-primary-foreground" aria-hidden="true" strokeWidth={3} />
         </Checkbox.Indicator>
       </Checkbox.Root>
 
-      <span className="text-[13px] text-[#191c1e] flex-1 leading-none">{label}</span>
+      <span className="text-[13px] text-foreground flex-1 leading-none">{label}</span>
       {sublabel && (
-        <span className="text-[12px] text-[#444748] tabular-nums">{sublabel}</span>
+        <span className="text-[12px] text-foreground-muted tabular-nums">{sublabel}</span>
       )}
     </label>
   );
@@ -277,9 +271,9 @@ function PriceRangeFilter({
   const hasValue = minVal !== "" || maxVal !== "";
 
   const inputCls = cn(
-    "w-full h-9 rounded-lg border border-[#e1e2e4] bg-[#F4F5F7]",
-    "px-2.5 text-[13px] text-[#191c1e] placeholder:text-[#747878]",
-    "focus:outline-none focus:bg-white focus:border-[#0D0D0D]/40 focus:ring-1 focus:ring-[#0D0D0D]/10",
+    "w-full h-9 rounded-lg border border-border bg-surface-container",
+    "px-2.5 text-[13px] text-foreground placeholder:text-foreground-muted",
+    "focus:outline-none focus:bg-surface-elevated focus:border-primary/40 focus:ring-1 focus:ring-primary/10",
     "transition-colors",
   );
 
@@ -287,20 +281,20 @@ function PriceRangeFilter({
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center gap-2">
         <input type="number" min={0} placeholder="Min" value={minVal} onChange={(e) => setMinVal(e.target.value)} aria-label="Minimum price" className={inputCls} />
-        <span className="text-[#444748] text-[13px] shrink-0">–</span>
+        <span className="text-foreground-muted text-[13px] shrink-0">–</span>
         <input type="number" min={0} placeholder="Max" value={maxVal} onChange={(e) => setMaxVal(e.target.value)} aria-label="Maximum price" className={inputCls} />
       </div>
       <div className="flex gap-2">
         <button
           onClick={apply}
-          className="flex-1 h-9 rounded-lg text-[13px] font-bold bg-[#0D0D0D] text-white hover:bg-[#262626] transition-colors"
+          className="flex-1 h-9 rounded-lg text-[13px] font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           Apply
         </button>
         {hasValue && (
           <button
             onClick={clear}
-            className="h-9 px-3 rounded-lg text-[13px] border border-[#e1e2e4] text-[#191c1e] hover:bg-[#f3f4f6] transition-colors"
+            className="h-9 px-3 rounded-lg text-[13px] border border-border text-foreground hover:bg-muted transition-colors"
           >
             Clear
           </button>

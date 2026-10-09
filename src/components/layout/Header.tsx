@@ -46,7 +46,6 @@ export function Header({
   const router      = useRouter();
   const pathname    = usePathname();
   const searchParams = useSearchParams();
-  // Convert search params to query string for active-nav matching
   const search = searchParams.toString() ? `?${searchParams.toString()}` : "";
 
   const navItems = NAV_ITEMS.filter(
@@ -74,26 +73,20 @@ export function Header({
     <header
       className={cn(
         "sticky top-0 z-40 w-full",
-        "bg-white/95 backdrop-blur-xl border-b border-[#e1e2e4]/60",
+        "bg-surface-elevated/95 backdrop-blur-xl border-b border-border/60",
         "transition-shadow duration-300",
         scrolled && "shadow-[0_2px_12px_rgba(0,0,0,0.06)]",
       )}
     >
-      {/*
-        Full-width header — no max-w constraint on the outer shell.
-        Inner content uses px padding to keep items away from edges.
-        Layout: [Logo | flex-1 gap | Nav + Search | divider | Actions]
-      */}
       <div className="w-full px-5 md:px-8 lg:px-10">
         <div className="flex h-14 md:h-16 items-center gap-0">
 
-          {/* ── ZONE 1: Logo — hard left ────────────────────────────────── */}
+          {/* ── Logo ────────────────────────────────────────────────────── */}
           <Link
             href="/"
-            className="shrink-0 flex items-center mr-8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D] rounded"
+            className="shrink-0 flex items-center mr-8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded"
             aria-label={`${storeName} — home`}
           >
-            {/* Both mobile and desktop use logo-large — icon+text always */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={logoUrl ?? "/logo-large.png"}
@@ -102,20 +95,18 @@ export function Header({
             />
           </Link>
 
-          {/* ── ZONE 2: Nav + Search — fills middle ─────────────────────── */}
+          {/* ── Nav + Search ─────────────────────────────────────────────── */}
           <div className="hidden md:flex flex-1 items-center gap-5">
-            {/* Nav */}
             <nav aria-label="Main navigation" className="hidden xl:flex items-center gap-6 shrink-0">
               {navItems.map((item) => (
                 <DesktopNavItem key={item.label} item={item} pathname={pathname} search={search} />
               ))}
             </nav>
 
-            {/* Search */}
             <form role="search" onSubmit={handleSearch} className="flex-1 max-w-[380px]">
               <div className="relative group">
                 <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[15px] text-[#747878] group-focus-within:text-[#191c1e] transition-colors pointer-events-none"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[15px] text-foreground-muted group-focus-within:text-foreground transition-colors pointer-events-none"
                   aria-hidden="true"
                 />
                 <input
@@ -126,9 +117,9 @@ export function Header({
                   aria-label="Search"
                   className={cn(
                     "w-full h-9 pl-9 pr-4 rounded-full",
-                    "bg-[#f3f4f6] border border-transparent",
-                    "text-[#191c1e] text-[13px] placeholder:text-[#747878]",
-                    "focus:outline-none focus:bg-white focus:border-[#c4c7c7]",
+                    "bg-muted border border-transparent",
+                    "text-foreground text-[13px] placeholder:text-foreground-muted",
+                    "focus:outline-none focus:bg-surface-elevated focus:border-border",
                     "transition-all duration-200",
                   )}
                 />
@@ -136,34 +127,27 @@ export function Header({
             </form>
           </div>
 
-          {/* ── ZONE 3: Account / Wishlist / Cart — hard right ──────────── */}
-          {/* Left border creates clear visual separation from nav+search */}
-          <div className="flex items-center gap-0.5 pl-4 ml-auto border-l border-[#e1e2e4]">
-            {/* Account — visible on all sizes */}
+          {/* ── Actions ──────────────────────────────────────────────────── */}
+          <div className="flex items-center gap-0.5 pl-4 ml-auto border-l border-border">
             <AccountButton />
 
-            {/* Wishlist — visible on all sizes */}
             <Link
               href="/account/wishlist"
               aria-label="Wishlist"
-              className="flex items-center justify-center h-9 w-9 rounded-full text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e] transition-all duration-150"
+              className="flex items-center justify-center h-9 w-9 rounded-full text-foreground-muted hover:bg-muted hover:text-foreground transition-all duration-150"
             >
               <Heart className="size-[18px]" aria-hidden="true" />
             </Link>
 
-            {/* Cart — visible on all sizes */}
             <CartButton cartCount={cartCount} onCartClick={onCartClick} />
-
-            {/* Mobile search icon */}
             <MobileSearchButton />
 
-            {/* Mobile hamburger — xl:hidden */}
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav"
               onClick={() => setMobileOpen((o) => !o)}
-              className="xl:hidden flex h-9 w-9 items-center justify-center rounded-full text-[#191c1e] hover:bg-[#f3f4f6] transition-colors"
+              className="xl:hidden flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted transition-colors"
             >
               {mobileOpen ? <X className="size-4.5" /> : <Menu className="size-4.5" />}
             </button>
@@ -171,7 +155,7 @@ export function Header({
         </div>
       </div>
 
-      {/* ── Mobile nav ──────────────────────────────────────────────────── */}
+      {/* ── Mobile nav ───────────────────────────────────────────────────── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.nav
@@ -181,13 +165,12 @@ export function Header({
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="xl:hidden border-t border-[#e1e2e4]/60 bg-white/95 backdrop-blur-xl"
+            className="xl:hidden border-t border-border/60 bg-surface-elevated/95 backdrop-blur-xl"
           >
-            {/* Mobile search */}
             <div className="px-5 md:px-8 lg:px-10 pt-4 pb-2">
               <form role="search" onSubmit={handleSearch} className="relative">
                 <Search
-                  className="absolute left-4 top-1/2 -translate-y-1/2 size-[15px] text-[#444748] pointer-events-none"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 size-[15px] text-foreground-muted pointer-events-none"
                   aria-hidden="true"
                 />
                 <input
@@ -198,9 +181,9 @@ export function Header({
                   aria-label="Search"
                   className={cn(
                     "w-full h-11 pl-10 pr-4 rounded-full",
-                    "bg-[#edeef0] border border-transparent",
-                    "text-[#191c1e] text-[14px] placeholder:text-[#444748]",
-                    "focus:outline-none focus:bg-white focus:border-[#c4c7c7]/60",
+                    "bg-surface-container border border-transparent",
+                    "text-foreground text-[14px] placeholder:text-foreground-muted",
+                    "focus:outline-none focus:bg-surface-elevated focus:border-border/60",
                     "transition-all duration-200",
                   )}
                 />
@@ -213,9 +196,9 @@ export function Header({
                     href={item.href}
                     className={cn(
                       "flex items-center py-3 text-[14px] font-semibold",
-                      "border-b border-[#e1e2e4]/50 last:border-none",
-                      item.isSale ? "text-[#ba0918]" : "text-[#191c1e]",
-                      "hover:text-[#444748] transition-colors",
+                      "border-b border-border/50 last:border-none",
+                      item.isSale ? "text-secondary" : "text-foreground",
+                      "hover:text-foreground-muted transition-colors",
                     )}
                   >
                     {item.label}
@@ -237,9 +220,9 @@ function CartButton({ cartCount, onCartClick }: { cartCount: number; onCartClick
 
   const cls = cn(
     "relative flex items-center gap-2 py-2 px-4 rounded-full",
-    "bg-[#0D0D0D] text-white text-[13px] font-bold tracking-wide uppercase",
-    "hover:bg-[#1c1b1b] hover:shadow-md transition-all duration-150",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D]",
+    "bg-primary text-primary-foreground text-[13px] font-bold tracking-wide uppercase",
+    "hover:bg-primary/90 hover:shadow-md transition-all duration-150",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
     "hidden sm:flex",
   );
 
@@ -250,7 +233,7 @@ function CartButton({ cartCount, onCartClick }: { cartCount: number; onCartClick
       {cartCount > 0 && (
         <span
           aria-hidden="true"
-          className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ba0918] text-white text-[10px] font-extrabold leading-none shadow-sm"
+          className="flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-[10px] font-extrabold leading-none shadow-sm"
         >
           {cartCount > 99 ? "99+" : cartCount}
         </span>
@@ -266,18 +249,8 @@ function CartButton({ cartCount, onCartClick }: { cartCount: number; onCartClick
 
 // ── Desktop nav item ──────────────────────────────────────────────────────────
 
-function DesktopNavItem({
-  item,
-  pathname,
-  search,
-}: {
-  item: NavItem;
-  pathname: string;
-  search: string;
-}) {
+function DesktopNavItem({ item, pathname, search }: { item: NavItem; pathname: string; search: string }) {
   const [open, setOpen] = useState(false);
-
-  // Full current URL path+search for matching
   const fullUrl = search ? `${pathname}${search}` : pathname;
 
   const isActive = item.href === "/"
@@ -294,12 +267,12 @@ function DesktopNavItem({
         href={item.href}
         className={cn(
           "relative py-1 text-[14px] transition-colors duration-150",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D] rounded",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded",
           item.isSale
-            ? "font-semibold text-[#ba0918] hover:opacity-80"
+            ? "font-semibold text-secondary hover:opacity-80"
             : isActive
-            ? "font-bold text-[#191c1e]"
-            : "font-medium text-[#444748] hover:text-[#191c1e]",
+            ? "font-bold text-foreground"
+            : "font-medium text-foreground-muted hover:text-foreground",
         )}
       >
         {item.label}
@@ -308,7 +281,7 @@ function DesktopNavItem({
             aria-hidden="true"
             className={cn(
               "absolute left-0 bottom-0 h-[2px] w-full rounded-full",
-              item.isSale ? "bg-[#ba0918]" : "bg-[#0D0D0D]",
+              item.isSale ? "bg-secondary" : "bg-primary",
             )}
           />
         )}
@@ -325,7 +298,7 @@ function DesktopNavItem({
       <button
         aria-expanded={open}
         aria-haspopup="true"
-        className="flex items-center gap-1 py-1 text-[14px] font-medium text-[#444748] hover:text-[#191c1e] transition-colors"
+        className="flex items-center gap-1 py-1 text-[14px] font-medium text-foreground-muted hover:text-foreground transition-colors"
       >
         {item.label}
         <ChevronDown className={cn("size-3.5 transition-transform duration-150", open && "rotate-180")} />
@@ -337,13 +310,13 @@ function DesktopNavItem({
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="absolute top-full left-0 mt-2 w-48 rounded-2xl border border-[#e1e2e4] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5 z-50"
+            className="absolute top-full left-0 mt-2 w-48 rounded-2xl border border-border bg-surface-elevated shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5 z-50"
           >
             {item.children.map((child) => (
               <Link
                 key={child.label}
                 href={child.href}
-                className="block px-4 py-2.5 text-[13px] font-medium text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e] transition-colors"
+                className="block px-4 py-2.5 text-[13px] font-medium text-foreground-muted hover:bg-muted hover:text-foreground transition-colors"
               >
                 {child.label}
               </Link>
@@ -379,7 +352,7 @@ function AccountButton() {
 
   const baseCls = cn(
     "flex items-center gap-1.5 px-2.5 py-2 rounded-full",
-    "text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e]",
+    "text-foreground-muted hover:bg-muted hover:text-foreground",
     "text-[13px] font-semibold transition-all duration-150",
   );
 
@@ -418,9 +391,9 @@ function AccountButton() {
         aria-label="Account menu"
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((o) => !o)}
-        className="flex items-center gap-2 px-2 py-1.5 rounded-full text-[#444748] hover:bg-[#edeef0] hover:text-[#191c1e] transition-all duration-150"
+        className="flex items-center gap-2 px-2 py-1.5 rounded-full text-foreground-muted hover:bg-surface-container hover:text-foreground transition-all duration-150"
       >
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0D0D0D] text-white text-[11px] font-bold shadow-sm">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold shadow-sm">
           {initials}
         </span>
         <span className="hidden md:inline text-[13px] font-semibold">Account</span>
@@ -433,24 +406,24 @@ function AccountButton() {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl border border-[#e1e2e4] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5"
+            className="absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl border border-border bg-surface-elevated shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5"
           >
-            <div className="px-4 py-3 border-b border-[#e1e2e4]">
-              <p className="text-[13px] font-bold text-[#191c1e] truncate">{displayName}</p>
+            <div className="px-4 py-3 border-b border-border">
+              <p className="text-[13px] font-bold text-foreground truncate">{displayName}</p>
               {user?.email && (
-                <p className="text-[11px] text-[#444748] truncate mt-0.5">{user.email}</p>
+                <p className="text-[11px] text-foreground-muted truncate mt-0.5">{user.email}</p>
               )}
             </div>
-            <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e] transition-colors">
+            <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-foreground-muted hover:bg-muted hover:text-foreground transition-colors">
               <User className="size-4" /> My Account
             </Link>
-            <Link href="/account/orders" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e] transition-colors">
+            <Link href="/account/orders" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-foreground-muted hover:bg-muted hover:text-foreground transition-colors">
               <ShoppingBag className="size-4" /> My Orders
             </Link>
-            <div className="border-t border-[#e1e2e4] my-1" />
+            <div className="border-t border-border my-1" />
             <button
               onClick={async () => { setMenuOpen(false); await logout(); router.push("/"); }}
-              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#444748] hover:bg-danger/5 hover:text-danger transition-colors"
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] text-foreground-muted hover:bg-danger/5 hover:text-danger transition-colors"
             >
               <LogOut className="size-4" /> Sign Out
             </button>
@@ -482,7 +455,7 @@ function MobileSearchButton() {
       <button
         aria-label="Search"
         onClick={() => setOpen((o) => !o)}
-        className="md:hidden flex h-9 w-9 items-center justify-center rounded-full text-[#444748] hover:bg-[#edeef0] transition-colors"
+        className="md:hidden flex h-9 w-9 items-center justify-center rounded-full text-foreground-muted hover:bg-surface-container transition-colors"
       >
         <Search className="size-[20px]" />
       </button>
@@ -493,11 +466,11 @@ function MobileSearchButton() {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="md:hidden fixed inset-x-0 top-16 z-50 bg-white/95 backdrop-blur-xl border-b border-[#e1e2e4]/60 px-5 py-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
+            className="md:hidden fixed inset-x-0 top-16 z-50 bg-surface-elevated/95 backdrop-blur-xl border-b border-border/60 px-5 py-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
           >
             <form role="search" onSubmit={handleSubmit} className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-[15px] text-[#444748] pointer-events-none" aria-hidden="true" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-[15px] text-foreground-muted pointer-events-none" aria-hidden="true" />
                 <input
                   autoFocus
                   type="search"
@@ -507,14 +480,14 @@ function MobileSearchButton() {
                   aria-label="Search"
                   className={cn(
                     "w-full h-11 pl-10 pr-4 rounded-full",
-                    "bg-[#edeef0] border border-transparent",
-                    "text-[#191c1e] text-[14px] placeholder:text-[#444748]",
-                    "focus:outline-none focus:bg-white focus:border-[#c4c7c7]/60",
+                    "bg-surface-container border border-transparent",
+                    "text-foreground text-[14px] placeholder:text-foreground-muted",
+                    "focus:outline-none focus:bg-surface-elevated focus:border-border/60",
                     "transition-all duration-200",
                   )}
                 />
               </div>
-              <button type="button" onClick={() => setOpen(false)} className="text-[13px] font-medium text-[#444748] hover:text-[#191c1e] px-2 transition-colors">
+              <button type="button" onClick={() => setOpen(false)} className="text-[13px] font-medium text-foreground-muted hover:text-foreground px-2 transition-colors">
                 Cancel
               </button>
             </form>

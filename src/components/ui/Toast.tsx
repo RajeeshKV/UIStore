@@ -83,14 +83,14 @@ const iconMap: Record<ToastType, React.ReactNode> = {
   success: <CheckCircle className="size-4 text-success shrink-0" />,
   error:   <XCircle     className="size-4 text-danger  shrink-0" />,
   warning: <AlertCircle className="size-4 text-warning shrink-0" />,
-  info:    <Info        className="size-4 text-[#5A6578] shrink-0" />,
+  info:    <Info        className="size-4 text-foreground-muted shrink-0" />,
 };
 
 const borderMap: Record<ToastType, string> = {
-  success: "border-l-4 border-l-success  border-[#E5E7EB]",
-  error:   "border-l-4 border-l-danger   border-[#E5E7EB]",
-  warning: "border-l-4 border-l-warning  border-[#E5E7EB]",
-  info:    "border-l-4 border-l-[#c4c7c7] border-[#E5E7EB]",
+  success: "border-l-4 border-l-success  border-border",
+  error:   "border-l-4 border-l-danger   border-border",
+  warning: "border-l-4 border-l-warning  border-border",
+  info:    "border-l-4 border-l-border-strong border-border",
 };
 
 function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: () => void }) {
@@ -101,8 +101,8 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: () => void
       aria-live="polite"
       className={cn(
         "pointer-events-auto flex items-start gap-3",
-        "rounded-xl bg-white shadow-[0_8px_24px_-4px_rgba(0,0,0,0.1)]",
-        "px-4 py-3 border border-[#E5E7EB]",
+        "rounded-xl bg-surface-elevated shadow-[0_8px_24px_-4px_rgba(0,0,0,0.1)]",
+        "px-4 py-3 border border-border",
         borderMap[item.type],
       )}
       initial={{ opacity: 0, y: 12, scale: 0.96 }}
@@ -114,13 +114,13 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: () => void
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-semibold text-foreground">{item.title}</p>
         {item.description && (
-          <p className="text-[12px] text-[#5A6578] mt-0.5">{item.description}</p>
+          <p className="text-[12px] text-foreground-muted mt-0.5">{item.description}</p>
         )}
       </div>
       <button
         onClick={onDismiss}
         aria-label="Dismiss notification"
-        className="text-[#5A6578] hover:text-foreground transition-colors mt-0.5 shrink-0"
+        className="text-foreground-muted hover:text-foreground transition-colors mt-0.5 shrink-0"
       >
         <X className="size-3.5" />
       </button>

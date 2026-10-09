@@ -19,13 +19,13 @@ const buttonVariants = cva(
       variant: {
         /** Obsidian black — primary CTA (Add to Cart, Shop Now, etc.) */
         primary: [
-          "bg-[#0D0D0D] text-white",
-          "hover:bg-[#262626]",
-          "disabled:bg-[#0D0D0D]/40",
+          "bg-primary text-primary-foreground",
+          "hover:bg-primary/90",
+          "disabled:bg-primary/40",
         ],
         /** White with border — secondary/ghost actions */
         secondary: [
-          "bg-white text-foreground border border-[#D1D5DB]",
+          "bg-surface-elevated text-foreground border border-border",
           "hover:bg-surface hover:border-border-strong",
         ],
         /** Transparent with border */

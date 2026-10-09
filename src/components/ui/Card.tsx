@@ -8,7 +8,7 @@ export function Card({ hoverable = false, className, children, ...props }: CardP
   return (
     <div
       className={cn(
-        "rounded-2xl border border-[#E5E7EB] bg-white",
+        "rounded-2xl border border-border bg-surface-elevated",
         hoverable && [
           "transition-shadow duration-200 cursor-pointer",
           "hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.06)]",

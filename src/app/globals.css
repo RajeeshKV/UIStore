@@ -1,197 +1,275 @@
 @import "tailwindcss";
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Kromic Store – Global Design System
-   Design reference: Shopey Luxury Tech design files
-   Font: Plus Jakarta Sans — loaded via <link> in layout.tsx
-   Primary palette: monochrome obsidian + crimson accent
-───────────────────────────────────────────────────────────────────────────── */
-
-/* ── 1. Raw palette (private) ─────────────────────────────────────────────── */
+/*
+─────────────────────────────────────────────────────────────────────────────
+Kromic Store – Global Design System
+Design reference: Shopey Luxury Tech design files
+Font: Plus Jakarta Sans — loaded via <link> in layout.tsx
+Primary palette: monochrome obsidian + crimson accent
+─────────────────────────────────────────────────────────────────────────────
+*/
+/*
+── 1. Raw palette (private) ───────────────────────────────────────────────
+*/
 :root {
-  /* Design-reference surfaces */
-  --ds-surface-lowest:        #ffffff;
-  --ds-surface-low:           #f3f4f6;
-  --ds-surface:               #f8f9fb;
-  --ds-surface-container:     #edeef0;
-  --ds-surface-high:          #e7e8ea;
-  --ds-surface-highest:       #e1e2e4;
-
-  /* Design-reference foreground */
-  --ds-on-surface:            #191c1e;
-  --ds-on-surface-muted:      #444748;
-
-  /* Design-reference borders */
-  --ds-outline:               #747878;
-  --ds-outline-variant:       #c4c7c7;
-
-  /* Design-reference primary (obsidian black) */
-  --ds-primary:               #000000;
-  --ds-on-primary:            #ffffff;
-  --ds-primary-container:     #1c1b1b;
-
-  /* Design-reference secondary (crimson — discount badges, sale) */
-  --ds-secondary:             #ba0918;
-  --ds-on-secondary:          #ffffff;
-  --ds-secondary-container:   #de2d2d;
-
-  /* Status */
-  --color-success-raw:        #16a34a;
-  --color-warning-raw:        #d97706;
-  --color-danger-raw:         #dc2626;
+  /*
+  Design-reference surfaces
+  */
+  --ds-surface-lowest: #ffffff;
+  --ds-surface-low: #f3f4f6;
+  --ds-surface: #f8f9fb;
+  --ds-surface-container: #edeef0;
+  --ds-surface-high: #e7e8ea;
+  --ds-surface-highest: #e1e2e4;
+  /*
+  Design-reference foreground
+  */
+  --ds-on-surface: #191c1e;
+  --ds-on-surface-muted: #444748;
+  /*
+  Design-reference borders
+  */
+  --ds-outline: #747878;
+  --ds-outline-variant: #c4c7c7;
+  /*
+  Design-reference primary (obsidian black)
+  */
+  --ds-primary: #000000;
+  --ds-on-primary: #ffffff;
+  --ds-primary-container: #1c1b1b;
+  /*
+  Design-reference secondary (crimson — discount badges, sale)
+  */
+  --ds-secondary: #ba0918;
+  --ds-on-secondary: #ffffff;
+  --ds-secondary-container: #de2d2d;
+  /*
+  Status
+  */
+  --color-success-raw: #16a34a;
+  --color-warning-raw: #d97706;
+  --color-danger-raw: #dc2626;
 }
-
-/* ── 2. Semantic tokens – Light (default) ──────────────────────────────────── */
+/*
+── 2. Semantic tokens – Light (default) ────────────────────────────────────
+*/
 :root {
-  /* Canvas */
-  --color-background:           var(--ds-surface);
-  --color-surface:              var(--ds-surface-low);
-  --color-surface-elevated:     var(--ds-surface-lowest);
-  --color-surface-container:    var(--ds-surface-container);
-
-  /* Text */
-  --color-foreground:           var(--ds-on-surface);
-  --color-foreground-muted:     var(--ds-on-surface-muted);
-
-  /* Borders */
-  --color-border:               var(--ds-outline-variant);
-  --color-border-strong:        var(--ds-outline);
-
-  /* Primary — obsidian */
-  --color-primary:              var(--ds-primary);
-  --color-primary-foreground:   var(--ds-on-primary);
-
-  /* Secondary — crimson (sale/discount only) */
-  --color-secondary:            var(--ds-secondary);
+  /*
+  Canvas
+  */
+  --color-background: var(--ds-surface);
+  --color-surface: var(--ds-surface-low);
+  --color-surface-elevated: var(--ds-surface-lowest);
+  --color-surface-container: var(--ds-surface-container);
+  /*
+  Text
+  */
+  --color-foreground: var(--ds-on-surface);
+  --color-foreground-muted: var(--ds-on-surface-muted);
+  /*
+  Borders
+  */
+  --color-border: var(--ds-outline-variant);
+  --color-border-strong: var(--ds-outline);
+  /*
+  Primary — obsidian
+  */
+  --color-primary: var(--ds-primary);
+  --color-primary-foreground: var(--ds-on-primary);
+  /*
+  Secondary — crimson (sale/discount only)
+  */
+  --color-secondary: var(--ds-secondary);
   --color-secondary-foreground: var(--ds-on-secondary);
-
-  /* Accent mirrors primary */
-  --color-accent:               var(--ds-primary);
-  --color-accent-foreground:    var(--ds-on-primary);
-
-  /* Muted surfaces */
-  --color-muted:                var(--ds-surface-container);
-  --color-muted-foreground:     var(--ds-on-surface-muted);
-
-  /* Status */
-  --color-success:              var(--color-success-raw);
-  --color-success-foreground:   #ffffff;
-  --color-warning:              var(--color-warning-raw);
-  --color-warning-foreground:   #ffffff;
-  --color-danger:               var(--color-danger-raw);
-  --color-danger-foreground:    #ffffff;
-
-  --color-focus:                var(--ds-primary);
+  /*
+  Accent mirrors primary
+  */
+  --color-accent: var(--ds-primary);
+  --color-accent-foreground: var(--ds-on-primary);
+  /*
+  Muted surfaces
+  */
+  --color-muted: var(--ds-surface-container);
+  --color-muted-foreground: var(--ds-on-surface-muted);
+  /*
+  Status
+  */
+  --color-success: var(--color-success-raw);
+  --color-success-foreground: #ffffff;
+  --color-warning: var(--color-warning-raw);
+  --color-warning-foreground: #ffffff;
+  --color-danger: var(--color-danger-raw);
+  --color-danger-foreground: #ffffff;
+  --color-focus: var(--ds-primary);
 }
-
-/* ── 3. Register tokens with Tailwind 4 ────────────────────────────────────── */
-@theme inline {
-  /* Colors */
-  --color-background:           var(--color-background);
-  --color-surface:              var(--color-surface);
-  --color-surface-elevated:     var(--color-surface-elevated);
-  --color-surface-container:    var(--color-surface-container);
-
-  --color-foreground:           var(--color-foreground);
-  --color-foreground-muted:     var(--color-foreground-muted);
-
-  --color-border:               var(--color-border);
-  --color-border-strong:        var(--color-border-strong);
-
-  --color-primary:              var(--color-primary);
-  --color-primary-foreground:   var(--color-primary-foreground);
-
-  --color-secondary:            var(--color-secondary);
+/*
+── 3. Register tokens with Tailwind 4 ──────────────────────────────────────
+   No 'inline' keyword — Tailwind emits var(--color-*) references in output
+   CSS so runtime data-theme overrides on <html> are respected.
+*/
+@theme {
+  /*
+  Colors
+  */
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-surface-elevated: var(--color-surface-elevated);
+  --color-surface-container: var(--color-surface-container);
+  --color-foreground: var(--color-foreground);
+  --color-foreground-muted: var(--color-foreground-muted);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-primary: var(--color-primary);
+  --color-primary-foreground: var(--color-primary-foreground);
+  --color-secondary: var(--color-secondary);
   --color-secondary-foreground: var(--color-secondary-foreground);
-
-  --color-accent:               var(--color-accent);
-  --color-accent-foreground:    var(--color-accent-foreground);
-
-  --color-muted:                var(--color-muted);
-  --color-muted-foreground:     var(--color-muted-foreground);
-
-  --color-success:              var(--color-success);
-  --color-success-foreground:   var(--color-success-foreground);
-
-  --color-warning:              var(--color-warning);
-  --color-warning-foreground:   var(--color-warning-foreground);
-
-  --color-danger:               var(--color-danger);
-  --color-danger-foreground:    var(--color-danger-foreground);
-
-  --color-focus:                var(--color-focus);
-
-  /* ── Typography — Plus Jakarta Sans ──────────────────────────────────────── */
-  --font-sans:    'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-mono:    ui-monospace, monospace;
-
-  /* Font sizes — editorial hierarchy from DESIGN.md */
-  --text-display:   clamp(2rem, 4.5vw, 3.5rem);   /* display-hero desktop */
-  --text-h1:        clamp(1.75rem, 3.5vw, 2.625rem);
-  --text-h2:        clamp(1.375rem, 2.5vw, 1.625rem); /* headline-lg 26px */
-  --text-h3:        1.25rem;                           /* headline-md 20px */
-  --text-h4:        1rem;                              /* headline-sm 16px */
-  --text-body-lg:   1rem;                              /* body-lg 16px */
-  --text-body:      0.875rem;                          /* body-md 14px */
-  --text-body-sm:   0.8125rem;                         /* body-sm 13px */
-  --text-caption:   0.75rem;                           /* label-sm 12px */
-  --text-label:     0.875rem;                          /* label-md 14px */
-  --text-price:     1.375rem;                          /* price-hero 22px */
-  --text-caps:      0.6875rem;                         /* caption-caps 11px */
-
-  /* Spacing */
-  --spacing-section:     2.5rem;   /* space-xl from DESIGN.md */
+  --color-accent: var(--color-accent);
+  --color-accent-foreground: var(--color-accent-foreground);
+  --color-muted: var(--color-muted);
+  --color-muted-foreground: var(--color-muted-foreground);
+  --color-success: var(--color-success);
+  --color-success-foreground: var(--color-success-foreground);
+  --color-warning: var(--color-warning);
+  --color-warning-foreground: var(--color-warning-foreground);
+  --color-danger: var(--color-danger);
+  --color-danger-foreground: var(--color-danger-foreground);
+  --color-focus: var(--color-focus);
+  /*
+  ── Typography — Plus Jakarta Sans ────────────────────────────────────────
+  */
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  /*
+  Font sizes — editorial hierarchy from DESIGN.md
+  */
+  --text-display: clamp(2rem, 4.5vw, 3.5rem);
+  /*
+  display-hero desktop
+  */
+  --text-h1: clamp(1.75rem, 3.5vw, 2.625rem);
+  --text-h2: clamp(1.375rem, 2.5vw, 1.625rem);
+  /*
+  headline-lg 26px
+  */
+  --text-h3: 1.25rem;
+  /*
+  headline-md 20px
+  */
+  --text-h4: 1rem;
+  /*
+  headline-sm 16px
+  */
+  --text-body-lg: 1rem;
+  /*
+  body-lg 16px
+  */
+  --text-body: 0.875rem;
+  /*
+  body-md 14px
+  */
+  --text-body-sm: 0.8125rem;
+  /*
+  body-sm 13px
+  */
+  --text-caption: 0.75rem;
+  /*
+  label-sm 12px
+  */
+  --text-label: 0.875rem;
+  /*
+  label-md 14px
+  */
+  --text-price: 1.375rem;
+  /*
+  price-hero 22px
+  */
+  --text-caps: 0.6875rem;
+  /*
+  caption-caps 11px
+  */
+  /*
+  Spacing
+  */
+  --spacing-section: 2.5rem;
+  /*
+  space-xl from DESIGN.md
+  */
   --spacing-container-x: 1.5rem;
-
-  /* Radius — from DESIGN.md */
-  --radius-xs:   0.25rem;    /* rounded-sm */
-  --radius-sm:   0.5rem;     /* DEFAULT */
-  --radius-md:   0.75rem;    /* rounded-md */
-  --radius-lg:   1rem;       /* rounded-lg (cards) */
-  --radius-xl:   1.5rem;     /* rounded-xl */
-  --radius-2xl:  1.875rem;   /* rounded-3xl (hero) */
+  /*
+  Radius — from DESIGN.md
+  */
+  --radius-xs: 0.25rem;
+  /*
+  rounded-sm
+  */
+  --radius-sm: 0.5rem;
+  /*
+  DEFAULT
+  */
+  --radius-md: 0.75rem;
+  /*
+  rounded-md
+  */
+  --radius-lg: 1rem;
+  /*
+  rounded-lg (cards)
+  */
+  --radius-xl: 1.5rem;
+  /*
+  rounded-xl
+  */
+  --radius-2xl: 1.875rem;
+  /*
+  rounded-3xl (hero)
+  */
   --radius-full: 9999px;
-
-  /* Shadows — restrained flat+surface aesthetic */
-  --shadow-xs:    0 1px 2px 0 rgba(0,0,0,0.04);
-  --shadow-sm:    0 2px 8px rgba(0,0,0,0.08);
-  --shadow-md:    0 8px 24px -4px rgba(0,0,0,0.06);  /* hover elevation */
-  --shadow-lg:    0 12px 36px rgba(0,0,0,0.06);      /* hero */
-  --shadow-xl:    0 20px 40px -8px rgba(0,0,0,0.08);
-
-  /* Motion */
-  --duration-fast:    150ms;
-  --duration-base:    200ms;
-  --duration-slow:    300ms;
-  --duration-slower:  500ms;
-  --ease-out-smooth:  cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-smooth:   cubic-bezier(0.7, 0, 0.84, 0);
-  --ease-in-out:      cubic-bezier(0.45, 0, 0.55, 1);
+  /*
+  Shadows — restrained flat+surface aesthetic
+  */
+  --shadow-xs: 0 1px 2px 0 rgba(0,0,0,0.04);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md: 0 8px 24px -4px rgba(0,0,0,0.06);
+  /*
+  hover elevation
+  */
+  --shadow-lg: 0 12px 36px rgba(0,0,0,0.06);
+  /*
+  hero
+  */
+  --shadow-xl: 0 20px 40px -8px rgba(0,0,0,0.08);
+  /*
+  Motion
+  */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  --ease-out-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-smooth: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
 }
-
-/* ── 5. Base styles ─────────────────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
+/*
+── 5. Base styles ───────────────────────────────────────────────────────────
+*/
+*,  *::before,  *::after {
   box-sizing: border-box;
 }
-
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
-
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html {
+    scroll-behavior: auto;
+  }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
-
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
@@ -201,29 +279,40 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-/* ── 6. Focus styles ─────────────────────────────────────────────────────────── */
+/*
+── 6. Focus styles ───────────────────────────────────────────────────────────
+*/
 :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
-
-/* ── 7. Selection ─────────────────────────────────────────────────────────── */
+/*
+── 7. Selection ───────────────────────────────────────────────────────────
+*/
 ::selection {
   background-color: var(--color-primary);
   color: var(--color-primary-foreground);
 }
-
-/* ── 8. Scrollbar (webkit) ─────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
+/*
+── 8. Scrollbar (webkit) ───────────────────────────────────────────────────
+*/
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
   border-radius: var(--radius-full);
 }
-::-webkit-scrollbar-thumb:hover { background: var(--color-border-strong); }
-
-/* ── 9. Typography utilities ─────────────────────────────────────────────────── */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+/*
+── 9. Typography utilities ───────────────────────────────────────────────────
+*/
 .text-display {
   font-size: var(--text-display);
   line-height: 1.05;
@@ -254,11 +343,26 @@ body {
   letter-spacing: -0.01em;
   font-weight: 600;
 }
-.text-body-lg { font-size: var(--text-body-lg); line-height: 1.65; }
-.text-body-sm { font-size: var(--text-body-sm); line-height: 1.5; }
-.text-caption  { font-size: var(--text-caption); line-height: 1.4; letter-spacing: 0.01em; }
-.text-label    { font-size: var(--text-label); line-height: 1; font-weight: 600; letter-spacing: 0.01em; }
-.text-caps     {
+.text-body-lg {
+  font-size: var(--text-body-lg);
+  line-height: 1.65;
+}
+.text-body-sm {
+  font-size: var(--text-body-sm);
+  line-height: 1.5;
+}
+.text-caption {
+  font-size: var(--text-caption);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+.text-label {
+  font-size: var(--text-label);
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.text-caps {
   font-size: var(--text-caps);
   line-height: 1.27;
   font-weight: 700;
@@ -270,65 +374,135 @@ body {
   font-weight: 800;
   line-height: 1.27;
 }
-
-/* ── 10. Layout utilities ─────────────────────────────────────────────────────── */
+/*
+── 10. Layout utilities ───────────────────────────────────────────────────────
+*/
 .container-x {
   padding-left: var(--spacing-container-x);
   padding-right: var(--spacing-container-x);
 }
-
-@media (min-width: 640px)  { :root { --spacing-container-x: 2rem; } }
-@media (min-width: 1024px) { :root { --spacing-container-x: 3rem; } }
-@media (min-width: 1280px) { :root { --spacing-container-x: 4rem; } }
-@media (min-width: 1536px) { :root { --spacing-container-x: 5rem; } }
-
-/* ── 11. Animation utilities ─────────────────────────────────────────────────── */
+@media (min-width: 640px) {
+  :root {
+    --spacing-container-x: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --spacing-container-x: 3rem;
+  }
+}
+@media (min-width: 1280px) {
+  :root {
+    --spacing-container-x: 4rem;
+  }
+}
+@media (min-width: 1536px) {
+  :root {
+    --spacing-container-x: 5rem;
+  }
+}
+/*
+── 11. Animation utilities ───────────────────────────────────────────────────
+*/
 @keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes fade-down {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes slide-in-right {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 @keyframes slide-out-right {
-  from { transform: translateX(0); }
-  to   { transform: translateX(100%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 @keyframes slide-in-left {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(0); }
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
 }
-
-.animate-fade-in         { animation: fade-in var(--duration-base) var(--ease-out-smooth) both; }
-.animate-fade-up         { animation: fade-up var(--duration-slow) var(--ease-out-smooth) both; }
-.animate-fade-down       { animation: fade-down var(--duration-slow) var(--ease-out-smooth) both; }
-.animate-scale-in        { animation: scale-in var(--duration-base) var(--ease-out-smooth) both; }
-.animate-slide-in-right  { animation: slide-in-right var(--duration-slow) var(--ease-out-smooth) both; }
-.animate-slide-out-right { animation: slide-out-right var(--duration-slow) var(--ease-in-smooth) both; }
-.animate-skeleton        { animation: skeleton-pulse 1.8s ease-in-out infinite; }
-
-/* ── 12. Catalog grids ─────────────────────────────────────────────────────────
-   CSS grid classes — responsive breakpoints require class-level @media, not inline styles.
-───────────────────────────────────────────────────────────────────────────── */
-
-/* Category & Brand pages — 2 cols mobile, auto-fill ≥640 */
+.animate-fade-in {
+  animation: fade-in var(--duration-base) var(--ease-out-smooth) both;
+}
+.animate-fade-up {
+  animation: fade-up var(--duration-slow) var(--ease-out-smooth) both;
+}
+.animate-fade-down {
+  animation: fade-down var(--duration-slow) var(--ease-out-smooth) both;
+}
+.animate-scale-in {
+  animation: scale-in var(--duration-base) var(--ease-out-smooth) both;
+}
+.animate-slide-in-right {
+  animation: slide-in-right var(--duration-slow) var(--ease-out-smooth) both;
+}
+.animate-slide-out-right {
+  animation: slide-out-right var(--duration-slow) var(--ease-in-smooth) both;
+}
+.animate-skeleton {
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+/*
+── 12. Catalog grids ─────────────────────────────────────────────────────────
+CSS grid classes — responsive breakpoints require class-level @media, not inline styles.
+─────────────────────────────────────────────────────────────────────────────
+*/
+/*
+Category & Brand pages — 2 cols mobile, auto-fill ≥640
+*/
 .grid-catalog-cards {
   display: grid;
   gap: 16px;
@@ -345,8 +519,9 @@ body {
     grid-template-columns: repeat(4, 1fr);
   }
 }
-
-/* Product grid — 2 cols mobile, 3–5 cols desktop */
+/*
+Product grid — 2 cols mobile, 3–5 cols desktop
+*/
 .grid-product-cards {
   display: grid;
   gap: 12px;
@@ -368,15 +543,1455 @@ body {
     grid-template-columns: repeat(5, 1fr);
   }
 }
-
-/* Suppress number-input spin arrows */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+/*
+Suppress number-input spin arrows
+*/
+input[type="number"]::-webkit-inner-spin-button,  input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type="number"] { -moz-appearance: textfield; }
-
-/* ── 13. Radix / shadcn reset helpers ──────────────────────────────────────── */
-/* Ensure Radix portals sit above everything */
-[data-radix-popper-content-wrapper] { z-index: 50 !important; }
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+/*
+── 13. Radix / shadcn reset helpers ────────────────────────────────────────
+*/
+/*
+Ensure Radix portals sit above everything
+*/
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+/*
+─────────────────────────────────────────────────────────────────────────────
+14. Alternate theme — Modern Editorial Luxury
+Activate with: <html data-theme="luxe"> or <body data-theme="luxe">
+This theme intentionally overrides tokens only; existing layouts and behavior
+remain unchanged.
+─────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="luxe"],  [data-theme="luxe"] {
+  color-scheme: light;
+  /*
+  Warm, editorial surfaces
+  */
+  --ds-surface-lowest: #ffffff;
+  --ds-surface-low: #f8f6f1;
+  --ds-surface: #f4f1eb;
+  --ds-surface-container: #ece7de;
+  --ds-surface-high: #e3ddd2;
+  --ds-surface-highest: #d9d1c5;
+  /*
+  Espresso foreground
+  */
+  --ds-on-surface: #211d18;
+  --ds-on-surface-muted: #71695f;
+  /*
+  Quiet warm borders
+  */
+  --ds-outline: #9b9184;
+  --ds-outline-variant: #d9d1c5;
+  /*
+  Espresso primary
+  */
+  --ds-primary: #29231d;
+  --ds-on-primary: #fffdf8;
+  --ds-primary-container: #3b3229;
+  /*
+  Champagne accent — use sparingly
+  */
+  --ds-secondary: #a88752;
+  --ds-on-secondary: #ffffff;
+  --ds-secondary-container: #d8c29b;
+  /*
+  Semantic aliases
+  */
+  --color-background: var(--ds-surface);
+  --color-surface: var(--ds-surface-low);
+  --color-surface-elevated: var(--ds-surface-lowest);
+  --color-surface-container: var(--ds-surface-container);
+  --color-foreground: var(--ds-on-surface);
+  --color-foreground-muted: var(--ds-on-surface-muted);
+  --color-border: var(--ds-outline-variant);
+  --color-border-strong: var(--ds-outline);
+  --color-primary: var(--ds-primary);
+  --color-primary-foreground: var(--ds-on-primary);
+  --color-secondary: var(--ds-secondary);
+  --color-secondary-foreground: var(--ds-on-secondary);
+  --color-accent: var(--ds-secondary);
+  --color-accent-foreground: #29231d;
+  --color-muted: var(--ds-surface-container);
+  --color-muted-foreground: var(--ds-on-surface-muted);
+  --color-focus: #a88752;
+  /*
+  More composed, less heavy elevations
+  */
+  --shadow-xs: 0 1px 2px rgba(41, 35, 29, 0.035);
+  --shadow-sm: 0 2px 8px rgba(41, 35, 29, 0.045);
+  --shadow-md: 0 10px 28px -8px rgba(41, 35, 29, 0.10);
+  --shadow-lg: 0 18px 42px -12px rgba(41, 35, 29, 0.12);
+  --shadow-xl: 0 24px 56px -16px rgba(41, 35, 29, 0.14);
+}
+/*
+Small polish pass for the luxury theme; no component behavior changes.
+*/
+[data-theme="luxe"] body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  letter-spacing: -0.005em;
+}
+[data-theme="luxe"] ::selection {
+  background-color: #d8c29b;
+  color: #29231d;
+}
+[data-theme="luxe"] ::-webkit-scrollbar-thumb {
+  background: #c9bfae;
+}
+[data-theme="luxe"] ::-webkit-scrollbar-thumb:hover {
+  background: #a99a84;
+}
+[data-theme="luxe"] :focus-visible {
+  outline-color: var(--color-focus);
+}
+/*
+Prefer reduced visual noise while retaining existing grid dimensions.
+*/
+[data-theme="luxe"] .grid-catalog-cards,  [data-theme="luxe"] .grid-product-cards {
+  align-items: stretch;
+}
+/*
+─────────────────────────────────────────────────────────────────────────────
+16. Alternate theme — Coffeehouse Green
+Activate with: <html lang="en" data-theme="starbucks">
+Inspired by Starbucks' broad coffeehouse palette; not an official brand asset.
+Keeps existing layout utilities and component behavior unchanged.
+─────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="starbucks"],  [data-theme="starbucks"] {
+  color-scheme: light;
+  /*
+  Warm café paper, cream, and subtle oat surfaces
+  */
+  --ds-surface-lowest: #ffffff;
+  --ds-surface-low: #f8f6f0;
+  --ds-surface: #f2efe6;
+  --ds-surface-container: #e8e3d6;
+  --ds-surface-high: #ddd6c5;
+  --ds-surface-highest: #d1c8b4;
+  /*
+  Deep coffee text
+  */
+  --ds-on-surface: #1f2923;
+  --ds-on-surface-muted: #5e675f;
+  /*
+  Natural, quiet borders
+  */
+  --ds-outline: #8b958b;
+  --ds-outline-variant: #d5d9d0;
+  /*
+  Coffeehouse evergreen
+  */
+  --ds-primary: #006241;
+  --ds-on-primary: #ffffff;
+  --ds-primary-container: #d8e8dd;
+  /*
+  Warm latte accent
+  */
+  --ds-secondary: #cba978;
+  --ds-on-secondary: #27241e;
+  --ds-secondary-container: #efe0c5;
+  --color-background: var(--ds-surface);
+  --color-surface: var(--ds-surface-low);
+  --color-surface-elevated: var(--ds-surface-lowest);
+  --color-surface-container: var(--ds-surface-container);
+  --color-foreground: var(--ds-on-surface);
+  --color-foreground-muted: var(--ds-on-surface-muted);
+  --color-border: var(--ds-outline-variant);
+  --color-border-strong: var(--ds-outline);
+  --color-primary: var(--ds-primary);
+  --color-primary-foreground: var(--ds-on-primary);
+  --color-secondary: var(--ds-secondary);
+  --color-secondary-foreground: var(--ds-on-secondary);
+  --color-accent: var(--ds-primary);
+  --color-accent-foreground: #ffffff;
+  --color-muted: var(--ds-surface-container);
+  --color-muted-foreground: var(--ds-on-surface-muted);
+  --color-focus: #00845a;
+  --shadow-xs: 0 1px 2px rgba(31, 41, 35, 0.04);
+  --shadow-sm: 0 3px 10px rgba(31, 41, 35, 0.055);
+  --shadow-md: 0 10px 26px -8px rgba(31, 41, 35, 0.10);
+  --shadow-lg: 0 18px 42px -12px rgba(31, 41, 35, 0.12);
+  --shadow-xl: 0 24px 56px -16px rgba(31, 41, 35, 0.14);
+}
+/*
+Coffeehouse canvas and typography
+*/
+[data-theme="starbucks"] body {
+  background: #f2efe6;
+  color: #1f2923;
+  font-family: var(--font-sans);
+  line-height: 1.65;
+}
+[data-theme="starbucks"] h1,  [data-theme="starbucks"] h2,  [data-theme="starbucks"] h3 {
+  color: #1f2923;
+  letter-spacing: -0.03em;
+}
+[data-theme="starbucks"] h1,  [data-theme="starbucks"] h2 {
+  font-weight: 700;
+}
+/*
+Tailwind utility compatibility for common storefront classes
+*/
+[data-theme="starbucks"] .bg-white {
+  background-color: #fffefa !important;
+}
+[data-theme="starbucks"] .bg-gray-50,  [data-theme="starbucks"] .bg-slate-50 {
+  background-color: #f8f6f0 !important;
+}
+[data-theme="starbucks"] .bg-gray-100,  [data-theme="starbucks"] .bg-slate-100 {
+  background-color: #e8e3d6 !important;
+}
+[data-theme="starbucks"] .text-gray-900,  [data-theme="starbucks"] .text-slate-900 {
+  color: #1f2923 !important;
+}
+[data-theme="starbucks"] .text-gray-800,  [data-theme="starbucks"] .text-slate-800 {
+  color: #29382f !important;
+}
+[data-theme="starbucks"] .text-gray-700,  [data-theme="starbucks"] .text-slate-700 {
+  color: #435248 !important;
+}
+[data-theme="starbucks"] .text-gray-600,  [data-theme="starbucks"] .text-slate-600,  [data-theme="starbucks"] .text-gray-500,  [data-theme="starbucks"] .text-slate-500 {
+  color: #667168 !important;
+}
+[data-theme="starbucks"] .border-gray-100,  [data-theme="starbucks"] .border-gray-200,  [data-theme="starbucks"] .border-slate-100,  [data-theme="starbucks"] .border-slate-200 {
+  border-color: #d5d9d0 !important;
+}
+/*
+Product cards — warm white, evergreen details, gentle lift
+*/
+[data-theme="starbucks"] .grid-product-cards > * {
+  min-width: 0;
+  overflow: hidden;
+  background: #fffefa;
+  border: 1px solid #e2e4dc;
+  border-radius: 18px;
+  box-shadow: 0 3px 10px rgba(31, 41, 35, 0.035);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+[data-theme="starbucks"] .grid-product-cards > *:hover {
+  transform: translateY(-3px);
+  border-color: #a9c3b2;
+  box-shadow: 0 14px 30px rgba(0, 98, 65, 0.10);
+}
+[data-theme="starbucks"] .grid-catalog-cards > * {
+  overflow: hidden;
+  border-radius: 20px;
+}
+/*
+Evergreen primary controls; keep red reserved for errors/sale messaging
+*/
+[data-theme="starbucks"] .bg-black,  [data-theme="starbucks"] .bg-gray-900,  [data-theme="starbucks"] .bg-slate-900 {
+  background-color: #006241 !important;
+}
+[data-theme="starbucks"] .bg-black:hover,  [data-theme="starbucks"] .bg-gray-900:hover,  [data-theme="starbucks"] .bg-slate-900:hover {
+  background-color: #004f35 !important;
+}
+[data-theme="starbucks"] .text-white {
+  color: #ffffff;
+}
+[data-theme="starbucks"] button,  [data-theme="starbucks"] [role="button"] {
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+[data-theme="starbucks"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),  [data-theme="starbucks"] select,  [data-theme="starbucks"] textarea {
+  color: #1f2923;
+  background-color: #fffefa;
+  border-color: #d5d9d0;
+  border-radius: 10px;
+}
+[data-theme="starbucks"] input::placeholder,  [data-theme="starbucks"] textarea::placeholder {
+  color: #879087;
+}
+[data-theme="starbucks"] input:focus,  [data-theme="starbucks"] select:focus,  [data-theme="starbucks"] textarea:focus {
+  border-color: #00845a;
+  box-shadow: 0 0 0 3px rgba(0, 98, 65, 0.13);
+  outline: none;
+}
+[data-theme="starbucks"] ::selection {
+  background: #006241;
+  color: #ffffff;
+}
+[data-theme="starbucks"] ::-webkit-scrollbar-thumb {
+  background: #c6cec5;
+}
+[data-theme="starbucks"] ::-webkit-scrollbar-thumb:hover {
+  background: #94a99a;
+}
+[data-theme="starbucks"] :focus-visible {
+  outline-color: #00845a;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="starbucks"] .grid-product-cards > *,  [data-theme="starbucks"] button,  [data-theme="starbucks"] [role="button"] {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+/*
+─────────────────────────────────────────────────────────────────────────────
+17. Alternate theme — Denim Heritage
+Activate with: <html lang="en" data-theme="levis">
+Inspired by classic denim, indigo workwear, warm canvas, and heritage red.
+Not an official Levi's brand asset. Existing layout and behavior are retained.
+─────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="levis"],  [data-theme="levis"] {
+  color-scheme: light;
+  /*
+  Natural canvas and faded denim surfaces
+  */
+  --ds-surface-lowest: #ffffff;
+  --ds-surface-low: #f8f5ef;
+  --ds-surface: #f1ede4;
+  --ds-surface-container: #e7e0d4;
+  --ds-surface-high: #dcd2c2;
+  --ds-surface-highest: #d0c3b0;
+  /*
+  Ink and washed-denim text
+  */
+  --ds-on-surface: #202a35;
+  --ds-on-surface-muted: #626c76;
+  /*
+  Warm canvas borders
+  */
+  --ds-outline: #8b9298;
+  --ds-outline-variant: #d5d8d8;
+  /*
+  Deep indigo denim
+  */
+  --ds-primary: #17365d;
+  --ds-on-primary: #ffffff;
+  --ds-primary-container: #dce6f1;
+  /*
+  Heritage red
+  */
+  --ds-secondary: #c41230;
+  --ds-on-secondary: #ffffff;
+  --ds-secondary-container: #f5dce1;
+  --color-background: var(--ds-surface);
+  --color-surface: var(--ds-surface-low);
+  --color-surface-elevated: var(--ds-surface-lowest);
+  --color-surface-container: var(--ds-surface-container);
+  --color-foreground: var(--ds-on-surface);
+  --color-foreground-muted: var(--ds-on-surface-muted);
+  --color-border: var(--ds-outline-variant);
+  --color-border-strong: var(--ds-outline);
+  --color-primary: var(--ds-primary);
+  --color-primary-foreground: var(--ds-on-primary);
+  --color-secondary: var(--ds-secondary);
+  --color-secondary-foreground: var(--ds-on-secondary);
+  --color-accent: var(--ds-secondary);
+  --color-accent-foreground: #ffffff;
+  --color-muted: var(--ds-surface-container);
+  --color-muted-foreground: var(--ds-on-surface-muted);
+  --color-focus: #c41230;
+  --shadow-xs: 0 1px 2px rgba(32, 42, 53, 0.04);
+  --shadow-sm: 0 3px 10px rgba(32, 42, 53, 0.055);
+  --shadow-md: 0 10px 26px -8px rgba(32, 42, 53, 0.10);
+  --shadow-lg: 0 18px 42px -12px rgba(32, 42, 53, 0.12);
+  --shadow-xl: 0 24px 56px -16px rgba(32, 42, 53, 0.14);
+}
+/*
+Denim Heritage visual language
+*/
+[data-theme="levis"] body {
+  background: #f1ede4;
+  color: #202a35;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+[data-theme="levis"] h1,  [data-theme="levis"] h2,  [data-theme="levis"] h3 {
+  color: #202a35;
+  letter-spacing: -0.025em;
+}
+[data-theme="levis"] h1,  [data-theme="levis"] h2 {
+  font-weight: 750;
+}
+/*
+Common Tailwind utility compatibility
+*/
+[data-theme="levis"] .bg-white {
+  background-color: #fffdf9 !important;
+}
+[data-theme="levis"] .bg-gray-50,  [data-theme="levis"] .bg-slate-50 {
+  background-color: #f8f5ef !important;
+}
+[data-theme="levis"] .bg-gray-100,  [data-theme="levis"] .bg-slate-100 {
+  background-color: #e7e0d4 !important;
+}
+[data-theme="levis"] .text-gray-900,  [data-theme="levis"] .text-slate-900 {
+  color: #202a35 !important;
+}
+[data-theme="levis"] .text-gray-800,  [data-theme="levis"] .text-slate-800 {
+  color: #2d3b4b !important;
+}
+[data-theme="levis"] .text-gray-700,  [data-theme="levis"] .text-slate-700 {
+  color: #485867 !important;
+}
+[data-theme="levis"] .text-gray-600,  [data-theme="levis"] .text-slate-600,  [data-theme="levis"] .text-gray-500,  [data-theme="levis"] .text-slate-500 {
+  color: #697580 !important;
+}
+[data-theme="levis"] .border-gray-100,  [data-theme="levis"] .border-gray-200,  [data-theme="levis"] .border-slate-100,  [data-theme="levis"] .border-slate-200 {
+  border-color: #d5d8d8 !important;
+}
+/*
+Product cards: crisp catalog panels with subtle denim-blue lift
+*/
+[data-theme="levis"] .grid-product-cards > * {
+  min-width: 0;
+  overflow: hidden;
+  background: #fffdf9;
+  border: 1px solid #e0ded8;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(32, 42, 53, 0.035);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+[data-theme="levis"] .grid-product-cards > *:hover {
+  transform: translateY(-2px);
+  border-color: #9bb3cc;
+  box-shadow: 0 12px 26px rgba(23, 54, 93, 0.10);
+}
+[data-theme="levis"] .grid-catalog-cards > * {
+  overflow: hidden;
+  border-radius: 14px;
+}
+/*
+Indigo primary actions
+*/
+[data-theme="levis"] .bg-black,  [data-theme="levis"] .bg-gray-900,  [data-theme="levis"] .bg-slate-900 {
+  background-color: #17365d !important;
+}
+[data-theme="levis"] .bg-black:hover,  [data-theme="levis"] .bg-gray-900:hover,  [data-theme="levis"] .bg-slate-900:hover {
+  background-color: #102846 !important;
+}
+/*
+Heritage red remains a deliberate highlight
+*/
+[data-theme="levis"] .text-red-500,  [data-theme="levis"] .text-red-600 {
+  color: #c41230 !important;
+}
+[data-theme="levis"] .bg-red-50 {
+  background-color: #f9e9ec;
+}
+[data-theme="levis"] .border-red-200 {
+  border-color: #edc2cb;
+}
+[data-theme="levis"] button,  [data-theme="levis"] [role="button"] {
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+[data-theme="levis"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),  [data-theme="levis"] select,  [data-theme="levis"] textarea {
+  color: #202a35;
+  background-color: #fffdf9;
+  border-color: #d5d8d8;
+  border-radius: 8px;
+}
+[data-theme="levis"] input::placeholder,  [data-theme="levis"] textarea::placeholder {
+  color: #8a9299;
+}
+[data-theme="levis"] input:focus,  [data-theme="levis"] select:focus,  [data-theme="levis"] textarea:focus {
+  border-color: #17365d;
+  box-shadow: 0 0 0 3px rgba(23, 54, 93, 0.13);
+  outline: none;
+}
+[data-theme="levis"] ::selection {
+  background: #c41230;
+  color: #ffffff;
+}
+[data-theme="levis"] ::-webkit-scrollbar-thumb {
+  background: #c6cbd0;
+}
+[data-theme="levis"] ::-webkit-scrollbar-thumb:hover {
+  background: #8b9aaa;
+}
+[data-theme="levis"] :focus-visible {
+  outline-color: #c41230;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="levis"] .grid-product-cards > *,  [data-theme="levis"] button,  [data-theme="levis"] [role="button"] {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+/*
+IKEA-inspired theme: blue, yellow, and clean catalog surfaces
+*/
+:root[data-theme="ikea"], [data-theme="ikea"] {
+  color-scheme: light;
+  --ds-surface-lowest:#ffffff;
+  --ds-surface-low:#f5f7fa;
+  --ds-surface:#eef2f7;
+  --ds-surface-container:#e0e7f0;
+  --ds-surface-high:#d4deeb;
+  --ds-surface-highest:#c7d4e4;
+  --ds-on-surface:#102b54;
+  --ds-on-surface-muted:#4f6179;
+  --ds-outline:#7386a0;
+  --ds-outline-variant:#cbd5e2;
+  --ds-primary:#0058a3;
+  --ds-on-primary:#ffffff;
+  --ds-primary-container:#dce8f5;
+  --ds-secondary:#ffda1a;
+  --ds-on-secondary:#102b54;
+  --ds-secondary-container:#fff0a8;
+  --color-background:#eef2f7;
+  --color-surface:#f5f7fa;
+  --color-surface-elevated:#ffffff;
+  --color-surface-container:#e0e7f0;
+  --color-foreground:#102b54;
+  --color-foreground-muted:#4f6179;
+  --color-border:#cbd5e2;
+  --color-border-strong:#7386a0;
+  --color-primary:#0058a3;
+  --color-primary-foreground:#ffffff;
+  --color-secondary:#ffda1a;
+  --color-secondary-foreground:#102b54;
+  --color-accent:#ffda1a;
+  --color-accent-foreground:#102b54;
+  --color-muted:#e0e7f0;
+  --color-muted-foreground:#4f6179;
+  --color-success:#287447;
+  --color-success-foreground:#ffffff;
+  --color-warning:#956c00;
+  --color-warning-foreground:#ffffff;
+  --color-danger:#c62828;
+  --color-danger-foreground:#ffffff;
+  --color-focus:#0058a3;
+  --shadow-xs:0 1px 2px rgba(16,43,84,.035);
+  --shadow-sm:0 3px 10px rgba(16,43,84,.05);
+  --shadow-md:0 10px 26px rgba(16,43,84,.085);
+  --shadow-lg:0 18px 42px rgba(16,43,84,.10);
+  --shadow-xl:0 24px 52px rgba(16,43,84,.13);
+}
+[data-theme="ikea"] body {
+  background:#eef2f7;
+  color:#102b54;
+}
+[data-theme="ikea"] h1,[data-theme="ikea"] h2,[data-theme="ikea"] h3 {
+  font-weight:750;
+  letter-spacing:-.03em;
+}
+[data-theme="ikea"] .bg-white {
+  background:#fff!important;
+}
+[data-theme="ikea"] .bg-gray-50,[data-theme="ikea"] .bg-slate-50 {
+  background:#f5f7fa!important;
+}
+[data-theme="ikea"] .bg-gray-100,[data-theme="ikea"] .bg-slate-100 {
+  background:#e0e7f0!important;
+}
+[data-theme="ikea"] .text-gray-900,[data-theme="ikea"] .text-slate-900 {
+  color:#102b54!important;
+}
+[data-theme="ikea"] .text-gray-800,[data-theme="ikea"] .text-slate-800 {
+  color:#1d3c68!important;
+}
+[data-theme="ikea"] .text-gray-700,[data-theme="ikea"] .text-slate-700 {
+  color:#385373!important;
+}
+[data-theme="ikea"] .text-gray-600,[data-theme="ikea"] .text-slate-600,[data-theme="ikea"] .text-gray-500,[data-theme="ikea"] .text-slate-500 {
+  color:#4f6179!important;
+}
+[data-theme="ikea"] .border-gray-100,[data-theme="ikea"] .border-gray-200,[data-theme="ikea"] .border-slate-100,[data-theme="ikea"] .border-slate-200 {
+  border-color:#cbd5e2!important;
+}
+[data-theme="ikea"] .bg-black,[data-theme="ikea"] .bg-gray-900,[data-theme="ikea"] .bg-slate-900 {
+  background:#0058a3!important;
+}
+[data-theme="ikea"] .grid-product-cards > * {
+  background:#fff;
+  border:1px solid #dce3ec;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 3px 10px rgba(16,43,84,.035);
+  transition:transform 200ms ease,box-shadow 200ms ease,border-color 200ms ease;
+}
+[data-theme="ikea"] .grid-product-cards > *:hover {
+  transform:translateY(-3px);
+  border-color:#9ab8d7;
+  box-shadow:0 12px 26px rgba(16,43,84,.11);
+}
+[data-theme="ikea"] .grid-catalog-cards > * {
+  border-radius:16px;
+  overflow:hidden;
+}
+[data-theme="ikea"] button,[data-theme="ikea"] [role="button"] {
+  border-radius:999px;
+  font-weight:700;
+}
+[data-theme="ikea"] input:not([type=checkbox]):not([type=radio]):not([type=range]),[data-theme="ikea"] select,[data-theme="ikea"] textarea {
+  background:#fff;
+  color:#102b54;
+  border:1px solid #cbd5e2;
+  border-radius:8px;
+}
+[data-theme="ikea"] input:focus,[data-theme="ikea"] select:focus,[data-theme="ikea"] textarea:focus {
+  border-color:#0058a3;
+  box-shadow:0 0 0 3px rgba(0,88,163,.14);
+  outline:none;
+}
+[data-theme="ikea"] ::selection {
+  background:#ffda1a;
+  color:#102b54;
+}
+/*
+───────────────────────────────── SEPHORA ──────────────────────────────────
+Beauty editorial: porcelain, ink black, soft rose, polished rounded cards.
+────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="sephora"], [data-theme="sephora"] {
+  color-scheme:light;
+  --ds-surface-lowest:#ffffff;
+  --ds-surface-low:#faf9f8;
+  --ds-surface:#f4f2f0;
+  --ds-surface-container:#e9e5e2;
+  --ds-surface-high:#ddd7d3;
+  --ds-surface-highest:#d1c9c4;
+  --ds-on-surface:#171515;
+  --ds-on-surface-muted:#6e6564;
+  --ds-outline:#8d8380;
+  --ds-outline-variant:#d9d2ce;
+  --ds-primary:#171515;
+  --ds-on-primary:#ffffff;
+  --ds-primary-container:#302b2a;
+  --ds-secondary:#b77b83;
+  --ds-on-secondary:#ffffff;
+  --ds-secondary-container:#f0dfe1;
+  --color-background:#f4f2f0;
+  --color-surface:#faf9f8;
+  --color-surface-elevated:#ffffff;
+  --color-surface-container:#e9e5e2;
+  --color-foreground:#171515;
+  --color-foreground-muted:#6e6564;
+  --color-border:#d9d2ce;
+  --color-border-strong:#8d8380;
+  --color-primary:#171515;
+  --color-primary-foreground:#ffffff;
+  --color-secondary:#b77b83;
+  --color-secondary-foreground:#ffffff;
+  --color-accent:#b77b83;
+  --color-accent-foreground:#ffffff;
+  --color-muted:#e9e5e2;
+  --color-muted-foreground:#6e6564;
+  --color-success:#28734a;
+  --color-success-foreground:#ffffff;
+  --color-warning:#956500;
+  --color-warning-foreground:#ffffff;
+  --color-danger:#b3263b;
+  --color-danger-foreground:#ffffff;
+  --color-focus:#9b626b;
+  --shadow-xs:0 1px 2px rgba(23,21,21,.03);
+  --shadow-sm:0 4px 14px rgba(23,21,21,.04);
+  --shadow-md:0 12px 30px rgba(23,21,21,.07);
+  --shadow-lg:0 20px 46px rgba(23,21,21,.09);
+  --shadow-xl:0 28px 60px rgba(23,21,21,.11);
+}
+[data-theme="sephora"] body {
+  background:#f4f2f0;
+  color:#171515;
+}
+[data-theme="sephora"] h1,[data-theme="sephora"] h2,[data-theme="sephora"] h3 {
+  font-weight:650;
+  letter-spacing:-.035em;
+}
+[data-theme="sephora"] .bg-white {
+  background:#fff!important;
+}
+[data-theme="sephora"] .bg-gray-50,[data-theme="sephora"] .bg-slate-50 {
+  background:#faf9f8!important;
+}
+[data-theme="sephora"] .bg-gray-100,[data-theme="sephora"] .bg-slate-100 {
+  background:#e9e5e2!important;
+}
+[data-theme="sephora"] .text-gray-900,[data-theme="sephora"] .text-slate-900 {
+  color:#171515!important;
+}
+[data-theme="sephora"] .text-gray-800,[data-theme="sephora"] .text-slate-800 {
+  color:#302b2a!important;
+}
+[data-theme="sephora"] .text-gray-700,[data-theme="sephora"] .text-slate-700 {
+  color:#514948!important;
+}
+[data-theme="sephora"] .text-gray-600,[data-theme="sephora"] .text-slate-600,[data-theme="sephora"] .text-gray-500,[data-theme="sephora"] .text-slate-500 {
+  color:#6e6564!important;
+}
+[data-theme="sephora"] .border-gray-100,[data-theme="sephora"] .border-gray-200,[data-theme="sephora"] .border-slate-100,[data-theme="sephora"] .border-slate-200 {
+  border-color:#d9d2ce!important;
+}
+[data-theme="sephora"] .bg-black,[data-theme="sephora"] .bg-gray-900,[data-theme="sephora"] .bg-slate-900 {
+  background:#171515!important;
+}
+[data-theme="sephora"] .grid-product-cards > * {
+  background:#fff;
+  border:1px solid #e5dfdc;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 3px 12px rgba(23,21,21,.025);
+  transition:transform 200ms ease,box-shadow 200ms ease,border-color 200ms ease;
+}
+[data-theme="sephora"] .grid-product-cards > *:hover {
+  transform:translateY(-3px);
+  border-color:#d8b9bd;
+  box-shadow:0 14px 32px rgba(23,21,21,.09);
+}
+[data-theme="sephora"] .grid-catalog-cards > * {
+  background:#fff;
+  border:1px solid #e5dfdc;
+  border-radius:18px;
+  overflow:hidden;
+}
+[data-theme="sephora"] input:not([type=checkbox]):not([type=radio]):not([type=range]),[data-theme="sephora"] select,[data-theme="sephora"] textarea {
+  background:#fff;
+  color:#171515;
+  border:1px solid #d9d2ce;
+  border-radius:9px;
+}
+[data-theme="sephora"] input:focus,[data-theme="sephora"] select:focus,[data-theme="sephora"] textarea:focus {
+  border-color:#9b626b;
+  box-shadow:0 0 0 3px rgba(183,123,131,.16);
+  outline:none;
+}
+[data-theme="sephora"] ::selection {
+  background:#b77b83;
+  color:#fff;
+}
+/*
+─────────────────────────────── PATAGONIA ──────────────────────────────────
+Outdoor utility: forest green, earth-paper backgrounds, trail-red highlights.
+────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="patagonia"], [data-theme="patagonia"] {
+  color-scheme:light;
+  --ds-surface-lowest:#fffefa;
+  --ds-surface-low:#f5f4ed;
+  --ds-surface:#eeede3;
+  --ds-surface-container:#e1e1d2;
+  --ds-surface-high:#d3d5c2;
+  --ds-surface-highest:#c5c9b2;
+  --ds-on-surface:#202e29;
+  --ds-on-surface-muted:#5d6a61;
+  --ds-outline:#7d8b7e;
+  --ds-outline-variant:#d0d7cc;
+  --ds-primary:#234c3b;
+  --ds-on-primary:#ffffff;
+  --ds-primary-container:#dbe8d8;
+  --ds-secondary:#d85b3f;
+  --ds-on-secondary:#ffffff;
+  --ds-secondary-container:#f6ded6;
+  --color-background:#eeede3;
+  --color-surface:#f5f4ed;
+  --color-surface-elevated:#fffefa;
+  --color-surface-container:#e1e1d2;
+  --color-foreground:#202e29;
+  --color-foreground-muted:#5d6a61;
+  --color-border:#d0d7cc;
+  --color-border-strong:#7d8b7e;
+  --color-primary:#234c3b;
+  --color-primary-foreground:#ffffff;
+  --color-secondary:#d85b3f;
+  --color-secondary-foreground:#ffffff;
+  --color-accent:#d85b3f;
+  --color-accent-foreground:#ffffff;
+  --color-muted:#e1e1d2;
+  --color-muted-foreground:#5d6a61;
+  --color-success:#287447;
+  --color-success-foreground:#ffffff;
+  --color-warning:#956500;
+  --color-warning-foreground:#ffffff;
+  --color-danger:#b83a32;
+  --color-danger-foreground:#ffffff;
+  --color-focus:#234c3b;
+  --shadow-xs:0 1px 2px rgba(32,46,41,.035);
+  --shadow-sm:0 3px 10px rgba(32,46,41,.05);
+  --shadow-md:0 10px 26px rgba(32,46,41,.085);
+  --shadow-lg:0 18px 42px rgba(32,46,41,.10);
+  --shadow-xl:0 24px 52px rgba(32,46,41,.13);
+}
+[data-theme="patagonia"] body {
+  background:#eeede3;
+  color:#202e29;
+}
+[data-theme="patagonia"] h1,[data-theme="patagonia"] h2,[data-theme="patagonia"] h3 {
+  font-weight:700;
+  letter-spacing:-.025em;
+}
+[data-theme="patagonia"] .bg-white {
+  background:#fffefa!important;
+}
+[data-theme="patagonia"] .bg-gray-50,[data-theme="patagonia"] .bg-slate-50 {
+  background:#f5f4ed!important;
+}
+[data-theme="patagonia"] .bg-gray-100,[data-theme="patagonia"] .bg-slate-100 {
+  background:#e1e1d2!important;
+}
+[data-theme="patagonia"] .text-gray-900,[data-theme="patagonia"] .text-slate-900 {
+  color:#202e29!important;
+}
+[data-theme="patagonia"] .text-gray-800,[data-theme="patagonia"] .text-slate-800 {
+  color:#304139!important;
+}
+[data-theme="patagonia"] .text-gray-700,[data-theme="patagonia"] .text-slate-700 {
+  color:#46594e!important;
+}
+[data-theme="patagonia"] .text-gray-600,[data-theme="patagonia"] .text-slate-600,[data-theme="patagonia"] .text-gray-500,[data-theme="patagonia"] .text-slate-500 {
+  color:#5d6a61!important;
+}
+[data-theme="patagonia"] .border-gray-100,[data-theme="patagonia"] .border-gray-200,[data-theme="patagonia"] .border-slate-100,[data-theme="patagonia"] .border-slate-200 {
+  border-color:#d0d7cc!important;
+}
+[data-theme="patagonia"] .bg-black,[data-theme="patagonia"] .bg-gray-900,[data-theme="patagonia"] .bg-slate-900 {
+  background:#234c3b!important;
+}
+[data-theme="patagonia"] .grid-product-cards > * {
+  background:#fffefa;
+  border:1px solid #dfe2d7;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(32,46,41,.03);
+  transition:transform 200ms ease,box-shadow 200ms ease,border-color 200ms ease;
+}
+[data-theme="patagonia"] .grid-product-cards > *:hover {
+  transform:translateY(-3px);
+  border-color:#a6b7a7;
+  box-shadow:0 12px 26px rgba(35,76,59,.11);
+}
+[data-theme="patagonia"] .grid-catalog-cards > * {
+  border-radius:14px;
+  overflow:hidden;
+}
+[data-theme="patagonia"] input:not([type=checkbox]):not([type=radio]):not([type=range]),[data-theme="patagonia"] select,[data-theme="patagonia"] textarea {
+  background:#fffefa;
+  color:#202e29;
+  border:1px solid #d0d7cc;
+  border-radius:8px;
+}
+[data-theme="patagonia"] input:focus,[data-theme="patagonia"] select:focus,[data-theme="patagonia"] textarea:focus {
+  border-color:#234c3b;
+  box-shadow:0 0 0 3px rgba(35,76,59,.14);
+  outline:none;
+}
+[data-theme="patagonia"] ::selection {
+  background:#234c3b;
+  color:#fff;
+}
+/*
+Shared polish: common border utilities, primary hover, focus and motion safety
+*/
+[data-theme="apple"] .border-gray-100,[data-theme="apple"] .border-gray-200,[data-theme="nike"] .border-gray-100,[data-theme="nike"] .border-gray-200,[data-theme="ikea"] .border-gray-100,[data-theme="ikea"] .border-gray-200,[data-theme="sephora"] .border-gray-100,[data-theme="sephora"] .border-gray-200,[data-theme="patagonia"] .border-gray-100,[data-theme="patagonia"] .border-gray-200 {
+  border-color:var(--color-border)!important;
+}
+[data-theme="apple"] :focus-visible,[data-theme="nike"] :focus-visible,[data-theme="ikea"] :focus-visible,[data-theme="sephora"] :focus-visible,[data-theme="patagonia"] :focus-visible {
+  outline:2px solid var(--color-focus);
+  outline-offset:3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="apple"] .grid-product-cards > *,  [data-theme="nike"] .grid-product-cards > *,  [data-theme="ikea"] .grid-product-cards > *,  [data-theme="sephora"] .grid-product-cards > *,  [data-theme="patagonia"] .grid-product-cards > * {
+    transition:none!important;
+    transform:none!important;
+  }
+}
+/*
+═══════════════════════════════════════════════════════════════════════════
+15. FIVE ADDITIONAL BRAND-INSPIRED THEMES
+Activate one on <html>: data-theme="tiffany|adidas|coca-cola|amazon|dior"
+These are independent visual themes, not official brand assets or design systems.
+═══════════════════════════════════════════════════════════════════════════
+*/
+/*
+───────────────────────────────── TIFFANY & CO. ────────────────────────────
+Luxury jewelry: signature teal, porcelain, delicate lines, refined spacing.
+────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="tiffany"], [data-theme="tiffany"] {
+  color-scheme:light;
+  --ds-surface-lowest:#ffffff;
+  --ds-surface-low:#fbf9f6;
+  --ds-surface:#f5f1eb;
+  --ds-surface-container:#e9e3da;
+  --ds-surface-high:#ded5ca;
+  --ds-surface-highest:#d2c7ba;
+  --ds-on-surface:#243b3b;
+  --ds-on-surface-muted:#687b78;
+  --ds-outline:#8ea6a1;
+  --ds-outline-variant:#d7e2de;
+  --ds-primary:#0f6f68;
+  --ds-on-primary:#ffffff;
+  --ds-primary-container:#d5eeea;
+  --ds-secondary:#81d8d0;
+  --ds-on-secondary:#183d3a;
+  --ds-secondary-container:#dff5f1;
+  --color-background:#f5f1eb;
+  --color-surface:#fbf9f6;
+  --color-surface-elevated:#ffffff;
+  --color-surface-container:#e9e3da;
+  --color-foreground:#243b3b;
+  --color-foreground-muted:#687b78;
+  --color-border:#d7e2de;
+  --color-border-strong:#8ea6a1;
+  --color-primary:#0f6f68;
+  --color-primary-foreground:#ffffff;
+  --color-secondary:#81d8d0;
+  --color-secondary-foreground:#183d3a;
+  --color-accent:#0f6f68;
+  --color-accent-foreground:#ffffff;
+  --color-muted:#e9e3da;
+  --color-muted-foreground:#687b78;
+  --color-success:#2e765f;
+  --color-success-foreground:#ffffff;
+  --color-warning:#956b2b;
+  --color-warning-foreground:#ffffff;
+  --color-danger:#a63b42;
+  --color-danger-foreground:#ffffff;
+  --color-focus:#0f6f68;
+  --shadow-xs:0 1px 2px rgba(36,59,59,.025);
+  --shadow-sm:0 4px 14px rgba(36,59,59,.04);
+  --shadow-md:0 12px 30px rgba(36,59,59,.065);
+  --shadow-lg:0 20px 46px rgba(36,59,59,.085);
+}
+[data-theme="tiffany"] body {
+  background:#f5f1eb;
+  color:#243b3b
+}
+[data-theme="tiffany"] h1,[data-theme="tiffany"] h2,[data-theme="tiffany"] h3 {
+  font-weight:550;
+  letter-spacing:-.035em
+}
+[data-theme="tiffany"] .bg-white {
+  background:#fff!important
+}
+[data-theme="tiffany"] .bg-gray-50,[data-theme="tiffany"] .bg-slate-50 {
+  background:#fbf9f6!important
+}
+[data-theme="tiffany"] .bg-gray-100,[data-theme="tiffany"] .bg-slate-100 {
+  background:#e9e3da!important
+}
+[data-theme="tiffany"] .text-gray-900,[data-theme="tiffany"] .text-slate-900 {
+  color:#243b3b!important
+}
+[data-theme="tiffany"] .text-gray-600,[data-theme="tiffany"] .text-slate-600,[data-theme="tiffany"] .text-gray-500,[data-theme="tiffany"] .text-slate-500 {
+  color:#687b78!important
+}
+[data-theme="tiffany"] .border-gray-100,[data-theme="tiffany"] .border-gray-200,[data-theme="tiffany"] .border-slate-100,[data-theme="tiffany"] .border-slate-200 {
+  border-color:#d7e2de!important
+}
+[data-theme="tiffany"] .bg-black,[data-theme="tiffany"] .bg-gray-900,[data-theme="tiffany"] .bg-slate-900 {
+  background:#0f6f68!important
+}
+[data-theme="tiffany"] .grid-product-cards > * {
+  background:#fff;
+  border:1px solid #e2e9e5;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 3px 12px rgba(36,59,59,.025);
+  transition:transform .24s,box-shadow .24s,border-color .24s
+}
+[data-theme="tiffany"] .grid-product-cards > *:hover {
+  transform:translateY(-3px);
+  border-color:#9fd5cd;
+  box-shadow:0 14px 32px rgba(15,111,104,.10)
+}
+[data-theme="tiffany"] .grid-catalog-cards > * {
+  border:1px solid #d7e2de;
+  border-radius:20px;
+  overflow:hidden
+}
+[data-theme="tiffany"] input:not([type=checkbox]):not([type=radio]):not([type=range]),[data-theme="tiffany"] select,[data-theme="tiffany"] textarea {
+  background:#fff;
+  border:1px solid #d7e2de;
+  border-radius:10px;
+  color:#243b3b
+}
+[data-theme="tiffany"] input:focus,[data-theme="tiffany"] select:focus,[data-theme="tiffany"] textarea:focus {
+  border-color:#0f6f68;
+  box-shadow:0 0 0 3px rgba(129,216,208,.25);
+  outline:none
+}
+[data-theme="tiffany"] ::selection {
+  background:#0f6f68;
+  color:#fff
+}
+/*
+───────────────────────────────── ADIDAS ────────────────────────────────────
+Sport streetwear: monochrome black/white, bold labels, compact angular cards.
+────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="adidas"], [data-theme="adidas"] {
+  color-scheme:light;
+  --ds-surface-lowest:#ffffff;
+  --ds-surface-low:#f7f7f7;
+  --ds-surface:#f0f0f0;
+  --ds-surface-container:#e5e5e5;
+  --ds-surface-high:#d8d8d8;
+  --ds-surface-highest:#cccccc;
+  --ds-on-surface:#111111;
+  --ds-on-surface-muted:#626262;
+  --ds-outline:#858585;
+  --ds-outline-variant:#d5d5d5;
+  --ds-primary:#111111;
+  --ds-on-primary:#ffffff;
+  --ds-primary-container:#e5e5e5;
+  --ds-secondary:#d6ff00;
+  --ds-on-secondary:#111111;
+  --ds-secondary-container:#edff99;
+  --color-background:#f0f0f0;
+  --color-surface:#f7f7f7;
+  --color-surface-elevated:#ffffff;
+  --color-surface-container:#e5e5e5;
+  --color-foreground:#111111;
+  --color-foreground-muted:#626262;
+  --color-border:#d5d5d5;
+  --color-border-strong:#858585;
+  --color-primary:#111111;
+  --color-primary-foreground:#ffffff;
+  --color-secondary:#d6ff00;
+  --color-secondary-foreground:#111111;
+  --color-accent:#d6ff00;
+  --color-accent-foreground:#111111;
+  --color-muted:#e5e5e5;
+  --color-muted-foreground:#626262;
+  --color-success:#24733c;
+  --color-success-foreground:#ffffff;
+  --color-warning:#946c00;
+  --color-warning-foreground:#ffffff;
+  --color-danger:#c62828;
+  --color-danger-foreground:#ffffff;
+  --color-focus:#739000;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.04);
+  --shadow-sm:0 3px 10px rgba(0,0,0,.055);
+  --shadow-md:0 10px 24px rgba(0,0,0,.085);
+  --shadow-lg:0 18px 40px rgba(0,0,0,.11);
+}
+[data-theme="adidas"] body {
+  background:#f0f0f0;
+  color:#111
+}
+[data-theme="adidas"] h1,[data-theme="adidas"] h2,[data-theme="adidas"] h3 {
+  font-weight:850;
+  letter-spacing:-.04em;
+  text-transform:uppercase
+}
+[data-theme="adidas"] .text-caps {
+  letter-spacing:.15em
+}
+[data-theme="adidas"] .bg-white {
+  background:#fff!important
+}
+[data-theme="adidas"] .bg-gray-50,[data-theme="adidas"] .bg-slate-50 {
+  background:#f7f7f7!important
+}
+[data-theme="adidas"] .bg-gray-100,[data-theme="adidas"] .bg-slate-100 {
+  background:#e5e5e5!important
+}
+[data-theme="adidas"] .text-gray-900,[data-theme="adidas"] .text-slate-900 {
+  color:#111!important
+}
+[data-theme="adidas"] .text-gray-600,[data-theme="adidas"] .text-slate-600,[data-theme="adidas"] .text-gray-500,[data-theme="adidas"] .text-slate-500 {
+  color:#626262!important
+}
+[data-theme="adidas"] .border-gray-100,[data-theme="adidas"] .border-gray-200,[data-theme="adidas"] .border-slate-100,[data-theme="adidas"] .border-slate-200 {
+  border-color:#d5d5d5!important
+}
+[data-theme="adidas"] .bg-black,[data-theme="adidas"] .bg-gray-900,[data-theme="adidas"] .bg-slate-900 {
+  background:#111!important
+}
+[data-theme="adidas"] .grid-product-cards > * {
+  background:#fff;
+  border:1px solid #dedede;
+  border-radius:4px;
+  overflow:hidden;
+  transition:transform .18s,border-color .18s,box-shadow .18s
+}
+[data-theme="adidas"] .grid-product-cards > *:hover {
+  transform:translateY(-2px);
+  border-color:#9ab800;
+  box-shadow:0 10px 24px rgba(0,0,0,.09)
+}
+[data-theme="adidas"] .grid-catalog-cards > * {
+  border-radius:4px;
+  overflow:hidden
+}
+[data-theme="adidas"] input:not([type=checkbox]):not([type=radio]):not([type=range]),[data-theme="adidas"] select,[data-theme="adidas"] textarea {
+  background:#fff;
+  border:1px solid #d5d5d5;
+  border-radius:4px;
+  color:#111
+}
+[data-theme="adidas"] input:focus,[data-theme="adidas"] select:focus,[data-theme="adidas"] textarea:focus {
+  border-color:#111;
+  box-shadow:0 0 0 2px rgba(17,17,17,.12);
+  outline:none
+}
+[data-theme="adidas"] ::selection {
+  background:#d6ff00;
+  color:#111
+}
+/*
+─────────────────────────────── COCA-COLA ──────────────────────────────────
+Iconic beverage retail: confident red, white, deep cola, rounded components.
+────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="coca-cola"], [data-theme="coca-cola"] {
+  color-scheme:light;
+  --ds-surface-lowest:#ffffff;
+  --ds-surface-low:#fff8f7;
+  --ds-surface:#f9efed;
+  --ds-surface-container:#f0dedb;
+  --ds-surface-high:#e5cbc7;
+  --ds-surface-highest:#d9b8b3;
+  --ds-on-surface:#311b1b;
+  --ds-on-surface-muted:#765d5c;
+  --ds-outline:#a28a88;
+  --ds-outline-variant:#e5cfcc;
+  --ds-primary:#e41e2b;
+  --ds-on-primary:#ffffff;
+  --ds-primary-container:#ffe0e2;
+  --ds-secondary:#311b1b;
+  --ds-on-secondary:#ffffff;
+  --ds-secondary-container:#ead9d7;
+  --color-background:#f9efed;
+  --color-surface:#fff8f7;
+  --color-surface-elevated:#ffffff;
+  --color-surface-container:#f0dedb;
+  --color-foreground:#311b1b;
+  --color-foreground-muted:#765d5c;
+  --color-border:#e5cfcc;
+  --color-border-strong:#a28a88;
+  --color-primary:#e41e2b;
+  --color-primary-foreground:#ffffff;
+  --color-secondary:#311b1b;
+  --color-secondary-foreground:#ffffff;
+  --color-accent:#e41e2b;
+  --color-accent-foreground:#ffffff;
+  --color-muted:#f0dedb;
+  --color-muted-foreground:#765d5c;
+  --color-success:#28734a;
+  --color-success-foreground:#ffffff;
+  --color-warning:#946000;
+  --color-warning-foreground:#ffffff;
+  --color-danger:#b91c1c;
+  --color-danger-foreground:#ffffff;
+  --color-focus:#c91b27;
+  --shadow-xs:0 1px 2px rgba(49,27,27,.035);
+  --shadow-sm:0 4px 12px rgba(49,27,27,.05);
+  --shadow-md:0 12px 28px rgba(49,27,27,.085);
+  --shadow-lg:0 20px 44px rgba(49,27,27,.11);
+}
+[data-theme="coca-cola"] body {
+  background:#f9efed;
+  color:#311b1b
+}
+[data-theme="coca-cola"] h1,[data-theme="coca-cola"] h2,[data-theme="coca-cola"] h3 {
+  font-weight:800;
+  letter-spacing:-.03em
+}
+[data-theme="coca-cola"] .bg-white {
+  background:#fff!important
+}
+[data-theme="coca-cola"] .bg-gray-50,[data-theme="coca-cola"] .bg-slate-50 {
+  background:#fff8f7!important
+}
+[data-theme="coca-cola"] .bg-gray-100,[data-theme="coca-cola"] .bg-slate-100 {
+  background:#f0dedb!important
+}
+[data-theme="coca-cola"] .text-gray-900,[data-theme="coca-cola"] .text-slate-900 {
+  color:#311b1b!important
+}
+[data-theme="coca-cola"] .text-gray-600,[data-theme="coca-cola"] .text-slate-600,[data-theme="coca-cola"] .text-gray-500,[data-theme="coca-cola"] .text-slate-500 {
+  color:#765d5c!important
+}
+[data-theme="coca-cola"] .border-gray-100,[data-theme="coca-cola"] .border-gray-200,[data-theme="coca-cola"] .border-slate-100,[data-theme="coca-cola"] .border-slate-200 {
+  border-color:#e5cfcc!important
+}
+[data-theme="coca-cola"] .bg-black,[data-theme="coca-cola"] .bg-gray-900,[data-theme="coca-cola"] .bg-slate-900 {
+  background:#e41e2b!important
+}
+[data-theme="coca-cola"] .grid-product-cards > * {
+  background:#fff;
+  border:1px solid #efdcd9;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 3px 10px rgba(49,27,27,.035);
+  transition:transform .2s,box-shadow .2s,border-color .2s
+}
+[data-theme="coca-cola"] .grid-product-cards > *:hover {
+  transform:translateY(-3px);
+  border-color:#e9a9ad;
+  box-shadow:0 14px 28px rgba(228,30,43,.11)
+}
+[data-theme="coca-cola"] .grid-catalog-cards > * {
+  border-radius:18px;
+  overflow:hidden
+}
+[data-theme="coca-cola"] button,[data-theme="coca-cola"] [role="button"] {
+  font-weight:700
+}
+[data-theme="coca-cola"] input:not([type=checkbox]):not([type=radio]):not([type=range]),[data-theme="coca-cola"] select,[data-theme="coca-cola"] textarea {
+  background:#fff;
+  border:1px solid #e5cfcc;
+  border-radius:9px;
+  color:#311b1b
+}
+[data-theme="coca-cola"] input:focus,[data-theme="coca-cola"] select:focus,[data-theme="coca-cola"] textarea:focus {
+  border-color:#e41e2b;
+  box-shadow:0 0 0 3px rgba(228,30,43,.13);
+  outline:none
+}
+[data-theme="coca-cola"] ::selection {
+  background:#e41e2b;
+  color:#fff
+}
+/*
+───────────────────────────────── AMAZON ───────────────────────────────────
+Marketplace utility: ink navy, warm white, unmistakable orange action color.
+────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="amazon"], [data-theme="amazon"] {
+  color-scheme:light;
+  --ds-surface-lowest:#ffffff;
+  --ds-surface-low:#fafafa;
+  --ds-surface:#eaeded;
+  --ds-surface-container:#e0e4e4;
+  --ds-surface-high:#d2d8d8;
+  --ds-surface-highest:#c4cccc;
+  --ds-on-surface:#0f1b25;
+  --ds-on-surface-muted:#53616d;
+  --ds-outline:#75838d;
+  --ds-outline-variant:#ccd4d8;
+  --ds-primary:#131921;
+  --ds-on-primary:#ffffff;
+  --ds-primary-container:#232f3e;
+  --ds-secondary:#ff9900;
+  --ds-on-secondary:#131921;
+  --ds-secondary-container:#ffe0ad;
+  --color-background:#eaeded;
+  --color-surface:#fafafa;
+  --color-surface-elevated:#ffffff;
+  --color-surface-container:#e0e4e4;
+  --color-foreground:#0f1b25;
+  --color-foreground-muted:#53616d;
+  --color-border:#ccd4d8;
+  --color-border-strong:#75838d;
+  --color-primary:#131921;
+  --color-primary-foreground:#ffffff;
+  --color-secondary:#ff9900;
+  --color-secondary-foreground:#131921;
+  --color-accent:#ff9900;
+  --color-accent-foreground:#131921;
+  --color-muted:#e0e4e4;
+  --color-muted-foreground:#53616d;
+  --color-success:#287a3d;
+  --color-success-foreground:#ffffff;
+  --color-warning:#a15c00;
+  --color-warning-foreground:#ffffff;
+  --color-danger:#b12704;
+  --color-danger-foreground:#ffffff;
+  --color-focus:#e47911;
+  --shadow-xs:0 1px 2px rgba(15,27,37,.04);
+  --shadow-sm:0 3px 10px rgba(15,27,37,.055);
+  --shadow-md:0 10px 24px rgba(15,27,37,.085);
+  --shadow-lg:0 18px 38px rgba(15,27,37,.10);
+}
+[data-theme="amazon"] body {
+  background:#eaeded;
+  color:#0f1b25
+}
+[data-theme="amazon"] h1,[data-theme="amazon"] h2,[data-theme="amazon"] h3 {
+  font-weight:750;
+  letter-spacing:-.025em
+}
+[data-theme="amazon"] .bg-white {
+  background:#fff!important
+}
+[data-theme="amazon"] .bg-gray-50,[data-theme="amazon"] .bg-slate-50 {
+  background:#fafafa!important
+}
+[data-theme="amazon"] .bg-gray-100,[data-theme="amazon"] .bg-slate-100 {
+  background:#e0e4e4!important
+}
+[data-theme="amazon"] .text-gray-900,[data-theme="amazon"] .text-slate-900 {
+  color:#0f1b25!important
+}
+[data-theme="amazon"] .text-gray-800,[data-theme="amazon"] .text-slate-800 {
+  color:#263746!important
+}
+[data-theme="amazon"] .text-gray-700,[data-theme="amazon"] .text-slate-700 {
+  color:#3f4e59!important
+}
+[data-theme="amazon"] .text-gray-600,[data-theme="amazon"] .text-slate-600,[data-theme="amazon"] .text-gray-500,[data-theme="amazon"] .text-slate-500 {
+  color:#53616d!important
+}
+[data-theme="amazon"] .border-gray-100,[data-theme="amazon"] .border-gray-200,[data-theme="amazon"] .border-slate-100,[data-theme="amazon"] .border-slate-200 {
+  border-color:#ccd4d8!important
+}
+[data-theme="amazon"] .bg-black,[data-theme="amazon"] .bg-gray-900,[data-theme="amazon"] .bg-slate-900 {
+  background:#131921!important
+}
+[data-theme="amazon"] .grid-product-cards > * {
+  background:#fff;
+  border:1px solid #d5d9d9;
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 2px 7px rgba(15,27,37,.035);
+  transition:box-shadow .18s,border-color .18s
+}
+[data-theme="amazon"] .grid-product-cards > *:hover {
+  border-color:#aab7bd;
+  box-shadow:0 8px 20px rgba(15,27,37,.10)
+}
+[data-theme="amazon"] .grid-catalog-cards > * {
+  background:#fff;
+  border:1px solid #d5d9d9;
+  border-radius:8px;
+  overflow:hidden
+}
+[data-theme="amazon"] input:not([type=checkbox]):not([type=radio]):not([type=range]),[data-theme="amazon"] select,[data-theme="amazon"] textarea {
+  background:#fff;
+  border:1px solid #aab7bd;
+  border-radius:7px;
+  color:#0f1b25
+}
+[data-theme="amazon"] input:focus,[data-theme="amazon"] select:focus,[data-theme="amazon"] textarea:focus {
+  border-color:#e47911;
+  box-shadow:0 0 0 3px rgba(255,153,0,.17);
+  outline:none
+}
+[data-theme="amazon"] ::selection {
+  background:#ff9900;
+  color:#131921
+}
+/*
+───────────────────────────────── DIOR ──────────────────────────────────────
+Couture luxury: ivory, near-black, muted champagne and graceful surfaces.
+────────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="dior"], [data-theme="dior"] {
+  color-scheme:light;
+  --ds-surface-lowest:#ffffff;
+  --ds-surface-low:#fcfaf7;
+  --ds-surface:#f5f0e8;
+  --ds-surface-container:#e9e0d4;
+  --ds-surface-high:#ddd1c2;
+  --ds-surface-highest:#d0c1ae;
+  --ds-on-surface:#211d1a;
+  --ds-on-surface-muted:#756b61;
+  --ds-outline:#988a7a;
+  --ds-outline-variant:#ded4c8;
+  --ds-primary:#211d1a;
+  --ds-on-primary:#ffffff;
+  --ds-primary-container:#e8e0d7;
+  --ds-secondary:#b49a70;
+  --ds-on-secondary:#211d1a;
+  --ds-secondary-container:#eee2cb;
+  --color-background:#f5f0e8;
+  --color-surface:#fcfaf7;
+  --color-surface-elevated:#ffffff;
+  --color-surface-container:#e9e0d4;
+  --color-foreground:#211d1a;
+  --color-foreground-muted:#756b61;
+  --color-border:#ded4c8;
+  --color-border-strong:#988a7a;
+  --color-primary:#211d1a;
+  --color-primary-foreground:#ffffff;
+  --color-secondary:#b49a70;
+  --color-secondary-foreground:#211d1a;
+  --color-accent:#b49a70;
+  --color-accent-foreground:#211d1a;
+  --color-muted:#e9e0d4;
+  --color-muted-foreground:#756b61;
+  --color-success:#397052;
+  --color-success-foreground:#ffffff;
+  --color-warning:#956a2b;
+  --color-warning-foreground:#ffffff;
+  --color-danger:#a43a3d;
+  --color-danger-foreground:#ffffff;
+  --color-focus:#8e744d;
+  --shadow-xs:0 1px 2px rgba(33,29,26,.025);
+  --shadow-sm:0 4px 14px rgba(33,29,26,.035);
+  --shadow-md:0 12px 30px rgba(33,29,26,.06);
+  --shadow-lg:0 20px 46px rgba(33,29,26,.085);
+  --shadow-xl:0 28px 60px rgba(33,29,26,.10);
+}
+[data-theme="dior"] body {
+  background:#f5f0e8;
+  color:#211d1a
+}
+[data-theme="dior"] h1,[data-theme="dior"] h2,[data-theme="dior"] h3 {
+  font-weight:550;
+  letter-spacing:-.04em
+}
+[data-theme="dior"] .bg-white {
+  background:#fff!important
+}
+[data-theme="dior"] .bg-gray-50,[data-theme="dior"] .bg-slate-50 {
+  background:#fcfaf7!important
+}
+[data-theme="dior"] .bg-gray-100,[data-theme="dior"] .bg-slate-100 {
+  background:#e9e0d4!important
+}
+[data-theme="dior"] .text-gray-900,[data-theme="dior"] .text-slate-900 {
+  color:#211d1a!important
+}
+[data-theme="dior"] .text-gray-600,[data-theme="dior"] .text-slate-600,[data-theme="dior"] .text-gray-500,[data-theme="dior"] .text-slate-500 {
+  color:#756b61!important
+}
+[data-theme="dior"] .border-gray-100,[data-theme="dior"] .border-gray-200,[data-theme="dior"] .border-slate-100,[data-theme="dior"] .border-slate-200 {
+  border-color:#ded4c8!important
+}
+[data-theme="dior"] .bg-black,[data-theme="dior"] .bg-gray-900,[data-theme="dior"] .bg-slate-900 {
+  background:#211d1a!important
+}
+[data-theme="dior"] .grid-product-cards > * {
+  background:#fff;
+  border:1px solid #e7ded3;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 3px 12px rgba(33,29,26,.025);
+  transition:transform .24s,box-shadow .24s,border-color .24s
+}
+[data-theme="dior"] .grid-product-cards > *:hover {
+  transform:translateY(-3px);
+  border-color:#c8b38e;
+  box-shadow:0 16px 36px rgba(33,29,26,.09)
+}
+[data-theme="dior"] .grid-catalog-cards > * {
+  border:1px solid #e7ded3;
+  border-radius:20px;
+  overflow:hidden
+}
+[data-theme="dior"] input:not([type=checkbox]):not([type=radio]):not([type=range]),[data-theme="dior"] select,[data-theme="dior"] textarea {
+  background:#fff;
+  border:1px solid #ded4c8;
+  border-radius:8px;
+  color:#211d1a
+}
+[data-theme="dior"] input:focus,[data-theme="dior"] select:focus,[data-theme="dior"] textarea:focus {
+  border-color:#8e744d;
+  box-shadow:0 0 0 3px rgba(180,154,112,.18);
+  outline:none
+}
+[data-theme="dior"] ::selection {
+  background:#b49a70;
+  color:#211d1a
+}
+/*
+Shared accessibility and reduced-motion behavior
+*/
+[data-theme="tiffany"] :focus-visible,[data-theme="adidas"] :focus-visible,[data-theme="coca-cola"] :focus-visible,[data-theme="amazon"] :focus-visible,[data-theme="dior"] :focus-visible {
+  outline:2px solid var(--color-focus);
+  outline-offset:3px
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="tiffany"] .grid-product-cards > *,  [data-theme="adidas"] .grid-product-cards > *,  [data-theme="coca-cola"] .grid-product-cards > *,  [data-theme="amazon"] .grid-product-cards > *,  [data-theme="dior"] .grid-product-cards > * {
+    transition:none!important;
+    transform:none!important
+  }
+}

@@ -22,16 +22,16 @@ export function CatalogBreadcrumb({ items, className }: CatalogBreadcrumbProps) 
             <li key={i} className="flex items-center gap-1.5">
               {i > 0 && (
                 <ChevronRight
-                  className="size-3 text-[#c4c7c7] shrink-0"
+                  className="size-3 text-border shrink-0"
                   aria-hidden="true"
                 />
               )}
               {i === 0 && item.href && (
-                <Home className="size-3.5 text-[#444748] shrink-0" aria-hidden="true" />
+                <Home className="size-3.5 text-foreground-muted shrink-0" aria-hidden="true" />
               )}
               {isLast || !item.href ? (
                 <span
-                  className="text-[13px] font-semibold text-[#191c1e]"
+                  className="text-[13px] font-semibold text-foreground"
                   aria-current={isLast ? "page" : undefined}
                 >
                   {item.label}
@@ -39,7 +39,7 @@ export function CatalogBreadcrumb({ items, className }: CatalogBreadcrumbProps) 
               ) : (
                 <Link
                   href={item.href}
-                  className="text-[13px] text-[#444748] hover:text-[#191c1e] transition-colors"
+                  className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
                 >
                   {item.label}
                 </Link>

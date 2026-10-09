@@ -66,7 +66,7 @@ function HeroCarouselInner({
       aria-roledescription="carousel"
       className="relative w-full px-5 md:px-8 lg:px-10 pt-4 md:pt-5"
     >
-      {/* ── Prev arrow ─────────────────────────────────────────────────────── */}
+      {/* Prev arrow */}
       {sorted.length > 1 && (
         <button
           onClick={() => { prev(); resetTimer(); }}
@@ -74,8 +74,8 @@ function HeroCarouselInner({
           className={cn(
             "absolute left-4 md:left-5 top-1/2 -translate-y-1/2 z-20",
             "flex h-11 w-11 items-center justify-center rounded-full",
-            "bg-white/80 backdrop-blur-md border border-white/80 text-[#191c1e]",
-            "shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:bg-white hover:scale-105 active:scale-95",
+            "bg-surface-elevated/80 backdrop-blur-md border border-surface-elevated/80 text-foreground",
+            "shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:bg-surface-elevated hover:scale-105 active:scale-95",
             "transition-all duration-150",
           )}
         >
@@ -83,10 +83,9 @@ function HeroCarouselInner({
         </button>
       )}
 
-      {/* ── Slide card ─────────────────────────────────────────────────────── */}
-      {/* Design reference: rounded-3xl, ~440-490px tall desktop, full-bleed within padding */}
+      {/* Slide card */}
       <div
-        className="relative w-full overflow-hidden rounded-3xl shadow-[0_12px_36px_rgba(0,0,0,0.06)] bg-[#edeef0]"
+        className="relative w-full overflow-hidden rounded-3xl shadow-[0_12px_36px_rgba(0,0,0,0.06)] bg-surface-container"
         style={{ height: "clamp(220px, 34vw, 490px)" }}
       >
         <AnimatePresence mode="wait" initial={false} custom={dir}>
@@ -102,7 +101,6 @@ function HeroCarouselInner({
             aria-roledescription="slide"
             aria-label={`Slide ${current + 1} of ${sorted.length}: ${slide.title}`}
           >
-            {/* Full-bleed background image */}
             {slide.imageUrl ? (
               <Image
                 src={slide.imageUrl}
@@ -113,30 +111,29 @@ function HeroCarouselInner({
                 className="object-cover object-center scale-[1.01]"
               />
             ) : (
-              <div className="absolute inset-0 bg-[#f5f0ea]" />
+              <div className="absolute inset-0 bg-background" />
             )}
 
-            {/* Gradient — left side only, text readable */}
+            {/* Gradient — left side only */}
             <div
-              className="absolute inset-0 bg-gradient-to-r from-[#f8f9fb]/95 via-[#f8f9fb]/70 md:via-[#f8f9fb]/40 to-transparent"
+              className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 md:via-background/40 to-transparent"
               aria-hidden="true"
             />
 
             {/* Text content */}
             <div className="relative z-10 h-full flex items-center pl-8 sm:pl-14 lg:pl-16">
               <div className="max-w-[45%]">
-                {/* NEW ARRIVALS eyebrow pill */}
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/60 shadow-sm text-[11px] font-bold tracking-widest text-[#191c1e] uppercase mb-3">
-                  <span className="text-[#ba0918] text-sm">✦</span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-elevated/90 backdrop-blur-md border border-surface-elevated/60 shadow-sm text-[11px] font-bold tracking-widest text-foreground uppercase mb-3">
+                  <span className="text-secondary text-sm">✦</span>
                   NEW ARRIVALS
                 </span>
 
-                <h1 className="text-[clamp(1.2rem,3.5vw,3.25rem)] font-extrabold text-[#191c1e] tracking-tight leading-[1.1] mb-3">
+                <h1 className="text-[clamp(1.2rem,3.5vw,3.25rem)] font-extrabold text-foreground tracking-tight leading-[1.1] mb-3">
                   {slide.title}
                 </h1>
 
                 {slide.subtitle && (
-                  <p className="text-[clamp(0.75rem,1.5vw,1.125rem)] text-[#444748] leading-relaxed mb-4 max-w-md">
+                  <p className="text-[clamp(0.75rem,1.5vw,1.125rem)] text-foreground-muted leading-relaxed mb-4 max-w-md">
                     {slide.subtitle}
                   </p>
                 )}
@@ -146,10 +143,10 @@ function HeroCarouselInner({
                   className={cn(
                     "inline-flex items-center gap-2",
                     "h-[clamp(36px,4vw,48px)] px-[clamp(16px,3vw,28px)]",
-                    "rounded-full bg-[#0D0D0D] text-white",
+                    "rounded-full bg-primary text-primary-foreground",
                     "text-[clamp(11px,1.2vw,14px)] font-bold tracking-wide",
-                    "hover:bg-[#262626] transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5",
-                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D]",
+                    "hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                   )}
                 >
                   {ctaLabel}
@@ -176,7 +173,7 @@ function HeroCarouselInner({
                 onClick={() => { goTo(i, i > current ? 1 : -1); resetTimer(); }}
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-300",
-                  i === current ? "w-6 bg-[#0D0D0D]" : "w-1.5 bg-[#0D0D0D]/30 hover:bg-[#0D0D0D]/60",
+                  i === current ? "w-6 bg-primary" : "w-1.5 bg-primary/30 hover:bg-primary/60",
                 )}
               />
             ))}
@@ -184,7 +181,7 @@ function HeroCarouselInner({
         )}
       </div>
 
-      {/* ── Next arrow ─────────────────────────────────────────────────────── */}
+      {/* Next arrow */}
       {sorted.length > 1 && (
         <button
           onClick={() => { next(); resetTimer(); }}
@@ -192,8 +189,8 @@ function HeroCarouselInner({
           className={cn(
             "absolute right-4 md:right-5 top-1/2 -translate-y-1/2 z-20",
             "flex h-11 w-11 items-center justify-center rounded-full",
-            "bg-white/80 backdrop-blur-md border border-white/80 text-[#191c1e]",
-            "shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:bg-white hover:scale-105 active:scale-95",
+            "bg-surface-elevated/80 backdrop-blur-md border border-surface-elevated/80 text-foreground",
+            "shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:bg-surface-elevated hover:scale-105 active:scale-95",
             "transition-all duration-150",
           )}
         >

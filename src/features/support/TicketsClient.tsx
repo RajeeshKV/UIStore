@@ -194,8 +194,8 @@ export function TicketsClient() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-[18px] font-bold text-[#191c1e]">Support Requests</h1>
-          <p className="text-[13px] text-[#5A6578] mt-0.5">Open a ticket to get help from our team.</p>
+          <h1 className="text-[18px] font-bold text-foreground">Support Requests</h1>
+          <p className="text-[13px] text-foreground-muted mt-0.5">Open a ticket to get help from our team.</p>
         </div>
         <Button variant="primary" size="sm" onClick={() => setNewOpen(true)} iconLeft={<Plus className="size-3.5" />}>
           New Request
@@ -211,8 +211,8 @@ export function TicketsClient() {
             className={cn(
               "h-8 px-3.5 rounded-full text-[12px] font-semibold border transition-all",
               statusFilter === s
-                ? "bg-[#0D0D0D] text-white border-[#0D0D0D]"
-                : "border-[#e1e2e4] text-[#444748] hover:border-[#0D0D0D] hover:text-[#191c1e]",
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-border text-foreground-muted hover:border-primary hover:text-foreground",
             )}
           >
             {s || "All"}
@@ -234,12 +234,12 @@ export function TicketsClient() {
             ))
           ) : tickets.length === 0 ? (
             <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <div className="h-14 w-14 rounded-full bg-[#f3f4f6] flex items-center justify-center">
-                <MessageCircle className="size-7 text-[#c4c7c7]" />
+              <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center">
+                <MessageCircle className="size-7 text-border" />
               </div>
               <div>
-                <p className="text-[15px] font-bold text-[#191c1e]">No support requests</p>
-                <p className="text-[13px] text-[#5A6578] mt-1">
+                <p className="text-[15px] font-bold text-foreground">No support requests</p>
+                <p className="text-[13px] text-foreground-muted mt-1">
                   {statusFilter ? `No ${statusFilter.toLowerCase()} requests.` : "Get help by opening a new request."}
                 </p>
               </div>
@@ -250,18 +250,18 @@ export function TicketsClient() {
               <Link
                 key={t.id}
                 href={`/account/support/${t.id}`}
-                className="group rounded-2xl border border-[#e1e2e4] bg-white p-4 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all flex flex-col gap-2"
+                className="group rounded-2xl border border-border bg-surface-elevated p-4 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all flex flex-col gap-2"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-[#191c1e] leading-snug line-clamp-1 group-hover:text-[#0D0D0D]">
+                    <p className="text-[14px] font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-foreground">
                       {t.subject}
                     </p>
-                    <p className="text-[11px] text-[#5A6578] mt-0.5 font-mono">{t.ticketNumber}</p>
+                    <p className="text-[11px] text-foreground-muted mt-0.5 font-mono">{t.ticketNumber}</p>
                   </div>
                   <TicketStatusBadge status={t.status} />
                 </div>
-                <div className="flex items-center gap-3 flex-wrap text-[11px] text-[#5A6578]">
+                <div className="flex items-center gap-3 flex-wrap text-[11px] text-foreground-muted">
                   {t.orderNumber && (
                     <span className="flex items-center gap-1">
                       <ExternalLink className="size-3" />

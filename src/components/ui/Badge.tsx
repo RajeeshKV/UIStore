@@ -7,9 +7,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         /** Default — obsidian pill */
-        default:   "bg-[#0D0D0D] text-white rounded-full px-2.5 py-1 text-[11px]",
+        default:   "bg-primary text-primary-foreground rounded-full px-2.5 py-1 text-[11px]",
         /** Crimson — discount/sale badge matches design secondary */
-        discount:  "bg-[#E02E2E] text-white rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide",
+        discount:  "bg-secondary text-secondary-foreground rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide",
         /** Neutral surface */
         secondary: "bg-surface-container text-foreground-muted rounded-full px-2.5 py-1 text-[11px] border border-border",
         /** Outline only */

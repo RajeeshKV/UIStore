@@ -36,8 +36,7 @@ import { pendingCartItem } from "@/lib/pendingCartItem";
  * 3. primaryImageUrl (top-level, pre-resolved by grid endpoint)
  * 4. placeholder (null)
  *
- * The API returns `url` on GridImage; `secureUrl` is accepted as a fallback
- * for forward compatibility if the backend ever renames the field.
+ * The API returns `url` on GridImage; `secureUrl` accepted as fallback.
  */
 function resolveImage(row: GridRow): string | null {
   function imgSrc(img: GridRow["images"][number]): string | null {
@@ -66,14 +65,14 @@ function StarRating({ average, count }: { average: number; count: number }) {
             key={i}
             className={cn(
               "size-3 shrink-0",
-              i <= filled ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-[#D1D5DB]",
+              i <= filled ? "fill-warning text-warning" : "fill-none text-border",
             )}
             aria-hidden="true"
           />
         ))}
       </div>
-      <span className="text-[11px] text-[#5A6578] tabular-nums">
-        {average.toFixed(1)} <span className="text-[#c4c7c7]">({count})</span>
+      <span className="text-[11px] text-foreground-muted tabular-nums">
+        {average.toFixed(1)} <span className="text-border-strong">({count})</span>
       </span>
     </div>
   );
@@ -107,7 +106,6 @@ export function VariantProductCard({
   const effectiveCurrency = row.currency ?? currency ?? "INR";
   const effectiveLocale = locale ?? "en-IN";
 
-  // Price and discount
   const priceStr = formatPrice(row.effectivePrice, effectiveCurrency, effectiveLocale);
   const comparePriceStr =
     row.compareAtPrice && row.compareAtPrice > row.effectivePrice
@@ -118,12 +116,10 @@ export function VariantProductCard({
       ? discountPercent(row.effectivePrice, row.compareAtPrice)
       : 0;
 
-  // Stock
   const stockState = normalizeStock(row.stockAvailability);
   const isOutOfStock = stockState === "OutOfStock";
   const isLowStock = stockState === "LowStock";
 
-  // Image
   const imageUrl = imgError ? null : resolveImage(row);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
@@ -134,7 +130,6 @@ export function VariantProductCard({
     if (!row.canPurchase || addingToCart) return;
 
     if (!isAuthenticated) {
-      // Save as pending with the resolved variantId for this row
       pendingCartItem.save({
         productId: row.productId,
         variantId: row.variantId ?? undefined,
@@ -148,7 +143,6 @@ export function VariantProductCard({
     }
 
     setAddingToCart(true);
-    // `row.id` is the variant id for variant rows; for simple rows variantId is null
     addItem(row.productId, row.variantId ?? undefined, 1);
     setTimeout(() => setAddingToCart(false), 800);
   }
@@ -172,24 +166,24 @@ export function VariantProductCard({
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "group relative flex flex-col rounded-2xl overflow-hidden border border-[#E5E7EB] bg-white",
+        "group relative flex flex-col rounded-2xl overflow-hidden border border-border bg-surface-elevated",
         "hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.06)] transition-shadow duration-200",
         isOutOfStock && "opacity-70",
       )}
     >
       {/* ── Image ───────────────────────────────────────────────────────── */}
-      <div className="relative aspect-square w-full bg-[#F4F5F7] overflow-hidden">
+      <div className="relative aspect-square w-full bg-surface-container overflow-hidden">
 
         {/* Discount badge */}
         {discount > 0 && !isOutOfStock && (
-          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-[#E02E2E] px-1.5 py-0.5 text-[9px] font-bold text-white leading-none uppercase tracking-wide pointer-events-none">
+          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-secondary px-1.5 py-0.5 text-[9px] font-bold text-secondary-foreground leading-none uppercase tracking-wide pointer-events-none">
             -{discount}%
           </span>
         )}
 
         {/* Stock badges */}
         {isOutOfStock && (
-          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-[#0D0D0D]/70 px-1.5 py-0.5 text-[9px] font-bold text-white leading-none pointer-events-none">
+          <span className="absolute top-2.5 left-2.5 z-10 rounded bg-primary/70 px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground leading-none pointer-events-none">
             Out of stock
           </span>
         )}
@@ -199,7 +193,7 @@ export function VariantProductCard({
           </span>
         )}
 
-        {/* Wishlist — keyed to productId so toggling one variant affects all */}
+        {/* Wishlist */}
         <button
           type="button"
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -208,9 +202,9 @@ export function VariantProductCard({
           className={cn(
             "absolute top-2.5 right-2.5 z-10",
             "flex h-8 w-8 items-center justify-center rounded-full",
-            "bg-white border shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
-            "hover:border-[#D1D5DB] transition-all duration-150",
-            isWishlisted ? "border-[#E02E2E]" : "border-[#E5E7EB]",
+            "bg-surface-elevated border shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
+            "hover:border-border transition-all duration-150",
+            isWishlisted ? "border-secondary" : "border-border",
           )}
         >
           <svg
@@ -218,8 +212,8 @@ export function VariantProductCard({
             className={cn(
               "size-3.5 transition-all duration-150",
               isWishlisted
-                ? "fill-[#E02E2E] stroke-[#E02E2E]"
-                : "fill-none stroke-[#5A6578]",
+                ? "fill-secondary stroke-secondary"
+                : "fill-none stroke-foreground-muted",
             )}
             strokeWidth={2}
             strokeLinecap="round"
@@ -230,7 +224,7 @@ export function VariantProductCard({
           </svg>
         </button>
 
-        {/* Product image — links to PDP with variant pre-selected */}
+        {/* Product image */}
         <Link
           href={row.variantId ? `/products/${row.slug}?variant=${row.variantId}` : `/products/${row.slug}`}
           aria-label={`View ${row.name}${
@@ -254,7 +248,7 @@ export function VariantProductCard({
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <ShoppingBag className="size-8 text-[#D1D5DB]" aria-hidden="true" />
+              <ShoppingBag className="size-8 text-border" aria-hidden="true" />
             </div>
           )}
         </Link>
@@ -266,24 +260,23 @@ export function VariantProductCard({
         {/* Name */}
         <Link
           href={row.variantId ? `/products/${row.slug}?variant=${row.variantId}` : `/products/${row.slug}`}
-          className="text-[13px] font-semibold text-[#191c1e] leading-snug line-clamp-2 hover:text-[#0D0D0D]/70 transition-colors"
+          className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 hover:text-foreground/70 transition-colors"
         >
           {row.name}
         </Link>
 
         {/* Variant label — attribute values only, e.g. "Orange · 256GB" */}
         {(() => {
-          // Prefer structured attributes (new API); fall back to legacy variantDescription
           if (row.variantAttributes && row.variantAttributes.length > 0) {
             return (
-              <p className="text-[11px] text-[#5A6578] leading-tight -mt-1 truncate">
+              <p className="text-[11px] text-foreground-muted leading-tight -mt-1 truncate">
                 {row.variantAttributes.map((a) => a.value).join(" · ")}
               </p>
             );
           }
           if (row.variantDescription) {
             return (
-              <p className="text-[11px] text-[#5A6578] leading-tight -mt-1 truncate">
+              <p className="text-[11px] text-foreground-muted leading-tight -mt-1 truncate">
                 {row.variantDescription}
               </p>
             );
@@ -298,11 +291,11 @@ export function VariantProductCard({
 
         {/* Price */}
         <div className="flex items-baseline gap-1.5 flex-wrap">
-          <span className="text-[15px] font-extrabold text-[#0D0D0D] leading-none">
+          <span className="text-[15px] font-extrabold text-foreground leading-none">
             {priceStr}
           </span>
           {comparePriceStr && (
-            <span className="text-[12px] text-[#5A6578] line-through">{comparePriceStr}</span>
+            <span className="text-[12px] text-foreground-muted line-through">{comparePriceStr}</span>
           )}
         </div>
 
@@ -310,7 +303,7 @@ export function VariantProductCard({
 
         {/* CTA */}
         {isOutOfStock ? (
-          <p className="mt-0.5 text-[11px] text-center text-[#5A6578] py-1">Out of stock</p>
+          <p className="mt-0.5 text-[11px] text-center text-foreground-muted py-1">Out of stock</p>
         ) : row.canPurchase ? (
           <button
             onClick={handleAddToCart}
@@ -319,8 +312,8 @@ export function VariantProductCard({
             className={cn(
               "mt-0.5 w-full flex items-center justify-center gap-1.5",
               "h-9 rounded-lg text-[12px] font-bold",
-              "bg-[#0D0D0D] text-white",
-              "hover:bg-[#262626] active:scale-[0.98] transition-all duration-150",
+              "bg-primary text-primary-foreground",
+              "hover:bg-primary/90 active:scale-[0.98] transition-all duration-150",
               "disabled:opacity-60",
             )}
           >

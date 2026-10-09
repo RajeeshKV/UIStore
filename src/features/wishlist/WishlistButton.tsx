@@ -11,15 +11,9 @@ interface WishlistButtonProps {
   variantId?: string;
   className?: string;
   size?: "sm" | "md";
-  /** When true, renders as a floating overlay (product card usage) */
   overlay?: boolean;
 }
 
-/**
- * Reusable wishlist heart button.
- * - Redirects unauthenticated users to /auth/login.
- * - Uses optimistic updates via WishlistContext.
- */
 export function WishlistButton({
   productId,
   variantId,
@@ -56,8 +50,8 @@ export function WishlistButton({
       className={cn(
         "flex items-center justify-center rounded-full transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         overlay
-          ? "bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white hover:scale-105"
-          : "bg-white border border-[#E5E7EB] hover:border-[#0D0D0D] shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
+          ? "bg-surface-elevated/90 backdrop-blur-sm shadow-sm hover:bg-surface-elevated hover:scale-105"
+          : "bg-surface-elevated border border-border hover:border-primary shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
         btnSize,
         className,
       )}
@@ -66,9 +60,7 @@ export function WishlistButton({
         className={cn(
           iconSize,
           "transition-colors",
-          isWished
-            ? "fill-[#E02E2E] text-[#E02E2E]"
-            : "text-[#5A6578]",
+          isWished ? "fill-secondary text-secondary" : "text-foreground-muted",
         )}
       />
     </button>

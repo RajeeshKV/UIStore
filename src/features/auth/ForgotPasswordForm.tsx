@@ -34,12 +34,12 @@ export function ForgotPasswordForm() {
           <CheckCircle className="size-8 text-success" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-[15px] font-bold text-[#191c1e]">Check your email</p>
-          <p className="mt-2 text-[13px] text-[#444748] max-w-sm leading-relaxed">
+          <p className="text-[15px] font-bold text-foreground">Check your email</p>
+          <p className="mt-2 text-[13px] text-foreground-muted max-w-sm leading-relaxed">
             If an account exists for <strong>{email}</strong>, we&apos;ve sent password reset instructions.
           </p>
         </div>
-        <Link href="/auth/login" className="text-[13px] text-[#444748] hover:text-[#191c1e] transition-colors">
+        <Link href="/auth/login" className="text-[13px] text-foreground-muted hover:text-foreground transition-colors">
           Back to Sign In
         </Link>
       </div>
@@ -60,7 +60,7 @@ export function ForgotPasswordForm() {
       <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}>
         Send Reset Link
       </Button>
-      <Link href="/auth/login" className="text-[13px] text-center text-[#444748] hover:text-[#191c1e] transition-colors">
+      <Link href="/auth/login" className="text-[13px] text-center text-foreground-muted hover:text-foreground transition-colors">
         Back to Sign In
       </Link>
     </form>

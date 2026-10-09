@@ -45,10 +45,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             }
             aria-invalid={!!error}
             className={cn(
-              "w-full appearance-none rounded-md border border-border bg-[#F4F5F7]",
+              "w-full appearance-none rounded-md border border-border bg-surface-container",
               "h-11 px-3 pr-9 text-[14px] text-foreground",
               "transition-colors duration-150",
-              "focus:outline-none focus:bg-white focus:border-[#0D0D0D]/40 focus:ring-1 focus:ring-[#0D0D0D]/10",
+              "focus:outline-none focus:bg-surface-elevated focus:border-primary/40 focus:ring-1 focus:ring-primary/10",
               "disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-muted",
               error && "border-danger focus:border-danger",
               className,

@@ -305,11 +305,11 @@ export function AddressForm({
             aria-invalid={!!errors.postalCode}
             autoComplete="postal-code"
             className={cn(
-              "w-full rounded-md border border-border bg-[#F4F5F7]",
+              "w-full rounded-md border border-border bg-surface-container",
               "h-11 px-3 pr-10 text-[14px] text-foreground",
-              "placeholder:text-[#5A6578]",
+              "placeholder:text-foreground-muted",
               "transition-colors duration-150",
-              "focus:outline-none focus:bg-white focus:border-[#0D0D0D]/40 focus:ring-1 focus:ring-[#0D0D0D]/10",
+              "focus:outline-none focus:bg-surface-elevated focus:border-primary/40 focus:ring-1 focus:ring-primary/10",
               errors.postalCode && "border-danger focus:border-danger focus:ring-danger/10",
             )}
           />

@@ -50,14 +50,14 @@ export function AccountLayout({ children }: AccountLayoutProps) {
         {/* Sidebar — desktop */}
         <aside className="hidden lg:flex flex-col w-56 shrink-0">
           {/* Avatar + identity */}
-          <div className="flex items-center gap-3 px-3 pb-5 mb-3 border-b border-[#e1e2e4]">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0D0D0D] text-white text-[14px] font-bold shrink-0">
+          <div className="flex items-center gap-3 px-3 pb-5 mb-3 border-b border-border">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground text-[14px] font-bold shrink-0">
               {initials}
             </span>
             <div className="min-w-0">
-              <p className="text-[13px] font-bold text-[#191c1e] truncate">{displayName}</p>
+              <p className="text-[13px] font-bold text-foreground truncate">{displayName}</p>
               {user?.email && (
-                <p className="text-[11px] text-[#5A6578] truncate">{user.email}</p>
+                <p className="text-[11px] text-foreground-muted truncate">{user.email}</p>
               )}
             </div>
           </div>
@@ -71,8 +71,8 @@ export function AccountLayout({ children }: AccountLayoutProps) {
                 className={cn(
                   "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150",
                   pathname === href
-                    ? "bg-[#0D0D0D] text-white"
-                    : "text-[#444748] hover:text-[#191c1e] hover:bg-[#f3f4f6]",
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground-muted hover:text-foreground hover:bg-muted",
                 )}
               >
                 <Icon className="size-4 shrink-0" aria-hidden="true" />
@@ -82,7 +82,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
 
             <button
               onClick={async () => { await logout(); router.push("/"); }}
-              className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-[#5A6578] hover:text-danger hover:bg-danger/5 transition-all mt-2"
+              className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-foreground-muted hover:text-danger hover:bg-danger/5 transition-all mt-2"
             >
               <LogOut className="size-4 shrink-0" aria-hidden="true" />
               Sign Out
@@ -103,8 +103,8 @@ export function AccountLayout({ children }: AccountLayoutProps) {
               className={cn(
                 "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all shrink-0",
                 pathname === href
-                  ? "bg-[#0D0D0D] text-white"
-                  : "border border-[#e1e2e4] text-[#444748] hover:border-[#0D0D0D] hover:text-[#191c1e]",
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border text-foreground-muted hover:border-primary hover:text-foreground",
               )}
             >
               <Icon className="size-3.5 shrink-0" aria-hidden="true" />
@@ -113,7 +113,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
           ))}
           <button
             onClick={async () => { await logout(); router.push("/"); }}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap border border-[#e1e2e4] text-[#5A6578] hover:text-danger hover:border-danger/30 transition-all shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap border border-border text-foreground-muted hover:text-danger hover:border-danger/30 transition-all shrink-0"
           >
             <LogOut className="size-3.5 shrink-0" aria-hidden="true" />
             Sign Out

@@ -11,7 +11,7 @@ export function Skeleton({ rounded = false, circle = false, className, ...props 
     <div
       aria-hidden="true"
       className={cn(
-        "animate-skeleton bg-[#edeef0]",
+        "animate-skeleton bg-surface-container",
         circle ? "rounded-full" : rounded ? "rounded-full" : "rounded-lg",
         className,
       )}
@@ -49,7 +49,7 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
 /** Category card skeleton */
 export function CategoryCardSkeleton() {
   return (
-    <div aria-hidden="true" className="flex items-center gap-0 rounded-2xl overflow-hidden border border-border bg-white">
+    <div aria-hidden="true" className="flex items-center gap-0 rounded-2xl overflow-hidden border border-border bg-surface-elevated">
       <Skeleton className="shrink-0 w-[90px] h-[90px] rounded-none" />
       <div className="flex-1 px-4 py-3 space-y-2">
         <Skeleton className="h-4 w-3/4" />

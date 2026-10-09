@@ -40,13 +40,8 @@ export function TrustBar({ settings }: TrustBarProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-20px" }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white rounded-2xl border border-[#e1e2e4]/50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] px-3 py-3 md:px-5 md:py-4"
+        className="bg-surface-elevated rounded-2xl border border-border/50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] px-3 py-3 md:px-5 md:py-4"
       >
-        {/*
-          Mobile: 2×2 compact grid — each cell is single line via truncate.
-          The horizontal divider (border-b on first two items) only shows on mobile (<md).
-          Desktop (md+): 4-col single row, vertical dividers between items.
-        */}
         <ul role="list" className="grid grid-cols-2 md:grid-cols-4 gap-0">
           {benefits.map((b, i) => (
             <motion.li
@@ -57,27 +52,22 @@ export function TrustBar({ settings }: TrustBarProps) {
               transition={{ duration: 0.2, delay: i * 0.05 }}
               className={cn(
                 "flex items-center gap-2.5 px-3 py-2.5",
-                // Mobile-only row divider — max-md: prefix so it ONLY applies below md breakpoint
-                i < 2 && "max-md:border-b max-md:border-[#f0f0f0]",
-                // Desktop vertical dividers between all items
-                "md:border-r md:border-[#e1e2e4]/60 last:md:border-r-0",
+                i < 2 && "max-md:border-b max-md:border-border/40",
+                "md:border-r md:border-border/60 last:md:border-r-0",
                 "first:md:pl-0 last:md:pr-0",
               )}
             >
-              {/* Icon — small circle */}
               <div
-                className="w-8 h-8 rounded-xl shrink-0 bg-[#f3f4f6] border border-[#e1e2e4]/40 flex items-center justify-center text-[#191c1e]"
+                className="w-8 h-8 rounded-xl shrink-0 bg-muted border border-border/40 flex items-center justify-center text-foreground"
                 aria-hidden="true"
               >
                 {b.icon}
               </div>
-
-              {/* Text — forced single line via truncate */}
               <div className="min-w-0 overflow-hidden">
-                <p className="text-[11px] md:text-[12px] font-bold text-[#191c1e] truncate leading-tight">
+                <p className="text-[11px] md:text-[12px] font-bold text-foreground truncate leading-tight">
                   {b.title}
                 </p>
-                <p className="text-[10px] md:text-[11px] text-[#5A6578] truncate leading-tight mt-0.5">
+                <p className="text-[10px] md:text-[11px] text-foreground-muted truncate leading-tight mt-0.5">
                   {b.description}
                 </p>
               </div>

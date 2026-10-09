@@ -240,11 +240,11 @@ export function Combobox({
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           className={cn(
-            "w-full rounded-md border border-border bg-[#F4F5F7]",
+            "w-full rounded-md border border-border bg-surface-container",
             "h-11 pl-3 pr-9 text-[14px] text-foreground",
-            "placeholder:text-[#5A6578]",
+            "placeholder:text-foreground-muted",
             "transition-colors duration-150",
-            "focus:outline-none focus:bg-white focus:border-[#0D0D0D]/40 focus:ring-1 focus:ring-[#0D0D0D]/10",
+            "focus:outline-none focus:bg-surface-elevated focus:border-primary/40 focus:ring-1 focus:ring-primary/10",
             "disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-muted",
             error && "border-danger focus:border-danger focus:ring-danger/10",
             showClear && "pr-16",
@@ -288,7 +288,7 @@ export function Combobox({
           aria-multiselectable={false}
           className={cn(
             "absolute z-50 top-full mt-1 w-full",
-            "rounded-md border border-border bg-white shadow-lg",
+            "rounded-md border border-border bg-surface-elevated shadow-lg",
             "max-h-60 overflow-y-auto",
             // Ensure it sits above surrounding content
             "left-0",
@@ -314,10 +314,10 @@ export function Combobox({
                   className={cn(
                     "px-3 py-2 text-[14px] cursor-pointer select-none transition-colors",
                     isActive
-                      ? "bg-[#F4F5F7] text-foreground"
+                      ? "bg-surface-container text-foreground"
                       : isSelected
-                      ? "bg-[#F4F5F7]/60 text-foreground font-medium"
-                      : "text-foreground hover:bg-[#F4F5F7]",
+                      ? "bg-surface-container/60 text-foreground font-medium"
+                      : "text-foreground hover:bg-surface-container",
                   )}
                 >
                   {opt.label}

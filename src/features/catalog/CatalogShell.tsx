@@ -134,9 +134,9 @@ export function CatalogShell({
   };
 
   return (
-    <div className="bg-[#f8f9fb] min-h-screen">
+    <div className="bg-background min-h-screen">
       {/* ── Page header band ─────────────────────────────────────────── */}
-      <section className="w-full bg-[#f8f9fb] py-8 border-b border-[#e1e2e4]">
+      <section className="w-full bg-background py-8 border-b border-border">
         <div className="px-5 md:px-8 lg:px-10">
           {/* Breadcrumb + status */}
           <div className="flex items-center justify-between pb-5">
@@ -144,8 +144,8 @@ export function CatalogShell({
               <CatalogBreadcrumb items={breadcrumbs} />
             )}
             <div className="hidden sm:flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#ba0918] animate-pulse" aria-hidden="true" />
-              <span className="text-[11px] font-bold tracking-widest uppercase text-[#444748]">
+              <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" aria-hidden="true" />
+              <span className="text-[11px] font-bold tracking-widest uppercase text-foreground-muted">
                 Live Inventory
               </span>
             </div>
@@ -154,21 +154,21 @@ export function CatalogShell({
           {/* Hero header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
             <div>
-              <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#444748] mb-1">
+              <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-foreground-muted mb-1">
                 Catalog Index
               </p>
               <div className="flex items-baseline gap-4">
-                <h1 className="text-[clamp(1.75rem,4vw,3rem)] font-extrabold text-[#191c1e] tracking-tight leading-none">
+                <h1 className="text-[clamp(1.75rem,4vw,3rem)] font-extrabold text-foreground tracking-tight leading-none">
                   {heading}
                 </h1>
                 {totalCount > 0 && (
-                  <span className="text-[16px] font-semibold text-[#444748]">
+                  <span className="text-[16px] font-semibold text-foreground-muted">
                     / {totalCount} items
                   </span>
                 )}
               </div>
               {description && (
-                <p className="mt-2 text-[14px] text-[#444748] max-w-2xl leading-relaxed">
+                <p className="mt-2 text-[14px] text-foreground-muted max-w-2xl leading-relaxed">
                   {description}
                 </p>
               )}
@@ -228,7 +228,7 @@ export function CatalogShell({
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
-                <p className="text-[12px] text-[#444748]">
+                <p className="text-[12px] text-foreground-muted">
                   Page {params.Page ?? 1} of {totalPages} &mdash;{" "}
                   {totalCount} item{totalCount !== 1 ? "s" : ""}
                 </p>

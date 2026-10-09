@@ -29,15 +29,8 @@ interface ProductInformationProps {
   currency: string;
   locale: string;
   codEnabled?: boolean;
-  /**
-   * Controlled variant — owned by ProductDetailIsland so image switching works.
-   * When provided, the component is controlled; internal state is ignored.
-   * null means "no variant selected yet" (partial or no selection).
-   */
   selectedVariant?: StorefrontVariantResponse | null;
-  /** Called when user picks a different variant in the selector (fully resolved). */
   onVariantChange?: (variant: StorefrontVariantResponse) => void;
-  /** Called when selection becomes partial — clears resolved variant in parent. */
   onVariantClear?: () => void;
 }
 
@@ -45,15 +38,12 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
   const shouldReduce = useReducedMotion();
   const { addItem, isMutating } = useCart();
   const hasVariants = (product.variants?.length ?? 0) > 0;
-  // Filter out null entries the API may return
   const safeVariants = (product.variants ?? []).filter(Boolean);
 
-  // Internal state — used when the component is uncontrolled (no parent island)
   const [internalVariant, setInternalVariant] = useState<StorefrontVariantResponse | null>(
     safeVariants.find((v) => v.canPurchase) ?? safeVariants[0] ?? null,
   );
 
-  // Use controlled value when provided, fall back to internal state
   const selectedVariant = controlledVariant !== undefined ? controlledVariant : internalVariant;
 
   function handleVariantSelect(variant: StorefrontVariantResponse) {
@@ -71,14 +61,6 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
   const effectiveStock: StockAvailability = selectedVariant?.stockAvailability ?? product.stockAvailability;
   const effectiveCurrency   = product.currency ?? currency;
 
-  /**
-   * CTA state machine (spec R4, R5, R8):
-   *   hasVariants && !selectedVariant  → "Select options"  disabled
-   *   hasVariants && !canPurchase       → "Out of Stock"    disabled
-   *   hasVariants && canPurchase        → "Add to Cart"     enabled
-   *   !hasVariants && canPurchase       → "Add to Cart"     enabled
-   *   !hasVariants && !canPurchase      → "Out of Stock"    disabled
-   */
   const needsSelection = hasVariants && selectedVariant === null;
   const effectiveCanPurchase = selectedVariant !== null
     ? selectedVariant.canPurchase
@@ -108,18 +90,18 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
         {product.brandName && product.brandSlug && (
           <Link
             href={`/brands/${product.brandSlug}`}
-            className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#ba0918] hover:opacity-80 transition-opacity"
+            className="text-[11px] font-bold tracking-[0.18em] uppercase text-secondary hover:opacity-80 transition-opacity"
           >
             {product.brandName}
           </Link>
         )}
         {product.brandName && product.categoryName && (
-          <span className="text-[#c4c7c7] text-[11px]" aria-hidden="true">·</span>
+          <span className="text-border text-[11px]" aria-hidden="true">·</span>
         )}
         {product.categoryName && product.categorySlug && (
           <Link
             href={`/categories/${product.categorySlug}`}
-            className="text-[12px] text-[#444748] hover:text-[#191c1e] transition-colors"
+            className="text-[12px] text-foreground-muted hover:text-foreground transition-colors"
           >
             {product.categoryName}
           </Link>
@@ -127,11 +109,11 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
       </div>
 
       {/* Title */}
-      <h1 className="text-[clamp(1.4rem,3vw,2rem)] font-extrabold text-[#191c1e] leading-tight tracking-tight">
+      <h1 className="text-[clamp(1.4rem,3vw,2rem)] font-extrabold text-foreground leading-tight tracking-tight">
         {product.name}
       </h1>
 
-      {/* Star rating — only when product has reviews */}
+      {/* Star rating */}
       {(product as StorefrontProductResponse & { hasRatings?: boolean; ratingAverage?: number; ratingCount?: number }).hasRatings && (
         <div className="flex items-center gap-1.5">
           {(() => {
@@ -142,13 +124,13 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
               <>
                 <div className="flex items-center gap-0.5" aria-label={`${avg.toFixed(1)} out of 5 stars`}>
                   {[1,2,3,4,5].map((i) => (
-                    <svg key={i} viewBox="0 0 24 24" className={cn("size-4 shrink-0", i <= filled ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-[#D1D5DB]")} stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                    <svg key={i} viewBox="0 0 24 24" className={cn("size-4 shrink-0", i <= filled ? "fill-warning text-warning" : "fill-none text-border")} stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
                   ))}
                 </div>
-                <span className="text-[13px] font-semibold text-[#191c1e]">{avg.toFixed(1)}</span>
-                <span className="text-[13px] text-[#5A6578]">({cnt} review{cnt !== 1 ? "s" : ""})</span>
+                <span className="text-[13px] font-semibold text-foreground">{avg.toFixed(1)}</span>
+                <span className="text-[13px] text-foreground-muted">({cnt} review{cnt !== 1 ? "s" : ""})</span>
               </>
             );
           })()}
@@ -157,7 +139,7 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
 
       {/* Short description */}
       {product.shortDescription && (
-        <p className="text-[14px] text-[#444748] leading-relaxed">{product.shortDescription}</p>
+        <p className="text-[14px] text-foreground-muted leading-relaxed">{product.shortDescription}</p>
       )}
 
       {/* Price block */}
@@ -168,16 +150,16 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
         transition={transitions.fast}
         className="flex items-end gap-3 flex-wrap"
       >
-        <span className="text-[28px] font-extrabold text-[#0D0D0D] tabular-nums leading-none">
+        <span className="text-[28px] font-extrabold text-foreground tabular-nums leading-none">
           {priceStr}
         </span>
         {comparePriceStr && (
-          <span className="text-[16px] text-[#5A6578] line-through tabular-nums mb-0.5">
+          <span className="text-[16px] text-foreground-muted line-through tabular-nums mb-0.5">
             {comparePriceStr}
           </span>
         )}
         {discount > 0 && (
-          <span className="rounded bg-[#E02E2E] px-2 py-0.5 text-[11px] font-bold text-white leading-none uppercase tracking-wide mb-0.5">
+          <span className="rounded bg-secondary px-2 py-0.5 text-[11px] font-bold text-secondary-foreground leading-none uppercase tracking-wide mb-0.5">
             {discount}% off
           </span>
         )}
@@ -199,7 +181,7 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
 
       {/* SKU */}
       {selectedVariant?.sku && (
-        <p className="text-[12px] text-[#5A6578]">SKU: {selectedVariant.sku}</p>
+        <p className="text-[12px] text-foreground-muted">SKU: {selectedVariant.sku}</p>
       )}
 
       {/* CTAs */}
@@ -222,7 +204,6 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
         >
           {ctaText}
         </Button>
-        {/* Wishlist circle button */}
         <WishlistButton
           productId={product.id}
           variantId={selectedVariant?.id}
@@ -233,9 +214,9 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
 
       {/* Delivery estimate */}
       {product.deliveryEstimate && (
-        <div className="flex items-start gap-3 rounded-xl border border-[#e1e2e4] px-4 py-3.5 bg-[#f8f9fb]">
-          <Truck className="size-4 text-[#444748] mt-0.5 shrink-0" aria-hidden="true" />
-          <p className="text-[13px] font-medium text-[#191c1e]">
+        <div className="flex items-start gap-3 rounded-xl border border-border px-4 py-3.5 bg-background">
+          <Truck className="size-4 text-foreground-muted mt-0.5 shrink-0" aria-hidden="true" />
+          <p className="text-[13px] font-medium text-foreground">
             {product.deliveryEstimate.description ??
               (product.deliveryEstimate.from && product.deliveryEstimate.to
                 ? `Estimated delivery: ${product.deliveryEstimate.from} – ${product.deliveryEstimate.to}`
@@ -247,7 +228,7 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
       {/* Accordions */}
       {product.description && (
         <ProductAccordion title="Product Details" defaultOpen>
-          <p className="text-[13px] text-[#444748] leading-relaxed whitespace-pre-line">
+          <p className="text-[13px] text-foreground-muted leading-relaxed whitespace-pre-line">
             {product.description}
           </p>
         </ProductAccordion>
@@ -258,9 +239,9 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
           <table className="w-full text-[13px]">
             <tbody>
               {product.attributes.map((attr) => (
-                <tr key={attr.name} className="border-b border-[#e1e2e4] last:border-none">
-                  <td className="py-2 pr-4 text-[#444748] font-semibold w-1/3 align-top">{attr.name}</td>
-                  <td className="py-2 text-[#191c1e] align-top">
+                <tr key={attr.name} className="border-b border-border last:border-none">
+                  <td className="py-2 pr-4 text-foreground-muted font-semibold w-1/3 align-top">{attr.name}</td>
+                  <td className="py-2 text-foreground align-top">
                     {attr.values?.map((v) => v.value).filter(Boolean).join(", ") ?? "—"}
                   </td>
                 </tr>
@@ -271,7 +252,7 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
       )}
 
       {/* Trust badges */}
-      <div className="flex flex-wrap gap-4 pt-2 border-t border-[#e1e2e4] text-[12px] text-[#444748]">
+      <div className="flex flex-wrap gap-4 pt-2 border-t border-border text-[12px] text-foreground-muted">
         <span className="flex items-center gap-1.5">
           <CheckCircle className="size-3.5 text-success" aria-hidden="true" />
           Secure checkout
@@ -280,7 +261,7 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
           <CheckCircle className="size-3.5 text-success" aria-hidden="true" />
           Easy returns
         </span>
-        <span className={cn("flex items-center gap-1.5", codEnabled ? "text-success" : "text-[#444748]")}>
+        <span className={cn("flex items-center gap-1.5", codEnabled ? "text-success" : "text-foreground-muted")}>
           {codEnabled ? (
             <CheckCircle className="size-3.5 text-success" aria-hidden="true" />
           ) : (
@@ -324,15 +305,15 @@ function ProductAccordion({ title, children, defaultOpen = false }: { title: str
   const shouldReduce    = useReducedMotion();
 
   return (
-    <div className="border-t border-[#e1e2e4]">
+    <div className="border-t border-border">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between py-4 text-[14px] font-bold text-[#191c1e] hover:text-[#444748] transition-colors"
+        className="flex w-full items-center justify-between py-4 text-[14px] font-bold text-foreground hover:text-foreground-muted transition-colors"
       >
         {title}
         <ChevronDown
-          className={cn("size-4 text-[#444748] transition-transform duration-200", open && "rotate-180")}
+          className={cn("size-4 text-foreground-muted transition-transform duration-200", open && "rotate-180")}
           aria-hidden="true"
         />
       </button>
