@@ -600,6 +600,7 @@ interface VariantRowState {
   // Editable fields
   sku: string;
   priceOverride: string; // string for input binding; "" = inherit
+  compareAtPrice: string; // string for input binding; "" = no compare-at
   isActive: boolean;
   sortOrder: number;
   // Stock editable fields
@@ -614,6 +615,7 @@ interface VariantRowState {
   _saved: {
     sku: string;
     priceOverride: string;
+    compareAtPrice: string;
     isActive: boolean;
     onHand: string;
     lowStockThreshold: string;
@@ -626,6 +628,7 @@ function isVariantRowDirty(row: VariantRowState): boolean {
   return (
     row.sku !== row._saved.sku ||
     row.priceOverride !== row._saved.priceOverride ||
+    row.compareAtPrice !== row._saved.compareAtPrice ||
     row.isActive !== row._saved.isActive ||
     row.onHand !== row._saved.onHand ||
     row.lowStockThreshold !== row._saved.lowStockThreshold
@@ -637,6 +640,7 @@ function variantResponseToRow(v: VariantResponse): VariantRowState {
   const lowStockThreshold = "0";
   const sku = v.sku ?? "";
   const priceOverride = v.priceOverride != null ? String(v.priceOverride) : "";
+  const compareAtPrice = v.compareAtPrice != null ? String(v.compareAtPrice) : "";
   return {
     id: v.id,
     attributeValueIds: v.attributeValueIds,
@@ -644,6 +648,7 @@ function variantResponseToRow(v: VariantResponse): VariantRowState {
     images: v.images,
     sku,
     priceOverride,
+    compareAtPrice,
     isActive: v.isActive,
     sortOrder: v.sortOrder,
     onHand,
@@ -652,7 +657,7 @@ function variantResponseToRow(v: VariantResponse): VariantRowState {
     available: v.availableStock ?? 0,
     isLowStock: false,
     isOutOfStock: (v.availableStock ?? 0) === 0,
-    _saved: { sku, priceOverride, isActive: v.isActive, onHand, lowStockThreshold },
+    _saved: { sku, priceOverride, compareAtPrice, isActive: v.isActive, onHand, lowStockThreshold },
     rowError: null,
   };
 }
@@ -677,10 +682,12 @@ function mergeInventoryIntoRow(row: VariantRowState, inv: InventoryResponse): Va
 function mergeVariantResponseIntoRow(row: VariantRowState, v: VariantResponse): VariantRowState {
   const sku = v.sku ?? "";
   const priceOverride = v.priceOverride != null ? String(v.priceOverride) : "";
+  const compareAtPrice = v.compareAtPrice != null ? String(v.compareAtPrice) : "";
   return {
     ...row,
     sku,
     priceOverride,
+    compareAtPrice,
     isActive: v.isActive,
     sortOrder: v.sortOrder,
     attributeValueIds: v.attributeValueIds,
@@ -690,6 +697,7 @@ function mergeVariantResponseIntoRow(row: VariantRowState, v: VariantResponse): 
       ...row._saved,
       sku,
       priceOverride,
+      compareAtPrice,
       isActive: v.isActive,
     },
     rowError: null,
@@ -760,6 +768,21 @@ function VariantMatrixRow({ productId, row, attrLabel, productPrice, saving, onC
             <span className="text-[10px] text-foreground-muted">= {formatPrice(displayPrice, "INR")}</span>
           )}
         </div>
+      </td>
+
+      {/* Compare-at price */}
+      <td className="py-2 px-2">
+        <input
+          type="number"
+          min={0}
+          step={0.01}
+          value={row.compareAtPrice}
+          onChange={(e) => onChange(row.id, { compareAtPrice: e.target.value })}
+          placeholder="—"
+          aria-label="Compare-at price"
+          disabled={saving}
+          className="w-28 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus disabled:opacity-50"
+        />
       </td>
 
       {/* SKU */}
@@ -919,7 +942,7 @@ function VariantEditor({
         setRows((prev) => {
           const clean = prev.map((r) => ({
             ...r,
-            _saved: { sku: r.sku, priceOverride: r.priceOverride, isActive: r.isActive, onHand: r.onHand, lowStockThreshold: r.lowStockThreshold },
+            _saved: { sku: r.sku, priceOverride: r.priceOverride, compareAtPrice: r.compareAtPrice, isActive: r.isActive, onHand: r.onHand, lowStockThreshold: r.lowStockThreshold },
             rowError: null,
           }));
           snapshotRef.current = clean;
@@ -1055,6 +1078,7 @@ function VariantEditor({
                 <th className="py-2 pl-4 pr-2 text-caption font-semibold text-foreground-muted">Variant</th>
                 <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">Images</th>
                 <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">Price override</th>
+                <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">Compare-at</th>
                 <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">SKU</th>
                 <th className="py-2 px-2 text-caption font-semibold text-foreground-muted">
                   <span className="block">On hand</span>
@@ -1322,12 +1346,14 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
       const onHandParsed = parseInt(row.onHand);
       const thresholdParsed = row.lowStockThreshold.trim() !== "" ? parseInt(row.lowStockThreshold) : undefined;
       const priceOverrideParsed = row.priceOverride !== "" ? parseFloat(row.priceOverride) : undefined;
+      const compareAtPriceParsed = row.compareAtPrice !== "" ? parseFloat(row.compareAtPrice) : undefined;
 
       calls.push(
         Promise.all([
           adminVariantsApi.update(productId, row.id, {
             sku: row.sku.trim() || undefined,
             priceOverride: priceOverrideParsed,
+            compareAtPrice: compareAtPriceParsed,
             isActive: row.isActive,
             sortOrder: row.sortOrder,
           }),

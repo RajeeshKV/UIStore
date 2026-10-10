@@ -314,6 +314,11 @@ export interface StorefrontVariantResponse {
   id: string;
   sku?: string;
   effectivePrice: number;
+  /**
+   * Variant-level compare-at price for strikethrough display on PDP.
+   * When present and > effectivePrice, show it struck through alongside effectivePrice.
+   */
+  compareAtPrice?: number;
   sortOrder: number;
   isActive: boolean;
   /** Comma-separated AttributeValue IDs (e.g. "uuid1,uuid2") — legacy echo, use attributes for display */
@@ -323,11 +328,6 @@ export interface StorefrontVariantResponse {
   canPurchase: boolean;
   /** §1.6 NEW — resolved attribute values; use for display labels */
   attributes?: VariantAttributeValueResponse[];
-  /**
-   * Variant-scoped image gallery (guide 41 §4.6, §7).
-   * When the user selects a variant, show these images in the PDP gallery.
-   * Fall back to the product gallery when this array is empty.
-   */
   images?: StorefrontImageResponse[];
 }
 
@@ -861,6 +861,11 @@ export interface VariantResponse {
   sku?: string;
   /** null means inherit from product price */
   priceOverride?: number;
+  /**
+   * Variant-level compare-at / was-price.
+   * Shown as strikethrough in the admin variant table and on the storefront PDP.
+   */
+  compareAtPrice?: number;
   sortOrder: number;
   isActive: boolean;
   /** Comma-separated AttributeValue IDs (response only) — use attributes for display */
@@ -879,6 +884,7 @@ export interface VariantResponse {
 export interface CreateVariantRequest {
   sku?: string;
   priceOverride?: number;
+  compareAtPrice?: number;
   sortOrder?: number;
   /** Array of AttributeValue UUIDs */
   attributeValueIds?: string[];
@@ -912,6 +918,12 @@ export interface ProductResponse {
   images?: ProductImageDto[];
   attributes?: ProductAttributeDto[];
   variants?: VariantResponse[];
+  /**
+   * §6 NEW — inventory record for simple products (no variants).
+   * Populated when `variants` is empty; null when the product has variants
+   * (inventory is then managed per-variant via InventoryResponse).
+   */
+  baseInventory?: InventoryResponse | null;
   createdAtUtc: string;
   updatedAtUtc: string;
 }
@@ -991,7 +1003,10 @@ export interface InventoryResponse {
   lowStockThreshold: number;
   isLowStock: boolean;
   isOutOfStock: boolean;
-  updatedAt: string;
+  /** ISO timestamp — previously `updatedAt`, now `updatedAtUtc` per API contract §7 */
+  updatedAtUtc: string;
+  /** @deprecated Use updatedAtUtc. Kept for backward compat during migration. */
+  updatedAt?: string;
 }
 
 export interface SetStockRequest {

@@ -57,7 +57,9 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
   }
 
   const effectivePrice      = selectedVariant?.effectivePrice ?? product.price;
-  const effectiveCompareAt  = product.compareAtPrice;
+  // Use variant-level compareAtPrice when a variant is resolved (§2 of integration guide).
+  // Fall back to product-level compareAtPrice only when no variant is active.
+  const effectiveCompareAt  = selectedVariant?.compareAtPrice ?? product.compareAtPrice;
   const effectiveStock: StockAvailability = selectedVariant?.stockAvailability ?? product.stockAvailability;
   const effectiveCurrency   = product.currency ?? currency;
 
