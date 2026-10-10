@@ -150,6 +150,7 @@ export function CheckoutClient({
   const [profileFirstName, setProfileFirstName] = useState("");
   const [profileLastName, setProfileLastName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
+  const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -166,6 +167,7 @@ export function CheckoutClient({
           phone: f.phone || (res.data.phoneNumber ?? ""),
         }));
       }
+      setProfileLoading(false);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
@@ -362,10 +364,19 @@ export function CheckoutClient({
     setSavingAddress(false);
   }, []);
 
-  // ── Set delivery address (for non-selected addresses) ────────────────────
+  // ── Set delivery address — updates backend default + local selection ────────
   const [settingDefaultAddr, setSettingDefaultAddr] = useState<string | null>(null);
-  const handleUseAddress = useCallback((id: string) => {
+
+  const handleUseAddress = useCallback(async (id: string) => {
+    setSettingDefaultAddr(id);
     setSelectedAddressId(id);
+    // Persist to backend so this survives a page refresh
+    const result = await addressesApi.setDefault(id);
+    if (result.ok) {
+      // Update local addresses list so isDefault flags are correct
+      setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a.id === id })));
+    }
+    setSettingDefaultAddr(null);
   }, []);
 
   // ── §3.2 Coupon: apply ──────────────────────────────────────────────────────
@@ -753,6 +764,9 @@ export function CheckoutClient({
   // ── Loading ──────────────────────────────────────────────────────────────────
   if (authLoading || cartLoading) return <CheckoutSkeleton />;
 
+  // Wait for profile to load before evaluating the phone gate
+  if (isAuthenticated && profileLoading) return <CheckoutSkeleton />;
+
   // ── Auth guard ───────────────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
@@ -810,6 +824,39 @@ export function CheckoutClient({
         </>
       );
     }
+  }
+
+  // ── Phone number required gate (always — regardless of OTP setting) ────────────
+  // Even when mobileOtpEnabled is false, a phone number must be on the account
+  // for delivery contact and Razorpay prefill. profilePhone is fetched on mount.
+  // Wait until profile has loaded (profilePhone === "" AND profile fetch hasn't run yet
+  // would be ambiguous — use a dedicated loading flag instead).
+  if (!profilePhone && !profileLoading) {
+    return (
+      <div className="px-5 md:px-8 lg:px-10 py-16 max-w-sm mx-auto text-center min-h-[60vh] flex flex-col items-center justify-center gap-5">
+        <div className="rounded-2xl bg-muted border border-border p-5">
+          <Phone className="size-8 text-foreground-muted" aria-hidden="true" />
+        </div>
+        <div>
+          <p className="text-[18px] font-bold text-foreground">Phone number required</p>
+          <p className="mt-2 text-[13px] text-foreground-muted leading-relaxed">
+            Add a phone number to your profile before checking out. It&apos;s used for delivery contact and payment verification.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 w-full">
+          <Link href="/account/profile">
+            <Button variant="primary" size="lg" fullWidth className="rounded-xl">
+              Add Phone Number
+            </Button>
+          </Link>
+          <Link href="/cart">
+            <Button variant="outline" size="md" fullWidth className="rounded-xl">
+              Back to Cart
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   // ── Empty cart (also handles blockingReasons CART_EMPTY — 200 with zeroed totals) ─
@@ -1147,10 +1194,11 @@ export function CheckoutClient({
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleUseAddress(addr.id)}
-                      className="shrink-0 h-7 px-3 rounded-lg border border-border text-[12px] font-semibold text-foreground hover:border-primary hover:text-primary transition-colors"
+                      onClick={() => void handleUseAddress(addr.id)}
+                      disabled={settingDefaultAddr === addr.id}
+                      className="shrink-0 h-7 px-3 rounded-lg border border-border text-[12px] font-semibold text-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Deliver here
+                      {settingDefaultAddr === addr.id ? "Saving…" : "Deliver here"}
                     </button>
                   </div>
                 ))}
