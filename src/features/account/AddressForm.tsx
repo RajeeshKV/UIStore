@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle2, LocateFixed, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { Button } from "@/components/ui/Button";
@@ -58,6 +58,37 @@ function PinStatusPill({
   return null;
 }
 
+// ── Locked field display (with edit escape hatch) ─────────────────────────────
+
+function LockedField({
+  label,
+  value,
+  onUnlock,
+}: {
+  label: string;
+  value: string;
+  onUnlock: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-[13px] font-semibold text-foreground">{label}</span>
+      <div className="flex items-center gap-2 h-11 px-3 rounded-md border border-border bg-muted text-[14px] text-foreground">
+        <span className="flex-1 truncate">{value || "—"}</span>
+        <button
+          type="button"
+          onClick={onUnlock}
+          className="shrink-0 flex items-center gap-1 text-[11px] text-foreground-muted hover:text-foreground transition-colors"
+          aria-label={`Edit ${label}`}
+        >
+          <Pencil className="size-3" />
+          Edit
+        </button>
+      </div>
+      <span className="text-[11px] text-foreground-muted">Auto-filled from PIN</span>
+    </div>
+  );
+}
+
 // ── Main form ─────────────────────────────────────────────────────────────────
 
 export function AddressForm({
@@ -95,12 +126,19 @@ export function AddressForm({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Post office options built from PIN lookup (for city/post-office combobox)
+  // Post office options built from PIN lookup
   const [postOfficeOptions, setPostOfficeOptions] = useState<ComboboxOption[]>([]);
-  // Multiple-district options (if PIN spans districts)
+  // Multiple-district options
   const [districtOptions, setDistrictOptions] = useState<ComboboxOption[]>([]);
-  // Flag: was the current district/city auto-populated from PIN?
+  // Flag: was the current state/district auto-populated from PIN?
   const [pinPopulated, setPinPopulated] = useState(false);
+  // Override locks: user clicked "Edit" to manually change auto-filled field
+  const [stateUnlocked, setStateUnlocked] = useState(false);
+  const [districtUnlocked, setDistrictUnlocked] = useState(false);
+
+  // ── Geolocation state ──────────────────────────────────────────────────────
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState("");
 
   // ── PIN lookup ──────────────────────────────────────────────────────────────
   const { status: pinStatus, result: pinResult, message: pinMessage } = usePinLookup(
@@ -110,25 +148,20 @@ export function AddressForm({
   // Apply PIN lookup results when they arrive
   useEffect(() => {
     if (pinStatus === "success" && pinResult) {
-      // Match the PIN's state against the loaded state list (or fall back to raw string)
       const matchedState = matchStateName(pinResult.state, states);
       const resolvedState = matchedState ? matchedState.name_en : pinResult.state;
 
-      // Build unique post office options
       const offices: ComboboxOption[] = pinResult.postOffices.map((o) => ({
         value: o.name,
         label: o.name,
       }));
       setPostOfficeOptions(offices);
 
-      // Build district options if multiple
       if (pinResult.multipleDistricts) {
         const uniqueDistricts = [
           ...new Set(pinResult.postOffices.map((o) => o.district)),
         ];
-        setDistrictOptions(
-          uniqueDistricts.map((d) => ({ value: d, label: d })),
-        );
+        setDistrictOptions(uniqueDistricts.map((d) => ({ value: d, label: d })));
       } else {
         setDistrictOptions([]);
       }
@@ -137,12 +170,13 @@ export function AddressForm({
         ...f,
         state: resolvedState,
         district: pinResult.district,
-        // Auto-select first post office only if there's exactly one
         city: offices.length === 1 ? offices[0].value : f.city,
       }));
       setPinPopulated(true);
+      // Reset unlock flags when a new PIN is resolved
+      setStateUnlocked(false);
+      setDistrictUnlocked(false);
 
-      // Clear state error now that it's populated
       setErrors((e) => {
         const next = { ...e };
         delete next.state;
@@ -151,20 +185,69 @@ export function AddressForm({
       });
     }
 
-    // When PIN is cleared/changed (back to idle) — clear stale location data
     if (pinStatus === "idle" && pinPopulated) {
       setPostOfficeOptions([]);
       setDistrictOptions([]);
       setPinPopulated(false);
-      setForm((f) => ({
-        ...f,
-        district: "",
-        city: "",
-        // Do NOT clear state — user may have already selected one manually
-      }));
+      setStateUnlocked(false);
+      setDistrictUnlocked(false);
+      setForm((f) => ({ ...f, district: "", city: "" }));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinStatus, pinResult, states]);
+
+  // ── Geolocation handler ────────────────────────────────────────────────────
+  function handleGeolocate() {
+    if (!navigator.geolocation) {
+      setGeoError("Geolocation is not supported by your browser.");
+      return;
+    }
+    setGeoLoading(true);
+    setGeoError("");
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          // Reverse geocode using a free API
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+            { headers: { "Accept-Language": "en" } },
+          );
+          if (!res.ok) throw new Error("Geocoding failed");
+          const data = await res.json();
+          const addr = data.address ?? {};
+
+          // Extract PIN code — try postcode first
+          const pin = (addr.postcode ?? "").replace(/\D/g, "").slice(0, 6);
+
+          setForm((f) => ({
+            ...f,
+            postalCode: pin || f.postalCode,
+            // Fill address line 1 if empty
+            addressLine1: f.addressLine1 || [addr.road, addr.suburb, addr.neighbourhood].filter(Boolean).join(", ") || f.addressLine1,
+          }));
+
+          if (!pin) {
+            setGeoError("Could not detect PIN code. Please enter it manually.");
+          }
+        } catch {
+          setGeoError("Could not fetch location details. Please enter PIN manually.");
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      (err) => {
+        setGeoLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoError("Location permission denied. Please enter PIN manually.");
+        } else {
+          setGeoError("Could not get location. Please enter PIN manually.");
+        }
+      },
+      { timeout: 10000 },
+    );
+  }
 
   // ── Field helpers ───────────────────────────────────────────────────────────
   const set = useCallback(
@@ -174,15 +257,14 @@ export function AddressForm({
   );
 
   function handlePostalCodeChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // Only allow digits, max 6
     const raw = e.target.value.replace(/\D/g, "").slice(0, 6);
     setForm((f) => ({ ...f, postalCode: raw }));
-
-    // Clear stale location when user modifies the PIN
     if (pinPopulated) {
       setPostOfficeOptions([]);
       setDistrictOptions([]);
       setPinPopulated(false);
+      setStateUnlocked(false);
+      setDistrictUnlocked(false);
       setForm((f) => ({ ...f, postalCode: raw, district: "", city: "" }));
     }
   }
@@ -202,10 +284,7 @@ export function AddressForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length) {
-      setErrors(errs);
-      return;
-    }
+    if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     onSave({
       label: form.label || undefined,
@@ -214,7 +293,6 @@ export function AddressForm({
       company: form.company || undefined,
       addressLine1: form.addressLine1,
       addressLine2: form.addressLine2 || undefined,
-      // city stores the post office / town name; district is embedded in addressLine2 or state
       city: form.city,
       state: form.state,
       postalCode: form.postalCode,
@@ -224,11 +302,15 @@ export function AddressForm({
     });
   }
 
+  // State field is locked when PIN was resolved and user hasn't clicked "Edit"
+  const stateLocked = pinPopulated && !stateUnlocked && pinStatus === "success";
+  // District locked when single-district PIN resolved and user hasn't clicked "Edit"
+  const districtLocked = pinPopulated && !districtUnlocked && pinStatus === "success" && districtOptions.length <= 1;
+
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
 
-      {/* State API error — non-blocking, shown once at top */}
       {statesError && (
         <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/30 px-3 py-2">
           <AlertTriangle className="size-3.5 text-warning mt-0.5 shrink-0" aria-hidden="true" />
@@ -283,14 +365,27 @@ export function AddressForm({
         autoComplete="address-line2"
       />
 
-      {/* ── PIN code ──────────────────────────────────────────────────────── */}
+      {/* ── PIN code + geolocation ────────────────────────────────────────── */}
       <div className="flex flex-col gap-1">
-        <label
-          htmlFor="addr-pincode"
-          className="text-[13px] font-semibold text-foreground"
-        >
-          PIN Code <span className="ml-1 text-danger" aria-hidden="true">*</span>
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="addr-pincode" className="text-[13px] font-semibold text-foreground">
+            PIN Code <span className="ml-1 text-danger" aria-hidden="true">*</span>
+          </label>
+          {/* Geolocation button */}
+          <button
+            type="button"
+            onClick={handleGeolocate}
+            disabled={geoLoading}
+            className="flex items-center gap-1 text-[11px] text-foreground-muted hover:text-foreground disabled:opacity-50 transition-colors"
+            aria-label="Auto-fill from location"
+          >
+            {geoLoading
+              ? <Loader2 className="size-3 animate-spin" aria-hidden="true" />
+              : <LocateFixed className="size-3" aria-hidden="true" />}
+            {geoLoading ? "Detecting…" : "Use my location"}
+          </button>
+        </div>
+
         <div className="relative flex items-center">
           <input
             id="addr-pincode"
@@ -314,46 +409,52 @@ export function AddressForm({
             )}
           />
           {pinStatus === "loading" && (
-            <Loader2
-              className="absolute right-3 size-4 text-foreground-muted animate-spin pointer-events-none"
-              aria-hidden="true"
-            />
+            <Loader2 className="absolute right-3 size-4 text-foreground-muted animate-spin pointer-events-none" aria-hidden="true" />
           )}
         </div>
 
-        {/* PIN status row */}
         <PinStatusPill status={pinStatus} message={pinMessage} />
+        {geoError && (
+          <span className="flex items-center gap-1 text-[11px] text-warning">
+            <AlertTriangle className="size-3" aria-hidden="true" />{geoError}
+          </span>
+        )}
         {errors.postalCode && (
-          <p id="addr-pincode-err" className="text-[12px] text-danger" role="alert">
-            {errors.postalCode}
-          </p>
+          <p id="addr-pincode-err" className="text-[12px] text-danger" role="alert">{errors.postalCode}</p>
         )}
       </div>
 
-      {/* ── State (searchable) ────────────────────────────────────────────── */}
-      <Combobox
-        id="addr-state"
-        label="State"
-        required
-        options={stateOptions}
-        value={form.state}
-        onChange={(v) =>
-          setForm((f) => ({ ...f, state: v }))
-        }
-        placeholder="Search state…"
-        loading={statesLoading}
-        error={errors.state}
-        hint={
-          pinStatus === "success" && pinResult
-            ? "Auto-filled from PIN — you can change this."
-            : undefined
-        }
-        autoComplete="address-level1"
-        clearable={false}
-      />
+      {/* ── State ─────────────────────────────────────────────────────────── */}
+      {stateLocked ? (
+        <LockedField
+          label="State *"
+          value={form.state}
+          onUnlock={() => setStateUnlocked(true)}
+        />
+      ) : (
+        <Combobox
+          id="addr-state"
+          label="State"
+          required
+          options={stateOptions}
+          value={form.state}
+          onChange={(v) => setForm((f) => ({ ...f, state: v }))}
+          placeholder="Search state…"
+          loading={statesLoading}
+          error={errors.state}
+          autoComplete="address-level1"
+          clearable={false}
+        />
+      )}
 
       {/* ── District ─────────────────────────────────────────────────────── */}
-      {districtOptions.length > 1 ? (
+      {districtLocked ? (
+        <LockedField
+          label="District"
+          value={form.district}
+          onUnlock={() => setDistrictUnlocked(true)}
+        />
+      ) : districtOptions.length > 1 ? (
         <Combobox
           id="addr-district"
           label="District"
@@ -369,11 +470,6 @@ export function AddressForm({
           value={form.district}
           onChange={set("district")}
           placeholder="Auto-filled from PIN"
-          hint={
-            pinStatus === "success"
-              ? "Auto-filled from PIN — you can change this."
-              : undefined
-          }
           autoComplete="address-level2"
         />
       )}
@@ -399,11 +495,7 @@ export function AddressForm({
           onChange={set("city")}
           placeholder="e.g. Bangalore GPO"
           error={errors.city}
-          hint={
-            postOfficeOptions.length === 1
-              ? "Auto-filled from PIN — you can change this."
-              : undefined
-          }
+          hint={postOfficeOptions.length === 1 ? "Auto-filled from PIN — you can change this." : undefined}
           autoComplete="address-level2"
         />
       )}
@@ -415,11 +507,7 @@ export function AddressForm({
         value={form.phone}
         onChange={set("phone")}
         autoComplete="tel"
-        hint={
-          defaultPhone && !initial
-            ? "Pre-filled from your verified profile number."
-            : undefined
-        }
+        hint={defaultPhone && !initial ? "Pre-filled from your verified profile number." : undefined}
       />
 
       {/* ── Country ──────────────────────────────────────────────────────── */}

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ShoppingBag, Tag, X, Truck, CreditCard, Banknote, CheckCircle,
-  Plus, Star, AlertTriangle, RefreshCw, XCircle, Info, Phone, Loader2, CheckCircle2,
+  Plus, Minus, Star, AlertTriangle, RefreshCw, XCircle, Info, Phone, Loader2, CheckCircle2, Trash2, Pencil,
 } from "lucide-react";
 import { cn, formatPrice, extractApiError } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -14,6 +14,7 @@ import { checkoutApi } from "@/services/api/checkout";
 import { cartApi } from "@/services/api/cart";
 import { ordersApi } from "@/services/api/orders";
 import { addressesApi } from "@/services/api/addresses";
+import { customerApi } from "@/services/api/customer";
 import { otpApi } from "@/services/api/otp";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -145,6 +146,30 @@ export function CheckoutClient({
   const [inlineDistrictOptions, setInlineDistrictOptions] = useState<ComboboxOption[]>([]);
   const [inlinePinPopulated, setInlinePinPopulated] = useState(false);
 
+  // ── Profile prefill for inline address form ───────────────────────────────
+  const [profileFirstName, setProfileFirstName] = useState("");
+  const [profileLastName, setProfileLastName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    customerApi.getProfile().then((res) => {
+      if (res.ok) {
+        setProfileFirstName(res.data.firstName ?? "");
+        setProfileLastName(res.data.lastName ?? "");
+        setProfilePhone(res.data.phoneNumber ?? "");
+        // Prefill inline form name/phone if they're still empty
+        setInlineForm((f) => ({
+          ...f,
+          firstName: f.firstName || (res.data.firstName ?? ""),
+          lastName: f.lastName || (res.data.lastName ?? ""),
+          phone: f.phone || (res.data.phoneNumber ?? ""),
+        }));
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (inlinePinStatus === "success" && inlinePinResult) {
       const matchedState = matchStateName(inlinePinResult.state, indiaStates);
@@ -164,16 +189,61 @@ export function CheckoutClient({
         city: offices.length === 1 ? offices[0].value : f.city,
       }));
       setInlinePinPopulated(true);
+      setInlineStateUnlocked(false);
+      setInlineDistrictUnlocked(false);
       setInlineErrors((e) => { const n = { ...e }; delete n.state; delete n.postalCode; return n; });
     }
     if (inlinePinStatus === "idle" && inlinePinPopulated) {
       setInlinePostOfficeOptions([]);
       setInlineDistrictOptions([]);
       setInlinePinPopulated(false);
+      setInlineStateUnlocked(false);
+      setInlineDistrictUnlocked(false);
       setInlineForm((f) => ({ ...f, district: "", city: "" }));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inlinePinStatus, inlinePinResult, indiaStates]);
+
+  // ── Inline form lock overrides (after PIN fill) ─────────────────────────
+  const [inlineStateUnlocked, setInlineStateUnlocked] = useState(false);
+  const [inlineDistrictUnlocked, setInlineDistrictUnlocked] = useState(false);
+
+  // ── Inline geolocation ──────────────────────────────────────────────────
+  const [inlineGeoLoading, setInlineGeoLoading] = useState(false);
+  const [inlineGeoError, setInlineGeoError] = useState("");
+
+  function handleInlineGeolocate() {
+    if (!navigator.geolocation) { setInlineGeoError("Geolocation not supported."); return; }
+    setInlineGeoLoading(true);
+    setInlineGeoError("");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+            { headers: { "Accept-Language": "en" } },
+          );
+          if (!res.ok) throw new Error("Geocoding failed");
+          const data = await res.json();
+          const addr = data.address ?? {};
+          const pin = (addr.postcode ?? "").replace(/\D/g, "").slice(0, 6);
+          setInlineForm((f) => ({
+            ...f,
+            postalCode: pin || f.postalCode,
+            addressLine1: f.addressLine1 || [addr.road, addr.suburb, addr.neighbourhood].filter(Boolean).join(", ") || "",
+          }));
+          if (!pin) setInlineGeoError("Could not detect PIN. Please enter manually.");
+        } catch { setInlineGeoError("Could not fetch location. Please enter PIN manually."); }
+        finally { setInlineGeoLoading(false); }
+      },
+      (err) => {
+        setInlineGeoLoading(false);
+        setInlineGeoError(err.code === err.PERMISSION_DENIED ? "Location permission denied." : "Could not get location.");
+      },
+      { timeout: 10000 },
+    );
+  }
 
   // Modal for adding additional addresses when user already has saved ones
   const [addAddressOpen, setAddAddressOpen] = useState(false);
@@ -292,6 +362,12 @@ export function CheckoutClient({
     setSavingAddress(false);
   }, []);
 
+  // ── Set delivery address (for non-selected addresses) ────────────────────
+  const [settingDefaultAddr, setSettingDefaultAddr] = useState<string | null>(null);
+  const handleUseAddress = useCallback((id: string) => {
+    setSelectedAddressId(id);
+  }, []);
+
   // ── §3.2 Coupon: apply ──────────────────────────────────────────────────────
   const handleApplyCoupon = useCallback(async () => {
     if (!couponInput.trim()) return;
@@ -328,6 +404,32 @@ export function CheckoutClient({
     }
     // Idempotent — safe even if no coupon was applied
   }, []);
+
+  // ── Summary cart mutations: qty change + remove ───────────────────────────
+  const [summaryMutating, setSummaryMutating] = useState(false);
+
+  const handleSummaryQtyChange = useCallback(async (itemId: string, newQty: number) => {
+    if (summaryMutating) return;
+    setSummaryMutating(true);
+    const result = await cartApi.updateItem(itemId, { quantity: newQty });
+    if (result.ok) {
+      // Refresh checkout summary to get updated totals
+      await fetchSummary(paymentMethod);
+      refreshCart();
+    }
+    setSummaryMutating(false);
+  }, [summaryMutating, fetchSummary, paymentMethod, refreshCart]);
+
+  const handleSummaryRemoveItem = useCallback(async (itemId: string) => {
+    if (summaryMutating) return;
+    setSummaryMutating(true);
+    const result = await cartApi.removeItem(itemId);
+    if (result.ok) {
+      await fetchSummary(paymentMethod);
+      refreshCart();
+    }
+    setSummaryMutating(false);
+  }, [summaryMutating, fetchSummary, paymentMethod, refreshCart]);
 
   // ── Open Razorpay (shared between first attempt and retry) ────────────────
   const openRazorpayWidget = useCallback(
@@ -594,6 +696,17 @@ export function CheckoutClient({
       return;
     }
 
+    // ── Razorpay: check if order was already completed server-side ────────────
+    // This happens when grandTotal is ₹0 or the backend bypasses Razorpay
+    // (e.g. fully discounted order). Backend sets orderStatus to "OrderPlaced"
+    // directly and returns null providerOrderId / razorpayKeyId.
+    const completedStatuses = ["OrderPlaced", "Confirmed", "Processing", "Packed", "Shipped", "Delivered"];
+    if (completedStatuses.includes(checkout.orderStatus ?? "")) {
+      setStep("success");
+      router.push(`/order-success/${checkout.orderId}`);
+      return;
+    }
+
     // ── Razorpay: validate the response ───────────────────────────────────────
     // Spec: only proceed when orderStatus is "PendingPayment" AND both IDs are non-null.
     // If providerOrderId is null the backend Razorpay order creation failed.
@@ -762,9 +875,22 @@ export function CheckoutClient({
 
                 {/* PIN code with live lookup */}
                 <div className="flex flex-col gap-1">
-                  <label htmlFor="checkout-pincode" className="text-[13px] font-semibold text-foreground">
-                    PIN Code <span className="text-danger" aria-hidden="true">*</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="checkout-pincode" className="text-[13px] font-semibold text-foreground">
+                      PIN Code <span className="text-danger" aria-hidden="true">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleInlineGeolocate}
+                      disabled={inlineGeoLoading}
+                      className="flex items-center gap-1 text-[11px] text-foreground-muted hover:text-foreground disabled:opacity-50 transition-colors"
+                    >
+                      {inlineGeoLoading
+                        ? <Loader2 className="size-3 animate-spin" aria-hidden="true" />
+                        : <span aria-hidden="true">📍</span>}
+                      {inlineGeoLoading ? "Detecting…" : "Use my location"}
+                    </button>
+                  </div>
                   <div className="relative flex items-center">
                     <input
                       id="checkout-pincode"
@@ -778,6 +904,8 @@ export function CheckoutClient({
                           setInlinePostOfficeOptions([]);
                           setInlineDistrictOptions([]);
                           setInlinePinPopulated(false);
+                          setInlineStateUnlocked(false);
+                          setInlineDistrictUnlocked(false);
                           setInlineForm((f) => ({ ...f, postalCode: raw, district: "", city: "" }));
                         } else {
                           setInlineForm((f) => ({ ...f, postalCode: raw }));
@@ -814,32 +942,63 @@ export function CheckoutClient({
                       <AlertTriangle className="size-3" aria-hidden="true" />{inlinePinMessage}
                     </span>
                   )}
+                  {inlineGeoError && (
+                    <span className="flex items-center gap-1 text-[11px] text-warning">
+                      <AlertTriangle className="size-3" aria-hidden="true" />{inlineGeoError}
+                    </span>
+                  )}
                   {inlineErrors.postalCode && (
                     <p className="text-[12px] text-danger" role="alert">{inlineErrors.postalCode}</p>
                   )}
                 </div>
 
-                {/* State — searchable combobox */}
-                <Combobox
-                  id="checkout-state"
-                  label="State"
-                  required
-                  options={stateOptions}
-                  value={inlineForm.state}
-                  onChange={(v) => {
-                    setInlineForm((f) => ({ ...f, state: v }));
-                    setInlineErrors((p) => { const n = { ...p }; delete n.state; return n; });
-                  }}
-                  placeholder="Search state…"
-                  loading={statesLoading}
-                  error={inlineErrors.state}
-                  hint={inlinePinStatus === "success" ? "Auto-filled from PIN — you can change this." : undefined}
-                  autoComplete="address-level1"
-                  clearable={false}
-                />
+                {/* State — locked after PIN fill, edit button to unlock */}
+                {inlinePinPopulated && !inlineStateUnlocked && inlinePinStatus === "success" ? (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[13px] font-semibold text-foreground">State *</span>
+                    <div className="flex items-center gap-2 h-11 px-3 rounded-md border border-border bg-muted text-[14px] text-foreground">
+                      <span className="flex-1 truncate">{inlineForm.state || "—"}</span>
+                      <button type="button" onClick={() => setInlineStateUnlocked(true)}
+                        className="shrink-0 flex items-center gap-1 text-[11px] text-foreground-muted hover:text-foreground transition-colors">
+                        <Pencil className="size-3" /> Edit
+                      </button>
+                    </div>
+                    <span className="text-[11px] text-foreground-muted">Auto-filled from PIN</span>
+                  </div>
+                ) : (
+                  <Combobox
+                    id="checkout-state"
+                    label="State"
+                    required
+                    options={stateOptions}
+                    value={inlineForm.state}
+                    onChange={(v) => {
+                      setInlineForm((f) => ({ ...f, state: v }));
+                      setInlineErrors((p) => { const n = { ...p }; delete n.state; return n; });
+                    }}
+                    placeholder="Search state…"
+                    loading={statesLoading}
+                    error={inlineErrors.state}
+                    hint={inlinePinStatus === "success" ? "Auto-filled from PIN — you can change this." : undefined}
+                    autoComplete="address-level1"
+                    clearable={false}
+                  />
+                )}
 
-                {/* District */}
-                {inlineDistrictOptions.length > 1 ? (
+                {/* District — locked after PIN fill (single district), edit to unlock */}
+                {inlinePinPopulated && !inlineDistrictUnlocked && inlinePinStatus === "success" && inlineDistrictOptions.length <= 1 ? (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[13px] font-semibold text-foreground">District</span>
+                    <div className="flex items-center gap-2 h-11 px-3 rounded-md border border-border bg-muted text-[14px] text-foreground">
+                      <span className="flex-1 truncate">{inlineForm.district || "—"}</span>
+                      <button type="button" onClick={() => setInlineDistrictUnlocked(true)}
+                        className="shrink-0 flex items-center gap-1 text-[11px] text-foreground-muted hover:text-foreground transition-colors">
+                        <Pencil className="size-3" /> Edit
+                      </button>
+                    </div>
+                    <span className="text-[11px] text-foreground-muted">Auto-filled from PIN</span>
+                  </div>
+                ) : inlineDistrictOptions.length > 1 ? (
                   <Combobox
                     id="checkout-district"
                     label="District"
@@ -891,54 +1050,71 @@ export function CheckoutClient({
                 <Input label="Country Code" required value={inlineForm.countryCode} onChange={setInline("countryCode")} error={inlineErrors.countryCode} placeholder="IN" autoComplete="country" />
               </div>
             ) : (
-              /* ── Has saved addresses: radio picker ── */
+              /* ── Has saved addresses: show selected + alternatives ── */
               <div className="flex flex-col gap-3">
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-                  role="radiogroup"
-                  aria-label="Select delivery address"
-                >
-                  {addresses.map((addr) => (
-                    <label
-                      key={addr.id}
-                      htmlFor={`addr-${addr.id}`}
-                      className={cn(
-                        "relative flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
-                        selectedAddressId === addr.id
-                          ? "border-primary bg-muted"
-                          : "border-border bg-surface-elevated hover:border-border-strong",
-                      )}
-                    >
-                      <input
-                        id={`addr-${addr.id}`}
-                        type="radio"
-                        name="deliveryAddress"
-                        value={addr.id}
-                        checked={selectedAddressId === addr.id}
-                        onChange={() => setSelectedAddressId(addr.id)}
-                        className="mt-0.5 accent-foreground shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
+                {/* Selected address — highlighted */}
+                {addresses.filter((a) => a.id === selectedAddressId).map((addr) => (
+                  <div
+                    key={addr.id}
+                    className="flex items-start gap-3 p-4 rounded-2xl border-2 border-primary bg-primary/5"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-[13px] font-bold text-foreground truncate">
                           {[addr.firstName, addr.lastName].filter(Boolean).join(" ") || addr.label || "Address"}
-                          {addr.isDefault && (
-                            <span className="ml-2 inline-flex items-center gap-0.5 text-[11px] text-foreground-muted">
-                              <Star className="size-3 fill-foreground-muted" aria-hidden="true" />
-                              Default
-                            </span>
-                          )}
                         </p>
-                        <address className="not-italic text-[12px] text-foreground-muted mt-0.5 leading-relaxed">
-                          {addr.addressLine1 && <span>{addr.addressLine1}, </span>}
-                          {addr.city && <span>{addr.city}, </span>}
-                          {addr.state && <span>{addr.state} </span>}
-                          {addr.postalCode && <span>{addr.postalCode}</span>}
-                          {addr.phone && <span className="block">{addr.phone}</span>}
-                        </address>
+                        <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">Delivering here</span>
+                        {addr.isDefault && (
+                          <span className="inline-flex items-center gap-0.5 text-[11px] text-foreground-muted">
+                            <Star className="size-3 fill-foreground-muted" aria-hidden="true" />
+                            Default
+                          </span>
+                        )}
                       </div>
-                    </label>
-                  ))}
-                </div>
+                      <address className="not-italic text-[12px] text-foreground-muted leading-relaxed">
+                        {addr.addressLine1 && <span>{addr.addressLine1}, </span>}
+                        {addr.city && <span>{addr.city}, </span>}
+                        {addr.state && <span>{addr.state} </span>}
+                        {addr.postalCode && <span>{addr.postalCode}</span>}
+                        {addr.phone && <span className="block">{addr.phone}</span>}
+                      </address>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Other addresses — each has a "Deliver here" button */}
+                {addresses.filter((a) => a.id !== selectedAddressId).map((addr) => (
+                  <div
+                    key={addr.id}
+                    className="flex items-start gap-3 p-4 rounded-2xl border border-border bg-surface-elevated"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-bold text-foreground truncate">
+                        {[addr.firstName, addr.lastName].filter(Boolean).join(" ") || addr.label || "Address"}
+                        {addr.isDefault && (
+                          <span className="ml-2 inline-flex items-center gap-0.5 text-[11px] text-foreground-muted">
+                            <Star className="size-3 fill-foreground-muted" aria-hidden="true" />
+                            Default
+                          </span>
+                        )}
+                      </p>
+                      <address className="not-italic text-[12px] text-foreground-muted mt-0.5 leading-relaxed">
+                        {addr.addressLine1 && <span>{addr.addressLine1}, </span>}
+                        {addr.city && <span>{addr.city}, </span>}
+                        {addr.state && <span>{addr.state} </span>}
+                        {addr.postalCode && <span>{addr.postalCode}</span>}
+                        {addr.phone && <span className="block">{addr.phone}</span>}
+                      </address>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleUseAddress(addr.id)}
+                      className="shrink-0 h-7 px-3 rounded-lg border border-border text-[12px] font-semibold text-foreground hover:border-primary hover:text-primary transition-colors"
+                    >
+                      Deliver here
+                    </button>
+                  </div>
+                ))}
 
                 <button
                   type="button"
@@ -1059,25 +1235,79 @@ export function CheckoutClient({
             <h2 className="text-[16px] font-bold text-foreground tracking-tight">Order Summary</h2>
 
             {/* Line items from summary or cart */}
-            <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-              {(summary?.items ?? cartItems).map((item) => (
-                <li key={"cartItemId" in item ? item.cartItemId : item.id} className="flex items-start gap-2 text-body-sm">
-                  <div className="flex-1 min-w-0">
-                    <span className="block truncate text-foreground">{item.productName}</span>
-                    {"variantAttributes" in item && item.variantAttributes && item.variantAttributes.length > 0 ? (
-                      <span className="block truncate text-[11px] text-foreground-muted">
-                        {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
-                      </span>
-                    ) : "variantDescription" in item && item.variantDescription ? (
-                      <span className="block truncate text-[11px] text-foreground-muted">{item.variantDescription}</span>
-                    ) : null}
-                  </div>
-                  <span className="text-foreground-muted shrink-0">×{item.quantity}</span>
-                  <span className="font-medium text-foreground shrink-0 tabular-nums">
-                    {formatPrice(item.lineTotal, effectiveCurrency, locale)}
-                  </span>
-                </li>
-              ))}
+            <ul className="flex flex-col divide-y divide-border -mx-1">
+              {(summary?.items ?? cartItems).map((item) => {
+                const itemId = "cartItemId" in item ? item.cartItemId : item.id;
+                const imgUrl = "primaryImageUrl" in item ? item.primaryImageUrl : undefined;
+                return (
+                  <li key={itemId} className="flex items-center gap-3 py-2.5 px-1 text-body-sm">
+                    {/* Thumbnail */}
+                    <div className="h-12 w-12 rounded-lg bg-surface-container border border-border shrink-0 overflow-hidden">
+                      {imgUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={imgUrl} alt={item.productName ?? ""} className="h-full w-full object-contain p-1" loading="lazy" />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center">
+                          <ShoppingBag className="size-4 text-border" aria-hidden="true" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Name + variant */}
+                    <div className="flex-1 min-w-0">
+                      <span className="block truncate text-foreground text-[13px] font-medium">{item.productName}</span>
+                      {"variantAttributes" in item && item.variantAttributes && item.variantAttributes.length > 0 ? (
+                        <span className="block truncate text-[11px] text-foreground-muted">
+                          {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
+                        </span>
+                      ) : "variantDescription" in item && item.variantDescription ? (
+                        <span className="block truncate text-[11px] text-foreground-muted">{item.variantDescription}</span>
+                      ) : null}
+
+                      {/* Qty controls — only when we have a cartItemId to mutate */}
+                      {"cartItemId" in item && (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <button
+                            type="button"
+                            aria-label="Decrease quantity"
+                            disabled={summaryMutating || item.quantity <= 1}
+                            onClick={() => handleSummaryQtyChange(item.cartItemId, item.quantity - 1)}
+                            className="flex h-5 w-5 items-center justify-center rounded border border-border text-foreground-muted hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <Minus className="size-2.5" />
+                          </button>
+                          <span className="text-[12px] font-semibold text-foreground tabular-nums min-w-[16px] text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            aria-label="Increase quantity"
+                            disabled={summaryMutating}
+                            onClick={() => handleSummaryQtyChange(item.cartItemId, item.quantity + 1)}
+                            className="flex h-5 w-5 items-center justify-center rounded border border-border text-foreground-muted hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <Plus className="size-2.5" />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Remove item"
+                            disabled={summaryMutating}
+                            onClick={() => handleSummaryRemoveItem(item.cartItemId)}
+                            className="ml-1 flex h-5 w-5 items-center justify-center rounded text-foreground-muted hover:text-danger hover:bg-danger/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <Trash2 className="size-2.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Price */}
+                    <span className="font-semibold text-foreground shrink-0 tabular-nums text-[13px]">
+                      {formatPrice(item.lineTotal, effectiveCurrency, locale)}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
 
             {summaryLoading && (
@@ -1122,8 +1352,8 @@ export function CheckoutClient({
                     muted={summary.isPriceInclusive}
                   />
                 )}
-                {/* Free shipping progress */}
-                {!summary.isFreeShipping && summary.freeShippingThreshold && summary.remainingForFreeShipping > 0 && (
+                {/* Free shipping progress — only when shipping has a cost and threshold exists */}
+                {!summary.isFreeShipping && summary.shippingAmount > 0 && summary.freeShippingThreshold && summary.remainingForFreeShipping > 0 && (
                   <p className="text-caption text-foreground-muted">
                     Add {formatPrice(summary.remainingForFreeShipping, effectiveCurrency, locale)} more for free shipping
                   </p>
@@ -1262,6 +1492,9 @@ export function CheckoutClient({
           onSave={handleModalAddAddress}
           saving={savingAddress}
           onCancel={() => setAddAddressOpen(false)}
+          defaultPhone={profilePhone || undefined}
+          defaultFirstName={profileFirstName || undefined}
+          defaultLastName={profileLastName || undefined}
         />
       </Modal>
 
