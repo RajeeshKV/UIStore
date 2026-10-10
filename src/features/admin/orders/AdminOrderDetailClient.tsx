@@ -171,17 +171,14 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
                   <div className="flex-1 min-w-0">
                     <p className="text-body-sm font-medium text-foreground">{item.productName ?? "Product"}</p>
 
-                    {/* Variant description — human-readable label e.g. "Orange / 256GB" */}
-                    {item.variantDescription && (
-                      <p className="text-caption text-foreground-muted mt-0.5">{item.variantDescription}</p>
-                    )}
-
-                    {/* Structured variant attributes — Color: Orange, Storage: 256GB */}
-                    {!item.variantDescription && item.variantAttributes && item.variantAttributes.length > 0 && (
+                    {/* Variant attributes — structured first, fall back to description */}
+                    {item.variantAttributes && item.variantAttributes.length > 0 ? (
                       <p className="text-caption text-foreground-muted mt-0.5">
                         {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
                       </p>
-                    )}
+                    ) : item.variantDescription ? (
+                      <p className="text-caption text-foreground-muted mt-0.5">{item.variantDescription}</p>
+                    ) : null}
 
                     {item.sku && (
                       <p className="text-caption text-foreground-muted">SKU: {item.sku}</p>

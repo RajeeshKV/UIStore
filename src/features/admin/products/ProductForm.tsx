@@ -249,13 +249,28 @@ function ImageManager({ productId, images = [], onRefresh }: ImageManagerProps) 
 // Product-level stock manager (only shown when product has NO variants)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function StockManager({ productId }: { productId: string }) {
-  const [inventory, setInventory] = useState<InventoryResponse | null>(null);
-  const [onHand, setOnHand] = useState("");
-  const [lowStockThreshold, setLowStockThreshold] = useState("");
+function StockManager({
+  productId,
+  initialInventory,
+}: {
+  productId: string;
+  initialInventory?: InventoryResponse | null;
+}) {
+  const [inventory, setInventory] = useState<InventoryResponse | null>(initialInventory ?? null);
+  const [onHand, setOnHand] = useState(initialInventory != null ? String(initialInventory.onHand) : "");
+  const [lowStockThreshold, setLowStockThreshold] = useState(
+    initialInventory != null ? String(initialInventory.lowStockThreshold) : "",
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Adjust modal state
+  const [adjustOpen, setAdjustOpen] = useState(false);
+  const [delta, setDelta] = useState("");
+  const [reason, setReason] = useState("");
+  const [adjusting, setAdjusting] = useState(false);
+  const [adjustError, setAdjustError] = useState("");
 
   function applyInventory(inv: InventoryResponse) {
     setInventory(inv);
@@ -263,12 +278,19 @@ function StockManager({ productId }: { productId: string }) {
     setLowStockThreshold(String(inv.lowStockThreshold));
   }
 
+  // Enable Set Stock only when something actually changed
+  const parsedOnHand = parseInt(onHand);
+  const parsedThreshold = lowStockThreshold.trim() !== "" ? parseInt(lowStockThreshold) : undefined;
+  const isDirty =
+    !isNaN(parsedOnHand) &&
+    (inventory == null ||
+      parsedOnHand !== inventory.onHand ||
+      (parsedThreshold !== undefined && parsedThreshold !== inventory.lowStockThreshold));
+
   async function handleSet() {
-    const parsed = parseInt(onHand);
-    if (isNaN(parsed) || parsed < 0) { setError("On-hand must be a non-negative integer."); return; }
+    if (isNaN(parsedOnHand) || parsedOnHand < 0) { setError("On-hand must be a non-negative integer."); return; }
     setError(""); setSuccess(""); setSaving(true);
-    const threshold = lowStockThreshold.trim() !== "" ? parseInt(lowStockThreshold) : undefined;
-    const res = await adminInventoryApi.set(productId, { onHand: parsed, lowStockThreshold: threshold });
+    const res = await adminInventoryApi.set(productId, { onHand: parsedOnHand, lowStockThreshold: parsedThreshold });
     setSaving(false);
     if (res.ok) {
       applyInventory(res.data);
@@ -279,8 +301,26 @@ function StockManager({ productId }: { productId: string }) {
     }
   }
 
+  async function handleAdjust() {
+    const d = parseInt(delta);
+    if (isNaN(d) || d === 0) { setAdjustError("Enter a non-zero delta (e.g. +10 or -3)."); return; }
+    setAdjustError(""); setAdjusting(true);
+    const res = await adminInventoryApi.adjust(productId, { delta: d, reason: reason.trim() || undefined });
+    setAdjusting(false);
+    if (res.ok) {
+      applyInventory(res.data);
+      setAdjustOpen(false);
+      setDelta(""); setReason("");
+      setSuccess(`Stock adjusted by ${d > 0 ? "+" : ""}${d}.`);
+      setTimeout(() => setSuccess(""), 3000);
+    } else {
+      setAdjustError(extractApiError(res.error, "Adjustment failed."));
+    }
+  }
+
   return (
     <div className="flex flex-col gap-3">
+      {/* Current stock status bar */}
       {inventory ? (
         <div className="flex flex-wrap items-center gap-3 text-caption text-foreground-muted rounded-lg bg-surface border border-border px-3 py-2.5">
           {inventory.isOutOfStock
@@ -291,17 +331,115 @@ function StockManager({ productId }: { productId: string }) {
           <span>On hand: <strong className="text-foreground">{inventory.onHand}</strong></span>
           <span>Reserved: <strong className="text-foreground">{inventory.reserved}</strong></span>
           <span>Available: <strong className="text-foreground">{inventory.available}</strong></span>
+          <span className="text-[10px] text-foreground-muted ml-auto">
+            Threshold: {inventory.lowStockThreshold}
+          </span>
         </div>
       ) : (
         <p className="text-caption text-foreground-muted">No inventory record yet.</p>
       )}
-      {error && <p className="text-caption text-danger">{error}</p>}
+
+      {error && <p className="text-caption text-danger" role="alert">{error}</p>}
       {success && <p className="text-caption text-success">{success}</p>}
+
+      {/* Set absolute stock */}
       <div className="grid grid-cols-2 gap-3">
-        <Input label="On hand (absolute)" type="number" min={0} value={onHand} onChange={(e) => setOnHand(e.target.value)} placeholder="e.g. 100" hint="Replaces current quantity." />
-        <Input label="Low-stock threshold" type="number" min={0} value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} placeholder="e.g. 10" />
+        <Input
+          label="On hand (absolute)"
+          type="number"
+          min={0}
+          value={onHand}
+          onChange={(e) => setOnHand(e.target.value)}
+          placeholder="e.g. 100"
+          hint="Replaces current quantity."
+        />
+        <Input
+          label="Low-stock threshold"
+          type="number"
+          min={0}
+          value={lowStockThreshold}
+          onChange={(e) => setLowStockThreshold(e.target.value)}
+          placeholder="e.g. 10"
+        />
       </div>
-      <Button type="button" variant="outline" size="sm" onClick={handleSet} loading={saving} className="self-start">Set stock</Button>
+
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleSet}
+          loading={saving}
+          disabled={!isDirty || saving}
+          className="self-start"
+        >
+          Set stock
+        </Button>
+        {/* Adjust ± button — only when inventory exists */}
+        {inventory && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => { setAdjustOpen((o) => !o); setAdjustError(""); setDelta(""); setReason(""); }}
+            className="self-start text-foreground-muted"
+          >
+            Adjust ±
+          </Button>
+        )}
+      </div>
+
+      {/* Inline adjust form */}
+      {adjustOpen && inventory && (
+        <div className="flex flex-col gap-2.5 rounded-lg border border-border bg-muted/30 p-3">
+          <p className="text-caption text-foreground-muted">
+            Current on hand: <strong className="text-foreground">{inventory.onHand}</strong>
+            {delta !== "" && !isNaN(parseInt(delta)) && (
+              <span className="ml-2 text-primary font-semibold">
+                → {inventory.onHand + (parseInt(delta) || 0)}
+              </span>
+            )}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              label="Delta (+/-)"
+              type="number"
+              value={delta}
+              onChange={(e) => setDelta(e.target.value)}
+              placeholder="+10 or -3"
+              autoFocus
+            />
+            <Input
+              label="Reason (optional)"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="e.g. Damaged stock"
+            />
+          </div>
+          {adjustError && <p className="text-caption text-danger" role="alert">{adjustError}</p>}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAdjust}
+              loading={adjusting}
+              disabled={delta === "" || delta === "0" || adjusting}
+            >
+              Apply
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setAdjustOpen(false)}
+              disabled={adjusting}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -637,7 +775,10 @@ function isVariantRowDirty(row: VariantRowState): boolean {
 
 function variantResponseToRow(v: VariantResponse): VariantRowState {
   const onHand = v.availableStock != null ? String(v.availableStock) : "0";
-  const lowStockThreshold = "0";
+  // lowStockThreshold is not returned by VariantResponse — only available after
+  // adminInventoryApi.set/adjust returns an InventoryResponse (mergeInventoryIntoRow).
+  // Keep as "" so the save call sends undefined (server preserves its stored value).
+  const lowStockThreshold = "";
   const sku = v.sku ?? "";
   const priceOverride = v.priceOverride != null ? String(v.priceOverride) : "";
   const compareAtPrice = v.compareAtPrice != null ? String(v.compareAtPrice) : "";
@@ -1718,7 +1859,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                     ? "Stock is managed per variant in the Variants table below."
                     : "Product-level inventory. Add variants below to enable per-variant stock."}
                 </p>
-                {attributes.length === 0 && <StockManager productId={productId} />}
+                {attributes.length === 0 && <StockManager productId={productId} initialInventory={product!.baseInventory} />}
               </Card>
             )}
           </div>

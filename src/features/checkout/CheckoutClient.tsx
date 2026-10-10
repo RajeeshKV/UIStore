@@ -1064,9 +1064,13 @@ export function CheckoutClient({
                 <li key={"cartItemId" in item ? item.cartItemId : item.id} className="flex items-start gap-2 text-body-sm">
                   <div className="flex-1 min-w-0">
                     <span className="block truncate text-foreground">{item.productName}</span>
-                    {"variantDescription" in item && item.variantDescription && (
+                    {"variantAttributes" in item && item.variantAttributes && item.variantAttributes.length > 0 ? (
+                      <span className="block truncate text-[11px] text-foreground-muted">
+                        {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
+                      </span>
+                    ) : "variantDescription" in item && item.variantDescription ? (
                       <span className="block truncate text-[11px] text-foreground-muted">{item.variantDescription}</span>
-                    )}
+                    ) : null}
                   </div>
                   <span className="text-foreground-muted shrink-0">×{item.quantity}</span>
                   <span className="font-medium text-foreground shrink-0 tabular-nums">

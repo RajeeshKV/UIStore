@@ -80,7 +80,13 @@ export function OrderSuccessClient({ orderId, currency, locale }: OrderSuccessCl
                     <div className="h-12 w-12 rounded-lg bg-muted shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-body-sm font-medium text-foreground truncate">{item.productName}</p>
-                      {item.variantDescription && <p className="text-caption text-foreground-muted">{item.variantDescription}</p>}
+                      {item.variantAttributes && item.variantAttributes.length > 0 ? (
+                        <p className="text-caption text-foreground-muted">
+                          {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
+                        </p>
+                      ) : item.variantDescription ? (
+                        <p className="text-caption text-foreground-muted">{item.variantDescription}</p>
+                      ) : null}
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-body-sm text-foreground-muted">×{item.quantity}</p>
