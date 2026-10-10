@@ -773,6 +773,45 @@ export function CheckoutClient({
     );
   }
 
+  // ── Phone verification gate ───────────────────────────────────────────────────
+  // When mobileOtpEnabled is true, block the entire checkout page until phone is verified.
+  // verifStatus === null means still loading — show skeleton rather than flash the checkout.
+  // Once fetched and not satisfied, render checkout behind a non-dismissible verification dialog.
+  if (mobileOtpEnabled) {
+    // Still loading verification status — don't flash the checkout form
+    if (verifStatus === null) {
+      return <CheckoutSkeleton />;
+    }
+
+    if (!verifStatus.verificationSatisfied) {
+      return (
+        <>
+          {/* Blur the checkout form in the background so user understands what's gated */}
+          <div className="px-5 md:px-8 lg:px-10 py-8 md:py-12 select-none pointer-events-none opacity-30 blur-sm" aria-hidden="true">
+            <CheckoutSkeleton />
+          </div>
+          <VerificationDialog
+            open={true}
+            onClose={() => {
+              // Redirect back to cart if user manages to close (e.g. Escape)
+              router.push("/cart");
+            }}
+            onVerified={(status) => {
+              setVerifStatus(status);
+              // Status is now satisfied — the condition above will re-evaluate
+              // and the checkout form will render normally
+            }}
+            initialPhone={user?.phoneNumber ?? ""}
+            purpose="PhoneVerification"
+            title="Verify your phone number"
+            subtitle="Phone verification is required before you can checkout."
+            blocking
+          />
+        </>
+      );
+    }
+  }
+
   // ── Empty cart (also handles blockingReasons CART_EMPTY — 200 with zeroed totals) ─
   const cartItems = cart?.items ?? [];
   if (cartItems.length === 0) {
@@ -1239,13 +1278,23 @@ export function CheckoutClient({
               {(summary?.items ?? cartItems).map((item) => {
                 const itemId = "cartItemId" in item ? item.cartItemId : item.id;
                 const imgUrl = "primaryImageUrl" in item ? item.primaryImageUrl : undefined;
+                const slug = "productSlug" in item ? item.productSlug : undefined;
+                const variantId = "variantId" in item ? item.variantId : undefined;
+                const href = slug ? `/products/${slug}${variantId ? `?variant=${variantId}` : ""}` : undefined;
                 return (
                   <li key={itemId} className="flex items-center gap-3 py-2.5 px-1 text-body-sm">
-                    {/* Thumbnail */}
+                    {/* Thumbnail — links to PDP when slug available */}
                     <div className="h-12 w-12 rounded-lg bg-surface-container border border-border shrink-0 overflow-hidden">
                       {imgUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={imgUrl} alt={item.productName ?? ""} className="h-full w-full object-contain p-1" loading="lazy" />
+                        href ? (
+                          <Link href={href} tabIndex={-1} aria-label={`View ${item.productName}`}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={imgUrl} alt={item.productName ?? ""} className="h-full w-full object-contain p-1 hover:opacity-80 transition-opacity" loading="lazy" />
+                          </Link>
+                        ) : (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={imgUrl} alt={item.productName ?? ""} className="h-full w-full object-contain p-1" loading="lazy" />
+                        )
                       ) : (
                         <div className="h-full w-full flex items-center justify-center">
                           <ShoppingBag className="size-4 text-border" aria-hidden="true" />
@@ -1255,7 +1304,13 @@ export function CheckoutClient({
 
                     {/* Name + variant */}
                     <div className="flex-1 min-w-0">
-                      <span className="block truncate text-foreground text-[13px] font-medium">{item.productName}</span>
+                      {href ? (
+                        <Link href={href} className="block truncate text-foreground text-[13px] font-medium hover:underline underline-offset-2">
+                          {item.productName}
+                        </Link>
+                      ) : (
+                        <span className="block truncate text-foreground text-[13px] font-medium">{item.productName}</span>
+                      )}
                       {"variantAttributes" in item && item.variantAttributes && item.variantAttributes.length > 0 ? (
                         <span className="block truncate text-[11px] text-foreground-muted">
                           {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}

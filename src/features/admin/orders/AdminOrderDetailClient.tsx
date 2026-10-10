@@ -154,22 +154,39 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
             <div className="divide-y divide-border">
               {order.items?.map((item) => (
                 <div key={item.id} className="flex items-start gap-4 px-5 py-4">
-                  {/* Item image */}
+                  {/* Item image — links to storefront product page when slug available */}
                   <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden border border-border">
                     {item.primaryImageUrl ? (
-                      <img
-                        src={item.primaryImageUrl}
-                        alt={item.productName ?? "Product"}
-                        className="h-full w-full object-contain p-1"
-                        loading="lazy"
-                      />
+                      item.productSlug ? (
+                        <a href={`/products/${item.productSlug}${item.variantId ? `?variant=${item.variantId}` : ""}`} target="_blank" rel="noopener noreferrer" aria-label={`View ${item.productName ?? "product"} on storefront`}>
+                          <img
+                            src={item.primaryImageUrl}
+                            alt={item.productName ?? "Product"}
+                            className="h-full w-full object-contain p-1 hover:opacity-80 transition-opacity"
+                            loading="lazy"
+                          />
+                        </a>
+                      ) : (
+                        <img
+                          src={item.primaryImageUrl}
+                          alt={item.productName ?? "Product"}
+                          className="h-full w-full object-contain p-1"
+                          loading="lazy"
+                        />
+                      )
                     ) : (
                       <Package className="size-5 text-foreground-muted" />
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-body-sm font-medium text-foreground">{item.productName ?? "Product"}</p>
+                    {item.productSlug ? (
+                      <a href={`/products/${item.productSlug}${item.variantId ? `?variant=${item.variantId}` : ""}`} target="_blank" rel="noopener noreferrer" className="text-body-sm font-medium text-foreground hover:underline underline-offset-2">
+                        {item.productName ?? "Product"}
+                      </a>
+                    ) : (
+                      <p className="text-body-sm font-medium text-foreground">{item.productName ?? "Product"}</p>
+                    )}
 
                     {/* Variant attributes — structured first, fall back to description */}
                     {item.variantAttributes && item.variantAttributes.length > 0 ? (

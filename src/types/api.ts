@@ -447,6 +447,8 @@ export interface UpdateCartItemRequest {
 export interface OrderItemResponse {
   id: string;
   productId: string;
+  /** Slug for linking to the product detail page — `/products/{productSlug}` */
+  productSlug?: string;
   variantId?: string;
   productName?: string;
   variantDescription?: string;

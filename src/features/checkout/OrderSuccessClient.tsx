@@ -75,27 +75,53 @@ export function OrderSuccessClient({ orderId, currency, locale }: OrderSuccessCl
             {/* Items */}
             {order.items && order.items.length > 0 && (
               <ul className="flex flex-col gap-3 mb-4">
-                {order.items.map((item) => (
-                  <li key={item.id} className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-lg bg-muted shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-body-sm font-medium text-foreground truncate">{item.productName}</p>
-                      {item.variantAttributes && item.variantAttributes.length > 0 ? (
-                        <p className="text-caption text-foreground-muted">
-                          {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
+                {order.items.map((item) => {
+                  const href = item.productSlug
+                    ? `/products/${item.productSlug}${item.variantId ? `?variant=${item.variantId}` : ""}`
+                    : undefined;
+                  return (
+                    <li key={item.id} className="flex items-center gap-3">
+                      {/* Thumbnail */}
+                      <div className="h-12 w-12 rounded-lg bg-muted shrink-0 overflow-hidden border border-border flex items-center justify-center">
+                        {item.primaryImageUrl ? (
+                          href ? (
+                            <Link href={href} tabIndex={-1} aria-label={`View ${item.productName}`}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={item.primaryImageUrl} alt={item.productName ?? "Product"} className="h-full w-full object-contain p-1 hover:opacity-80 transition-opacity" loading="lazy" />
+                            </Link>
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={item.primaryImageUrl} alt={item.productName ?? "Product"} className="h-full w-full object-contain p-1" loading="lazy" />
+                          )
+                        ) : (
+                          <Package className="size-5 text-foreground-muted" aria-hidden="true" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        {href ? (
+                          <Link href={href} className="text-body-sm font-medium text-foreground truncate block hover:underline underline-offset-2">
+                            {item.productName}
+                          </Link>
+                        ) : (
+                          <p className="text-body-sm font-medium text-foreground truncate">{item.productName}</p>
+                        )}
+                        {item.variantAttributes && item.variantAttributes.length > 0 ? (
+                          <p className="text-caption text-foreground-muted">
+                            {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
+                          </p>
+                        ) : item.variantDescription ? (
+                          <p className="text-caption text-foreground-muted">{item.variantDescription}</p>
+                        ) : null}
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-body-sm text-foreground-muted">×{item.quantity}</p>
+                        <p className="text-body-sm font-medium text-foreground tabular-nums">
+                          {formatPrice(item.lineTotal, effectiveCurrency, locale)}
                         </p>
-                      ) : item.variantDescription ? (
-                        <p className="text-caption text-foreground-muted">{item.variantDescription}</p>
-                      ) : null}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-body-sm text-foreground-muted">×{item.quantity}</p>
-                      <p className="text-body-sm font-medium text-foreground tabular-nums">
-                        {formatPrice(item.lineTotal, effectiveCurrency, locale)}
-                      </p>
-                    </div>
-                  </li>
-                ))}
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
 

@@ -192,23 +192,41 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
           <ul>
             {order.items.map((item) => (
               <li key={item.id} className="flex items-center gap-3 px-5 py-4 border-b border-border last:border-none">
-                {/* Thumbnail */}
+                {/* Thumbnail — links to product page when slug available */}
                 {item.primaryImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.primaryImageUrl}
-                    alt={item.productName ?? "Product"}
-                    className="h-14 w-14 rounded-lg object-cover bg-muted shrink-0"
-                  />
+                  item.productSlug ? (
+                    <Link href={`/products/${item.productSlug}${item.variantId ? `?variant=${item.variantId}` : ""}`} className="shrink-0" tabIndex={-1} aria-label={`View ${item.productName}`}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.primaryImageUrl}
+                        alt={item.productName ?? "Product"}
+                        className="h-14 w-14 rounded-lg object-cover bg-muted hover:opacity-80 transition-opacity"
+                      />
+                    </Link>
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.primaryImageUrl}
+                      alt={item.productName ?? "Product"}
+                      className="h-14 w-14 rounded-lg object-cover bg-muted shrink-0"
+                    />
+                  )
                 ) : (
                   <div className="h-14 w-14 rounded-lg bg-muted shrink-0 flex items-center justify-center">
                     <Package className="size-5 text-foreground-muted" aria-hidden="true" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-body-sm font-medium text-foreground line-clamp-2">
-                    {item.productName}
-                  </p>
+                  {item.productSlug ? (
+                    <Link
+                      href={`/products/${item.productSlug}${item.variantId ? `?variant=${item.variantId}` : ""}`}
+                      className="text-body-sm font-medium text-foreground line-clamp-2 hover:underline underline-offset-2"
+                    >
+                      {item.productName}
+                    </Link>
+                  ) : (
+                    <p className="text-body-sm font-medium text-foreground line-clamp-2">{item.productName}</p>
+                  )}
                   {/* Prefer structured attributes; fall back to plain description */}
                   {item.variantAttributes && item.variantAttributes.length > 0 ? (
                     <p className="text-caption text-foreground-muted">
