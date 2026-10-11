@@ -12,6 +12,8 @@ import type {
   OtpSendRequest,
   OtpSendResponse,
   OtpVerifyRequest,
+  OtpCheckAvailabilityRequest,
+  OtpCheckAvailabilityResponse,
   PhoneVerificationStatusResponse,
 } from "@/types/api";
 
@@ -46,6 +48,14 @@ export function maskPhone(phone: string): string {
 }
 
 export const otpApi = {
+  /**
+   * POST /api/v1/otp/check-availability
+   * Checks if a phone number is available to be linked to an account.
+   * Returns available: false when the number is already taken by another account.
+   */
+  checkAvailability: (data: OtpCheckAvailabilityRequest) =>
+    apiClient.post<OtpCheckAvailabilityResponse>("/api/v1/otp/check-availability", data),
+
   /**
    * POST /api/v1/otp/send
    * Rate limited: 5 req / 60 s per IP.

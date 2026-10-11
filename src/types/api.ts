@@ -1276,6 +1276,17 @@ export interface UpdateSmsConfigRequest {
 
 export type OtpPurpose = "PhoneVerification" | "Login" | "PasswordReset";
 
+/** POST /api/v1/otp/check-availability — checks if a phone number can be used */
+export interface OtpCheckAvailabilityRequest {
+  phoneNumber: string;
+}
+
+export interface OtpCheckAvailabilityResponse {
+  available: boolean;
+  /** When false, describes why the number is unavailable */
+  reason?: string;
+}
+
 /** POST /api/v1/otp/send */
 export interface OtpSendRequest {
   phoneNumber?: string;
