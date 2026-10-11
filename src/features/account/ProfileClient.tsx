@@ -115,22 +115,28 @@ export function ProfileClient() {
     setSaving(true);
     setErrors({});
 
-    const result = await customerApi.updateProfile({
-      displayName: form.displayName || undefined,
-      phoneNumber: form.phoneNumber || undefined,
-      dateOfBirth: form.dateOfBirth || undefined,
-      newsletterConsent: form.newsletterConsent,
-    });
+    // When OTP is enabled: NEVER save phoneNumber directly — it must go through OTP verification.
+    // Only save the non-phone fields. Phone is updated by the backend after OTP verify succeeds.
+    const payload = mobileOtpEnabled
+      ? {
+          displayName: form.displayName || undefined,
+          dateOfBirth: form.dateOfBirth || undefined,
+          newsletterConsent: form.newsletterConsent,
+          // phoneNumber intentionally omitted — save only after OTP verification
+        }
+      : {
+          displayName: form.displayName || undefined,
+          phoneNumber: form.phoneNumber || undefined,
+          dateOfBirth: form.dateOfBirth || undefined,
+          newsletterConsent: form.newsletterConsent,
+        };
+
+    const result = await customerApi.updateProfile(payload);
 
     setSaving(false);
     if (result.ok) {
       setProfile(result.data);
       toastSuccess("Profile updated", "Your changes have been saved.");
-
-      // If OTP is enabled and phone changed but not verified, offer to verify
-      if (mobileOtpEnabled && form.phoneNumber && !result.data.phoneNumberVerified) {
-        setVerifyOpen(true);
-      }
     } else {
       const msg = extractApiError(result.error, "Could not save changes.");
       toastError("Update failed", msg);
@@ -300,36 +306,55 @@ export function ProfileClient() {
           placeholder="How you'd like to be addressed"
         />
 
-        {/* Phone field — only shown when OTP is not enabled or number is not yet verified */}
-        {(!mobileOtpEnabled || !isVerified) && (
+        {/* Phone field — behaviour depends on mobileOtpEnabled */}
+        {!mobileOtpEnabled ? (
+          /* OTP disabled — plain editable field, saved normally */
+          <Input
+            label="Phone Number"
+            type="tel"
+            value={form.phoneNumber}
+            onChange={set("phoneNumber")}
+            error={errors.phonenumber}
+            autoComplete="tel"
+          />
+        ) : !isVerified ? (
+          /* OTP enabled, no verified number yet — verify-first flow */
           <div className="flex flex-col gap-1.5">
-            <Input
-              label="Phone Number"
-              type="tel"
-              value={form.phoneNumber}
-              onChange={set("phoneNumber")}
-              error={errors.phonenumber}
-              autoComplete="tel"
-              hint={
-                mobileOtpEnabled
-                  ? "Indian mobile number. You'll be prompted to verify after saving."
-                  : undefined
-              }
-            />
-            {showVerifyButton && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="self-start mt-1"
-                onClick={() => setVerifyOpen(true)}
-              >
-                <Phone className="size-3.5 mr-1.5" aria-hidden="true" />
-                Verify now
-              </Button>
-            )}
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <Input
+                  label="Phone Number"
+                  type="tel"
+                  value={form.phoneNumber}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    setForm((f) => ({ ...f, phoneNumber: raw }));
+                  }}
+                  error={errors.phonenumber}
+                  autoComplete="tel"
+                  hint="10-digit Indian mobile number"
+                  maxLength={10}
+                />
+              </div>
+              {/* Verify button appears once 10 digits are entered */}
+              {form.phoneNumber.replace(/\D/g, "").length === 10 && (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="md"
+                  className="shrink-0 mb-px"
+                  onClick={() => setVerifyOpen(true)}
+                >
+                  <Phone className="size-3.5 mr-1.5" aria-hidden="true" />
+                  Verify
+                </Button>
+              )}
+            </div>
+            <p className="text-[11px] text-warning">
+              ⚠ Phone number is not saved until verified with OTP.
+            </p>
           </div>
-        )}
+        ) : null /* verified — shown in the read-only banner above */}
 
         <Input
           label="Date of Birth"
@@ -365,12 +390,23 @@ export function ProfileClient() {
       <VerificationDialog
         open={verifyOpen}
         onClose={() => setVerifyOpen(false)}
-        onVerified={(status) => {
+        onVerified={async (status) => {
           setVerifyOpen(false);
-          void refreshVerifStatus();
+
+          // Step 4: OTP verified — NOW save the phone number to the profile
+          if (mobileOtpEnabled && form.phoneNumber) {
+            const saveRes = await customerApi.updateProfile({
+              phoneNumber: normalisePhone(form.phoneNumber),
+            });
+            if (saveRes.ok) {
+              setProfile(saveRes.data);
+            }
+          }
+
+          await refreshVerifStatus();
           toastSuccess(
             "Phone verified",
-            `+91 ${status.phoneNumber ?? ""} has been confirmed.`,
+            `+91 ${status.phoneNumber ?? form.phoneNumber} has been confirmed and saved.`,
           );
         }}
         initialPhone={
