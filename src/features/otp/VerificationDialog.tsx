@@ -150,7 +150,7 @@ export function VerificationDialog({
     if (saved && saved.purpose === purpose) {
       const expiresMs = new Date(saved.expiresAt).getTime() - Date.now();
       if (expiresMs > 0) {
-        // Session is still live — restore into code-entry step
+        // Session is still live - restore into code-entry step
         setPhone(saved.phone);
         setPhoneLocked(true);
         setExpiresAt(saved.expiresAt);
@@ -200,7 +200,7 @@ export function VerificationDialog({
       setOtp("");
       setStep("code");
 
-      // Always 4-digit OTP — no server call needed for length
+      // Always 4-digit OTP - no server call needed for length
       setOtpLength(4);
 
       otpSession.save({
@@ -211,7 +211,7 @@ export function VerificationDialog({
         resendAt: res.data.resendAvailableAtUtc,
       });
     } else {
-      // A send failure does NOT consume cooldown — return to phone step
+      // A send failure does NOT consume cooldown - return to phone step
       setStep("phone");
       const err = res.error;
       const code = "code" in err ? (err as { code?: string }).code : undefined;
@@ -244,7 +244,7 @@ export function VerificationDialog({
     inFlight.current = false;
 
     if (res.ok) {
-      // 204 success — clear session, re-fetch status
+      // 204 success - clear session, re-fetch status
       otpSession.clear();
       setStep("verified");
 
@@ -262,7 +262,7 @@ export function VerificationDialog({
       const isExpired = expiryRemaining === 0;
       const desc = describeOtpError(status, isExpired && code === "OTP_INVALID" ? "OTP_INVALID" : code);
 
-      // OTP_INVALID when expired — show expiry-specific copy
+      // OTP_INVALID when expired - show expiry-specific copy
       if (isExpired && code === "OTP_INVALID") {
         setBannerNeutral("Your code has expired. Request a new one.");
         setOtp("");
@@ -337,7 +337,7 @@ export function VerificationDialog({
       ) : (
         <div className="flex flex-col gap-5">
 
-          {/* Banner — flow disabled (SMS_NOT_CONFIGURED, 429) */}
+          {/* Banner - flow disabled (SMS_NOT_CONFIGURED, 429) */}
           {bannerError && (
             <div
               role="alert"
@@ -347,7 +347,7 @@ export function VerificationDialog({
             </div>
           )}
 
-          {/* Banner — neutral (cooldown, expiry) */}
+          {/* Banner - neutral (cooldown, expiry) */}
           {bannerNeutral && !bannerError && (
             <div className="rounded-md bg-muted border border-border px-4 py-3 text-body-sm text-foreground-muted">
               {bannerNeutral}

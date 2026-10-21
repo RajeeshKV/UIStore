@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WishlistContext — global wishlist state for authenticated customers.
+ * WishlistContext - global wishlist state for authenticated customers.
  *
  * - wishedIds: Set of productIds currently in the wishlist (for fast heart rendering).
  * - toggle: adds or removes a product from the wishlist.

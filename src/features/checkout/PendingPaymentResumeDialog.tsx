@@ -21,6 +21,7 @@ import { pendingPaymentStore, type PersistedCheckout } from "@/lib/pendingPaymen
 import { ordersApi } from "@/services/api/orders";
 import { checkoutApi } from "@/services/api/checkout";
 import { loadRazorpayScript, openRazorpay } from "@/lib/razorpay";
+import { getThemeColor } from "@/theme/runtime";
 import { useAuth } from "@/features/auth/AuthContext";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -38,7 +39,7 @@ export function PendingPaymentResumeDialog() {
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated) {
-      // Not logged in — clear any stale entry (logged-out users can't pay)
+      // Not logged in - clear any stale entry (logged-out users can't pay)
       pendingPaymentStore.clear();
       return;
     }
@@ -52,7 +53,7 @@ export function PendingPaymentResumeDialog() {
       if (result.ok && result.data.status === "PendingPayment") {
         setPending(entry);
       } else {
-        // Order moved on (confirmed, cancelled, expired) — clear stale entry
+        // Order moved on (confirmed, cancelled, expired) - clear stale entry
         pendingPaymentStore.clear();
       }
       setChecking(false);
@@ -79,7 +80,7 @@ export function PendingPaymentResumeDialog() {
       prefill: {
         email: user?.email,
       },
-      theme: { color: "#09090b" },
+      theme: { color: getThemeColor() },
       handler: async (response) => {
         const verifyResult = await checkoutApi.verifyPayment(pending.orderId, {
           razorpayPaymentId: response.razorpay_payment_id,
@@ -91,7 +92,7 @@ export function PendingPaymentResumeDialog() {
           setPending(null);
           router.push(`/order-success/${pending.orderId}`);
         } else {
-          // Payment captured but verify failed — instruct support contact
+          // Payment captured but verify failed - instruct support contact
           pendingPaymentStore.clear();
           setPending(null);
           alert(
@@ -102,7 +103,7 @@ export function PendingPaymentResumeDialog() {
       modal: {
         ondismiss: () => {
           setResuming(false);
-          // Keep pending state — user can retry again
+          // Keep pending state - user can retry again
         },
       },
     });

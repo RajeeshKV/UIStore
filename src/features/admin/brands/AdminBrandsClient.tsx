@@ -189,7 +189,7 @@ export function AdminBrandsClient() {
       header: "Website",
       render: (row) => row.websiteUrl ? (
         <a href={row.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-body-sm text-foreground-muted hover:text-foreground underline truncate max-w-[180px] block">{row.websiteUrl}</a>
-      ) : <span className="text-body-sm text-foreground-muted">—</span>,
+      ) : <span className="text-body-sm text-foreground-muted">-</span>,
     },
     {
       key: "status",
@@ -223,7 +223,7 @@ export function AdminBrandsClient() {
           <Input label="Slug" value={form.slug ?? ""} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} hint="Auto-generated from name if blank." />
           <Input label="Description" value={form.description ?? ""} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
           <Input label="Website URL" type="url" value={form.websiteUrl ?? ""} onChange={(e) => setForm((f) => ({ ...f, websiteUrl: e.target.value }))} />
-          {/* Logo upload — only for existing brands */}
+          {/* Logo upload - only for existing brands */}
           {editTarget && <BrandLogoUpload brand={editTarget} onRefresh={handleLogoRefresh} />}
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>

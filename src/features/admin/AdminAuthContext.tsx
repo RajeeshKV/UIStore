@@ -60,7 +60,7 @@ export function AdminAuthProvider({
       if (result.data.role?.toLowerCase() === "admin") {
         setAdmin(result.data);
       } else {
-        // Customer token — clear and redirect
+        // Customer token - clear and redirect
         tokenStore.clear();
         setAdmin(null);
       }

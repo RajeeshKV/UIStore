@@ -73,7 +73,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
     const err = res.error as { code?: string; message?: string };
     const code = err?.code ?? "";
 
-    // §3 CONCURRENCY_CONFLICT: two requests raced. Retryable — refetch and let admin retry.
+    // §3 CONCURRENCY_CONFLICT: two requests raced. Retryable - refetch and let admin retry.
     if (code === "CONCURRENCY_CONFLICT") {
       setStatusDialogOpen(false);
       setUpdateError("");
@@ -116,7 +116,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
         {/* §3 Concurrency notice */}
         {concurrencyNote && (
           <div role="alert" className="flex items-center justify-between gap-3 rounded-lg bg-warning/5 border border-warning/20 px-4 py-3 text-body-sm text-foreground">
-            <span>Order was updated by another session. The data below is now refreshed — you can retry the status change.</span>
+            <span>Order was updated by another session. The data below is now refreshed - you can retry the status change.</span>
             <button onClick={() => setConcurrencyNote(false)} className="shrink-0 text-foreground-muted hover:text-foreground">✕</button>
           </div>
         )}
@@ -154,7 +154,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
             <div className="divide-y divide-border">
               {order.items?.map((item) => (
                 <div key={item.id} className="flex items-start gap-4 px-5 py-4">
-                  {/* Item image — links to storefront product page when slug available */}
+                  {/* Item image - links to storefront product page when slug available */}
                   <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-muted overflow-hidden border border-border">
                     {item.primaryImageUrl ? (
                       item.productSlug ? (
@@ -188,7 +188,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
                       <p className="text-body-sm font-medium text-foreground">{item.productName ?? "Product"}</p>
                     )}
 
-                    {/* Variant attributes — structured first, fall back to description */}
+                    {/* Variant attributes - structured first, fall back to description */}
                     {item.variantAttributes && item.variantAttributes.length > 0 ? (
                       <p className="text-caption text-foreground-muted mt-0.5">
                         {item.variantAttributes.map((a) => `${a.attributeName}: ${a.value}`).join(" · ")}
@@ -223,7 +223,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
               <dl className="flex flex-col gap-2 text-body-sm">
                 <div className="flex justify-between">
                   <dt className="text-foreground-muted">Payment</dt>
-                  <dd className="text-foreground capitalize">{order.paymentMethod ?? "—"}</dd>
+                  <dd className="text-foreground capitalize">{order.paymentMethod ?? "-"}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-foreground-muted">Subtotal</dt>
@@ -356,7 +356,7 @@ export function AdminOrderDetailClient({ orderId }: AdminOrderDetailClientProps)
               className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus"
             />
           </div>
-          {/* Remarks / Reason — available for all status changes */}
+          {/* Remarks / Reason - available for all status changes */}
           <div className="flex flex-col gap-1.5">
             <label className="text-body-sm font-medium text-foreground">
               Remarks / Reason (optional)

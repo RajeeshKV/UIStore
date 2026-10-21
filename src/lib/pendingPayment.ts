@@ -18,10 +18,10 @@ export interface PersistedCheckout {
   razorpayKeyId: string;
   grandTotal: number;
   currency: string;
-  savedAt: number; // unix ms — used to expire stale entries
+  savedAt: number; // unix ms - used to expire stale entries
 }
 
-const MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes — Razorpay order expiry is typically 15 min
+const MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes - Razorpay order expiry is typically 15 min
 
 export const pendingPaymentStore = {
   save(data: Omit<PersistedCheckout, "savedAt">): void {
@@ -30,7 +30,7 @@ export const pendingPaymentStore = {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
     } catch {
-      // storage quota — non-fatal
+      // storage quota - non-fatal
     }
   },
 

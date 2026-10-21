@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Admin SMS Integration — schema-driven from GET /providers.
+ * Admin SMS Integration - schema-driven from GET /providers.
  *
  * Layout:
  *   ┌─ Status bar ──────────────────────────────────────────────────────────┐
@@ -11,9 +11,9 @@
  *   │  Provider notes                                                       │
  *   └───────────────────────────────────────────────────────────────────────┘
  *
- * OTP policy is no longer configurable — removed.
+ * OTP policy is no longer configurable - removed.
  * Templates section removed per spec.
- * No DeliveryMode dropdown — not in any provider schema.
+ * No DeliveryMode dropdown - not in any provider schema.
  * Secrets are write-only: blank = preserve existing, non-blank = replace.
  */
 
@@ -43,7 +43,7 @@ interface SchemaFieldProps {
 function SchemaField({ field, value, onChange, isConfigured }: SchemaFieldProps) {
   const isSecret = field.type === "Secret";
   const placeholder = isSecret && isConfigured
-    ? "Configured — enter new value to replace"
+    ? "Configured - enter new value to replace"
     : (field.placeholder ?? "");
 
   const inputId = `sms-field-${field.key}`;
@@ -88,7 +88,7 @@ function SchemaField({ field, value, onChange, isConfigured }: SchemaFieldProps)
           required={field.required}
           className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
         >
-          <option value="">— Select —</option>
+          <option value="">- Select -</option>
           {field.allowedValues.map((v) => (
             <option key={v} value={v}>{v}</option>
           ))}
@@ -124,7 +124,7 @@ function SmsStatusStrip({ status }: { status: SmsIntegrationStatusResponse }) {
     return (
       <div className="flex items-center gap-3 rounded-lg bg-muted/60 border border-border px-4 py-2.5">
         <WifiOff className="size-4 text-foreground-muted shrink-0" />
-        <p className="text-body-sm text-foreground-muted">SMS delivery is disabled — customers cannot receive codes.</p>
+        <p className="text-body-sm text-foreground-muted">SMS delivery is disabled - customers cannot receive codes.</p>
       </div>
     );
   }
@@ -145,7 +145,7 @@ function SmsStatusStrip({ status }: { status: SmsIntegrationStatusResponse }) {
     <div className="flex items-center gap-2 rounded-lg bg-success/5 border border-success/30 px-4 py-2.5">
       <CheckCircle2 className="size-4 text-success shrink-0" />
       <p className="text-body-sm text-success font-medium">
-        SMS active{status.provider ? ` — ${status.provider}` : ""}.
+        SMS active{status.provider ? ` - ${status.provider}` : ""}.
       </p>
     </div>
   );
@@ -257,7 +257,7 @@ export function AdminSmsIntegrationClient() {
     ? <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-0.5 text-caption font-medium text-foreground-muted"><span className="h-1.5 w-1.5 rounded-full bg-foreground-muted" />Not Configured</span>
     : !status.enabled
     ? <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-0.5 text-caption font-medium text-warning"><span className="h-1.5 w-1.5 rounded-full bg-warning" />Configured, Disabled</span>
-    : <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-0.5 text-caption font-medium text-success"><span className="h-1.5 w-1.5 rounded-full bg-success" />Active{status.provider ? ` — ${status.provider}` : ""}</span>;
+    : <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-0.5 text-caption font-medium text-success"><span className="h-1.5 w-1.5 rounded-full bg-success" />Active{status.provider ? ` - ${status.provider}` : ""}</span>;
 
   return (
     <div className="flex flex-col gap-4">
@@ -297,7 +297,7 @@ export function AdminSmsIntegrationClient() {
 
         {status?.isConfigured && (
           <p className="text-caption text-warning bg-warning/5 border border-warning/20 rounded-md px-3 py-2">
-            Credentials are write-only — leave fields blank to keep existing values.
+            Credentials are write-only - leave fields blank to keep existing values.
           </p>
         )}
 
@@ -317,10 +317,10 @@ export function AdminSmsIntegrationClient() {
                 onChange={(e) => handleProviderChange(e.target.value)}
                 className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
               >
-                <option value="">— Select provider —</option>
+                <option value="">- Select provider -</option>
                 {providers.map((p) => (
                   <option key={p.name} value={p.name}>
-                    {p.name}{p.description ? ` — ${p.description}` : ""}
+                    {p.name}{p.description ? ` - ${p.description}` : ""}
                   </option>
                 ))}
               </select>

@@ -28,14 +28,14 @@ export function StorefrontLayout({
 }: StorefrontLayoutProps) {
   const currency = settings?.currencyCode ?? "INR";
   const locale = settings?.culture ?? "en-IN";
-  // Normalize null to empty array — API may return null when backend is unreachable
+  // Normalize null to empty array - API may return null when backend is unreachable
   const policyList = policies ?? [];
 
   return (
     <AuthProvider>
       <WishlistProvider>
         <CartProvider>
-          <div className="flex flex-col min-h-screen">
+          <div className="storefront-editorial flex flex-col min-h-screen">
             <CartAwareHeader
               storeName={settings?.businessName ?? "Shopey"}
               logoUrl={settings?.logoUrl}

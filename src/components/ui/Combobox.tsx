@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Combobox — accessible searchable dropdown that matches the project's Input / Select design.
+ * Combobox - accessible searchable dropdown that matches the project's Input / Select design.
  *
  * Replaces MUI Autocomplete. Supports:
  * - Free-form filtering by label

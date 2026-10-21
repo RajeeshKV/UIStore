@@ -40,7 +40,7 @@ function Stars({ rating }: { rating: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          className={cn("size-3", i < rating ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-border")}
+          className={cn("size-3", i < rating ? "fill-rating text-rating" : "fill-none text-border")}
           aria-hidden="true"
         />
       ))}
@@ -94,12 +94,12 @@ function ReviewDetail({ review, onPublish, onReject, onDelete, onClose, loading 
           </button>
         </div>
 
-        {/* Body — scrollable */}
+        {/* Body - scrollable */}
         <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
           {/* Customer */}
           <div className="rounded-lg bg-muted px-4 py-3 flex flex-col gap-1">
             <p className="text-caption font-semibold text-foreground-muted uppercase tracking-wide">Customer</p>
-            <p className="text-body-sm text-foreground">{review.authorName ?? "—"}</p>
+            <p className="text-body-sm text-foreground">{review.authorName ?? "-"}</p>
             <p className="text-caption text-foreground-muted font-mono">{review.customerEmail}</p>
             {review.isVerifiedPurchase && (
               <span className="text-[10px] font-bold text-success">✓ Verified Purchase</span>
@@ -300,7 +300,7 @@ export function AdminReviewsClient() {
       header: "Product",
       render: (row) => (
         <div>
-          <p className="text-body-sm font-medium text-foreground line-clamp-1">{row.productName ?? "—"}</p>
+          <p className="text-body-sm font-medium text-foreground line-clamp-1">{row.productName ?? "-"}</p>
           <p className="text-caption text-foreground-muted">{row.customerEmail ?? row.authorName}</p>
         </div>
       ),

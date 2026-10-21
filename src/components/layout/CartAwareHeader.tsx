@@ -19,7 +19,7 @@ export function CartAwareHeader({ storeName, logoUrl }: CartAwareHeaderProps) {
   const { itemCount, openDrawer } = useCart();
   const [hasBrands, setHasBrands] = useState<boolean | null>(null);
 
-  // Fetch brands once on mount — public endpoint, no auth needed.
+  // Fetch brands once on mount - public endpoint, no auth needed.
   // null = still loading (don't hide yet); false = no brands; true = has brands.
   useEffect(() => {
     storeApi.getBrands().then((result) => {

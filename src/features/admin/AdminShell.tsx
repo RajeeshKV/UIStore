@@ -13,7 +13,7 @@ function AdminShellInner({ children }: AdminShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f8f9fb]">
+    <div className="admin-workspace flex h-screen overflow-hidden">
       <AdminSidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -22,7 +22,7 @@ function AdminShellInner({ children }: AdminShellProps) {
         <AdminTopBar onMenuClick={() => setSidebarOpen(true)} />
         <main
           id="admin-main"
-          className="flex-1 overflow-y-auto p-5 md:p-7"
+          className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-7"
         >
           {children}
         </main>
@@ -32,8 +32,8 @@ function AdminShellInner({ children }: AdminShellProps) {
 }
 
 /**
- * AdminShell — wraps protected pages with Guard + Sidebar + TopBar.
- * AdminAuthProvider is provided by the root admin/layout.tsx — not here.
+ * AdminShell - wraps protected pages with Guard + Sidebar + TopBar.
+ * AdminAuthProvider is provided by the root admin/layout.tsx - not here.
  */
 export function AdminShell({ children }: AdminShellProps) {
   return (

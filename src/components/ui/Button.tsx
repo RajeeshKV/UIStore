@@ -17,13 +17,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        /** Obsidian black — primary CTA (Add to Cart, Shop Now, etc.) */
+        /** Obsidian black - primary CTA (Add to Cart, Shop Now, etc.) */
         primary: [
           "bg-primary text-primary-foreground",
           "hover:bg-primary/90",
           "disabled:bg-primary/40",
         ],
-        /** White with border — secondary/ghost actions */
+        /** White with border - secondary/ghost actions */
         secondary: [
           "bg-surface-elevated text-foreground border border-border",
           "hover:bg-surface hover:border-border-strong",
@@ -49,7 +49,7 @@ const buttonVariants = cva(
         sm: "h-8 px-3 text-[12px] rounded-md gap-1.5",
         md: "h-10 px-4 text-[13px] rounded-md gap-2",
         lg: "h-11 px-6 text-[14px] rounded-lg gap-2",
-        /** Full-rounded pill — matches design's rounded-full CTAs */
+        /** Full-rounded pill - matches design's rounded-full CTAs */
         pill: "h-11 px-7 text-[13px] rounded-full gap-2.5",
         icon: "h-9 w-9 rounded-md",
       },

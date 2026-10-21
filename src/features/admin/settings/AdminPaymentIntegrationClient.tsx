@@ -136,7 +136,7 @@ export function AdminPaymentIntegrationClient() {
         </div>
       )}
 
-      {/* Credentials form — 2×2 grid */}
+      {/* Credentials form - 2×2 grid */}
       <div className="rounded-lg border border-border bg-background p-4 flex flex-col gap-4">
         <h3 className="text-body-sm font-semibold text-foreground border-b border-border pb-2">Credentials</h3>
 
@@ -150,7 +150,7 @@ export function AdminPaymentIntegrationClient() {
               value={keyId}
               onChange={(e) => setKeyId(e.target.value)}
               placeholder="rzp_live_…"
-              hint={status?.maskedKeyId ? "Shown masked — enter new value to replace." : "From Dashboard → Settings → API Keys."}
+              hint={status?.maskedKeyId ? "Shown masked - enter new value to replace." : "From Dashboard → Settings → API Keys."}
               autoComplete="off"
               required
             />
@@ -159,7 +159,7 @@ export function AdminPaymentIntegrationClient() {
               type="password"
               value={keySecret}
               onChange={(e) => setKeySecret(e.target.value)}
-              placeholder={status?.hasSecret ? "Configured — enter new to replace" : "Enter Key Secret"}
+              placeholder={status?.hasSecret ? "Configured - enter new to replace" : "Enter Key Secret"}
               hint="Write-only. Never shown after saving."
               autoComplete="new-password"
               required
@@ -169,7 +169,7 @@ export function AdminPaymentIntegrationClient() {
               type="password"
               value={webhookSecret}
               onChange={(e) => setWebhookSecret(e.target.value)}
-              placeholder={status?.hasSecret ? "Configured — enter new to replace" : suggestedWebhookSecret ? "Use suggested secret above" : "Enter webhook secret"}
+              placeholder={status?.hasSecret ? "Configured - enter new to replace" : suggestedWebhookSecret ? "Use suggested secret above" : "Enter webhook secret"}
               hint="Must match the secret set in Razorpay dashboard."
               autoComplete="new-password"
               required

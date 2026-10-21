@@ -36,6 +36,6 @@ const PAYMENT_MAP: Record<string, { variant: "success" | "warning" | "danger" | 
 
 export function PaymentStatusBadge({ method }: { method?: string }) {
   const key = (method ?? "").toLowerCase();
-  const config = PAYMENT_MAP[key] ?? { variant: "muted" as const, label: method ?? "—" };
+  const config = PAYMENT_MAP[key] ?? { variant: "muted" as const, label: method ?? "-" };
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }

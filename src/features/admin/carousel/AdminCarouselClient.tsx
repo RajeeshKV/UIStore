@@ -388,7 +388,7 @@ export function AdminCarouselClient() {
           <div className="text-body-sm text-foreground-muted">
             <strong className="text-foreground font-medium">How it works:</strong>{" "}
             Create a slide, then upload its image. Only active slides appear on the storefront.
-            The Shop Now CTA always navigates to the Shop page — you can customise the button label per slide.
+            The Shop Now CTA always navigates to the Shop page - you can customise the button label per slide.
           </div>
         </div>
 

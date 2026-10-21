@@ -66,7 +66,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {/* Skip to main content — accessibility */}
+        {/* Skip to main content - accessibility */}
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:text-body-sm"
@@ -82,7 +82,7 @@ export default async function RootLayout({
             {children}
           </ToastProvider>
         </StoreProvider>
-        {/* Dev-only theme switcher — eliminated from production builds */}
+        {/* Dev-only theme switcher - eliminated from production builds */}
         <DevThemeSwitcher />
       </body>
     </html>

@@ -61,11 +61,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void refresh();
 
-    // When session expires, clear user — the page's own guard handles redirect
+    // When session expires, clear user - the page's own guard handles redirect
     const handler = () => {
       setUser(null);
       setIsLoading(false);
-      // Redirect to login — only if currently on a protected page
+      // Redirect to login - only if currently on a protected page
       if (typeof window !== "undefined" &&
           window.location.pathname.startsWith("/account")) {
         const redirect = encodeURIComponent(window.location.pathname);

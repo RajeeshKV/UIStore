@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Admin layout — wraps all /admin/* routes except /admin/login.
+ * Admin layout - wraps all /admin/* routes except /admin/login.
  * AdminShell provides: AuthProvider, AdminGuard, Sidebar, TopBar.
  */
 export default function AdminLayout({

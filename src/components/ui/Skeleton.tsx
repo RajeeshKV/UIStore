@@ -5,7 +5,7 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   circle?: boolean;
 }
 
-/** Base skeleton block — animate-skeleton is defined in globals.css */
+/** Base skeleton block - animate-skeleton is defined in globals.css */
 export function Skeleton({ rounded = false, circle = false, className, ...props }: SkeletonProps) {
   return (
     <div
@@ -22,7 +22,7 @@ export function Skeleton({ rounded = false, circle = false, className, ...props 
 
 // ── Compound skeletons ────────────────────────────────────────────────────────
 
-/** Product card skeleton — vertical layout */
+/** Product card skeleton - vertical layout */
 export function ProductCardSkeleton() {
   return (
     <div aria-hidden="true" className="flex flex-col gap-2">

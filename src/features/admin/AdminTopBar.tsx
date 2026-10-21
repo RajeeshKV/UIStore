@@ -3,7 +3,7 @@
 import { SidebarToggle } from "./AdminSidebar";
 import { useAdminAuth } from "./AdminAuthContext";
 import { usePathname } from "next/navigation";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -46,10 +46,10 @@ export function AdminTopBar({ onMenuClick }: AdminTopBarProps) {
   const initials = (adminName[0] ?? "A").toUpperCase();
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-[#e1e2e4] bg-white/95 backdrop-blur-sm px-4">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-white/95 backdrop-blur-sm px-4 md:px-6">
       <SidebarToggle onClick={onMenuClick} />
 
-      <h1 className="text-[16px] font-bold text-[#191c1e] flex-1 tracking-tight">{pageTitle}</h1>
+      <h1 className="text-[15px] font-semibold text-foreground flex-1 tracking-tight">{pageTitle}</h1>
 
       {/* Admin profile menu */}
       <div className="relative">
@@ -59,11 +59,11 @@ export function AdminTopBar({ onMenuClick }: AdminTopBarProps) {
           aria-label="Admin account menu"
           className={cn(
             "flex items-center gap-2 rounded-xl px-2 py-1.5",
-            "text-[13px] text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e]",
+            "text-[13px] text-foreground-muted hover:bg-surface hover:text-foreground",
             "transition-colors duration-150",
           )}
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0D0D0D] text-white text-[11px] font-bold">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white text-[11px] font-bold">
             {initials}
           </div>
           <span className="hidden sm:block max-w-32 truncate font-medium">{adminName}</span>
@@ -72,16 +72,16 @@ export function AdminTopBar({ onMenuClick }: AdminTopBarProps) {
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-            <div className="absolute right-0 top-full mt-2 z-20 w-52 rounded-2xl border border-[#e1e2e4] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5">
-              <div className="px-4 py-3 border-b border-[#e1e2e4]">
-                <p className="text-[13px] font-bold text-[#191c1e] truncate">{adminName}</p>
+            <div className="absolute right-0 top-full mt-2 z-20 w-52 rounded-2xl border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5">
+              <div className="px-4 py-3 border-b border-border">
+                <p className="text-[13px] font-bold text-foreground truncate">{adminName}</p>
                 {admin?.email && (
-                  <p className="text-[11px] text-[#5A6578] truncate">{admin.email}</p>
+                  <p className="text-[11px] text-foreground-muted truncate">{admin.email}</p>
                 )}
               </div>
               <button
                 onClick={() => { setMenuOpen(false); void logout(); }}
-                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#444748] hover:bg-danger/5 hover:text-danger transition-colors"
+                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] text-foreground-muted hover:bg-danger/5 hover:text-danger transition-colors"
               >
                 <LogOut className="size-4" />
                 Sign out

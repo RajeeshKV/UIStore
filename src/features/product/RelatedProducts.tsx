@@ -8,7 +8,7 @@ interface RelatedProductsProps {
   locale: string;
 }
 
-/** Renders silently nothing when empty — no empty state shown */
+/** Renders silently nothing when empty - no empty state shown */
 export function RelatedProducts({
   products,
   currency,

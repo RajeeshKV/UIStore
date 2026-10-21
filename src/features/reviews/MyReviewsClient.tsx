@@ -35,7 +35,7 @@ function StarDisplay({ rating }: { rating: number }) {
           key={i}
           className={cn(
             "size-3.5",
-            i < rating ? "fill-[#F59E0B] text-[#F59E0B]" : "fill-none text-[#e1e2e4]",
+            i < rating ? "fill-rating text-rating" : "fill-none text-border",
           )}
           aria-hidden="true"
         />
@@ -95,7 +95,7 @@ export function MyReviewsClient() {
   if (error) {
     return (
       <div className="flex flex-col items-center gap-4 py-12 text-center">
-        <p className="text-[14px] text-[#5A6578]">{error}</p>
+        <p className="text-[14px] text-foreground-muted">{error}</p>
         <Button variant="outline" size="sm" onClick={() => load(1)} iconLeft={<RefreshCw className="size-3.5" />}>
           Retry
         </Button>
@@ -106,12 +106,12 @@ export function MyReviewsClient() {
   if (reviews.length === 0) {
     return (
       <div className="flex flex-col items-center gap-5 py-16 text-center">
-        <div className="h-16 w-16 rounded-full bg-[#f3f4f6] flex items-center justify-center">
-          <MessageSquare className="size-7 text-[#c4c7c7]" />
+        <div className="h-16 w-16 rounded-full bg-surface flex items-center justify-center">
+          <MessageSquare className="size-7 text-foreground-muted" />
         </div>
         <div>
-          <h2 className="text-[18px] font-bold text-[#191c1e]">No reviews yet</h2>
-          <p className="text-[13px] text-[#5A6578] mt-1">You haven&apos;t reviewed any products yet.</p>
+          <h2 className="text-[18px] font-bold text-foreground">No reviews yet</h2>
+          <p className="text-[13px] text-foreground-muted mt-1">You haven&apos;t reviewed any products yet.</p>
         </div>
         <Link href="/shop">
           <Button variant="primary" size="sm">Browse Products</Button>
@@ -122,19 +122,19 @@ export function MyReviewsClient() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-[18px] font-bold text-[#191c1e]">
-        My Reviews <span className="text-[#5A6578] font-normal text-[15px]">({reviews.length})</span>
+      <h2 className="text-[18px] font-bold text-foreground">
+        My Reviews <span className="text-foreground-muted font-normal text-[15px]">({reviews.length})</span>
       </h2>
 
       <div className="flex flex-col gap-4">
         {reviews.map((review) => (
-          <div key={review.id} className="rounded-2xl border border-[#e1e2e4] bg-white p-4 flex flex-col gap-3">
+          <div key={review.id} className="rounded-2xl border border-border bg-white p-4 flex flex-col gap-3">
             {/* Header */}
             <div className="flex items-start justify-between gap-2">
               <div className="flex flex-col gap-1">
                 <StarDisplay rating={review.rating} />
                 {review.title && (
-                  <p className="text-[14px] font-bold text-[#191c1e]">{review.title}</p>
+                  <p className="text-[14px] font-bold text-foreground">{review.title}</p>
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -144,7 +144,7 @@ export function MyReviewsClient() {
 
             {/* Body */}
             {review.body && (
-              <p className="text-[13px] text-[#444748] leading-relaxed line-clamp-3">{review.body}</p>
+              <p className="text-[13px] text-foreground-muted leading-relaxed line-clamp-3">{review.body}</p>
             )}
 
             {/* Images */}
@@ -156,7 +156,7 @@ export function MyReviewsClient() {
                     key={img.id}
                     src={img.url}
                     alt="Review photo"
-                    className="h-12 w-12 rounded-lg object-cover border border-[#e1e2e4]"
+                    className="h-12 w-12 rounded-lg object-cover border border-border"
                     loading="lazy"
                   />
                 ))}
@@ -164,8 +164,8 @@ export function MyReviewsClient() {
             )}
 
             {/* Footer */}
-            <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#f3f4f6]">
-              <span className="text-[11px] text-[#5A6578]">
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-border">
+              <span className="text-[11px] text-foreground-muted">
                 {new Date(review.createdAtUtc).toLocaleDateString("en-IN", {
                   year: "numeric", month: "short", day: "numeric",
                 })}
@@ -176,7 +176,7 @@ export function MyReviewsClient() {
               <div className="flex items-center gap-1">
                 {deleteConfirm === review.id ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-[12px] text-[#5A6578]">Delete this review?</span>
+                    <span className="text-[12px] text-foreground-muted">Delete this review?</span>
                     <Button
                       variant="danger"
                       size="sm"
@@ -198,7 +198,7 @@ export function MyReviewsClient() {
                   <>
                     <Link
                       href={`/products/${review.productId}`}
-                      className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[12px] text-[#5A6578] border border-[#e1e2e4] hover:border-[#0D0D0D] hover:text-[#191c1e] transition-colors"
+                      className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[12px] text-foreground-muted border border-border hover:border-primary hover:text-foreground transition-colors"
                     >
                       <Edit2 className="size-3" />
                       View Product
@@ -206,7 +206,7 @@ export function MyReviewsClient() {
                     <button
                       onClick={() => setDeleteConfirm(review.id)}
                       aria-label="Delete review"
-                      className="flex items-center justify-center h-7 w-7 rounded-lg text-[#5A6578] hover:text-danger hover:bg-danger/5 transition-colors"
+                      className="flex items-center justify-center h-7 w-7 rounded-lg text-foreground-muted hover:text-danger hover:bg-danger/5 transition-colors"
                     >
                       <Trash2 className="size-3.5" />
                     </button>
@@ -224,7 +224,7 @@ export function MyReviewsClient() {
           <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => load(page - 1)}>
             Previous
           </Button>
-          <span className="text-[13px] text-[#5A6578]">Page {page} of {totalPages}</span>
+          <span className="text-[13px] text-foreground-muted">Page {page} of {totalPages}</span>
           <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => load(page + 1)}>
             Next
           </Button>

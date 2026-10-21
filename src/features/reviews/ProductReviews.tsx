@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProductReviews — public + customer review section for the product detail page.
+ * ProductReviews - public + customer review section for the product detail page.
  *
  * Layout:
  *  ┌─────────────────────────────────────────┐

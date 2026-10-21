@@ -208,7 +208,7 @@ export function AdminCategoriesClient() {
     {
       key: "parent",
       header: "Parent",
-      render: (row) => <span className="text-body-sm text-foreground-muted">{row.parentCategoryName ?? "—"}</span>,
+      render: (row) => <span className="text-body-sm text-foreground-muted">{row.parentCategoryName ?? "-"}</span>,
     },
     {
       key: "sort",
@@ -257,12 +257,12 @@ export function AdminCategoriesClient() {
           <div className="flex flex-col gap-1.5">
             <label className="text-body-sm font-medium text-foreground">Parent category</label>
             <select value={form.parentCategoryId ?? ""} onChange={(e) => setForm((f) => ({ ...f, parentCategoryId: e.target.value || undefined }))} aria-label="Parent category" className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus">
-              <option value="">— None (top level) —</option>
+              <option value="">- None (top level) -</option>
               {categories.filter((c) => c.id !== editTarget?.id).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <Input label="Sort order" type="number" min={0} value={form.sortOrder ?? 0} onChange={(e) => setForm((f) => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))} />
-          {/* Image upload — only for existing categories */}
+          {/* Image upload - only for existing categories */}
           {editTarget && <CategoryImageUpload category={editTarget} onRefresh={handleImageRefresh} />}
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>

@@ -1,5 +1,5 @@
 /**
- * Wishlist API — all routes require a customer JWT.
+ * Wishlist API - all routes require a customer JWT.
  * Customer id is derived from the access token server-side; never send it in the body.
  */
 import { apiClient } from "./client";
@@ -34,7 +34,7 @@ export const wishlistApi = {
   },
 
   /**
-   * POST /api/v1/wishlist — idempotent.
+   * POST /api/v1/wishlist - idempotent.
    * Returns { item, created: true } on first save; { item, created: false } if already saved.
    */
   add: (data: AddWishlistItemRequest) =>
@@ -50,7 +50,7 @@ export const wishlistApi = {
   },
 
   /**
-   * DELETE /api/v1/wishlist — clears the entire wishlist.
+   * DELETE /api/v1/wishlist - clears the entire wishlist.
    */
   clear: () => apiClient.delete<void>("/api/v1/wishlist"),
 };

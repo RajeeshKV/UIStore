@@ -24,7 +24,7 @@ export function HeroSection({ storeName }: HeroSectionProps) {
       aria-label="Hero"
       className="relative w-full overflow-hidden bg-surface"
     >
-      {/* Aspect-ratio wrapper — prevents CLS */}
+      {/* Aspect-ratio wrapper - prevents CLS */}
       <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] md:aspect-[16/7] lg:aspect-[16/6]">
         {/* Background image */}
         <motion.div
@@ -35,13 +35,13 @@ export function HeroSection({ storeName }: HeroSectionProps) {
         >
           <Image
             src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1600&q=85&auto=format&fit=crop"
-            alt="Modern living room with elegant home decor — premium furniture and accessories"
+            alt="Modern living room with elegant home decor - premium furniture and accessories"
             fill
             priority
             sizes="100vw"
             className="object-cover object-center"
           />
-          {/* Gradient overlay — left side only, preserves image color on right */}
+          {/* Gradient overlay - left side only, preserves image color on right */}
           <div
             className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/30 to-transparent"
             aria-hidden="true"
@@ -116,7 +116,7 @@ export function HeroSection({ storeName }: HeroSectionProps) {
           </div>
         </div>
 
-        {/* Scroll indicator — subtle, desktop only */}
+        {/* Scroll indicator - subtle, desktop only */}
         <motion.div
           aria-hidden="true"
           className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-1.5"

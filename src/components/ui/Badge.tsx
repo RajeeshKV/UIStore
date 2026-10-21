@@ -6,9 +6,9 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        /** Default — obsidian pill */
+        /** Default - obsidian pill */
         default:   "bg-primary text-primary-foreground rounded-full px-2.5 py-1 text-[11px]",
-        /** Crimson — discount/sale badge matches design secondary */
+        /** Crimson - discount/sale badge matches design secondary */
         discount:  "bg-secondary text-secondary-foreground rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide",
         /** Neutral surface */
         secondary: "bg-surface-container text-foreground-muted rounded-full px-2.5 py-1 text-[11px] border border-border",
@@ -22,7 +22,7 @@ const badgeVariants = cva(
         danger:    "bg-danger/10 text-danger border border-danger/20 rounded-full px-2.5 py-1 text-[11px]",
         /** Muted */
         muted:     "bg-muted text-foreground-muted rounded-full px-2.5 py-1 text-[11px]",
-        /** Status dot — caps style */
+        /** Status dot - caps style */
         caps:      "bg-surface-container text-foreground-muted rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest border border-border",
       },
     },

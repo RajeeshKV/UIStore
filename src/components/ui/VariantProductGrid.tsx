@@ -48,7 +48,7 @@ export function VariantProductGrid({
       <EmptyState
         icon={<ShoppingBag className="size-8" />}
         title="No products found"
-        description="Check back soon — new arrivals are on the way."
+        description="Check back soon - new arrivals are on the way."
       />
     );
   }

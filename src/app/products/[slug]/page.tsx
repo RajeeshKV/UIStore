@@ -40,7 +40,7 @@ export async function generateMetadata({
   if (!product) return { title: "Product Not Found" };
 
   const storeName = settings?.businessName ?? "Shopey";
-  const title = product.metaTitle ?? `${product.name} — ${storeName}`;
+  const title = product.metaTitle ?? `${product.name} - ${storeName}`;
   const description =
     product.metaDescription ??
     product.shortDescription ??
@@ -95,7 +95,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
 
   const currency = settings?.currencyCode ?? product.currency ?? "INR";
   const locale = settings?.culture ?? "en-IN";
-  // Mirrors checkout/page.tsx — backend is the authority on COD availability
+  // Mirrors checkout/page.tsx - backend is the authority on COD availability
   const codEnabled = settings?.payment?.codEnabled ?? settings?.delivery?.codEnabled ?? false;
 
   const breadcrumbs = [
@@ -114,7 +114,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
           <CatalogBreadcrumb items={breadcrumbs} />
         </div>
 
-        {/* Main product section — island owns variant state + image switching */}
+        {/* Main product section - island owns variant state + image switching */}
         <div className="px-5 md:px-8 lg:px-10 py-8 md:py-10">
           <ProductDetailIsland
             product={product}

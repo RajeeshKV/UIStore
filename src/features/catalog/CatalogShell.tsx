@@ -220,7 +220,7 @@ export function CatalogShell({
               </motion.div>
             )}
 
-            {/* Pagination — note: totalCount is row count, not product count */}
+            {/* Pagination - note: totalCount is row count, not product count */}
             {!fetchError && totalPages > 1 && !isPending && (
               <div className="mt-12 mb-4 flex flex-col items-center gap-3">
                 <Pagination

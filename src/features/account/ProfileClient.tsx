@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProfileClient — Phone field rules:
+ * ProfileClient - Phone field rules:
  *
  * OTP DISABLED (mobileOtpEnabled = false):
  *   - Phone field behaves like any other field (displayName, DOB).
@@ -50,7 +50,7 @@ export function ProfileClient() {
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [availabilityError, setAvailabilityError] = useState("");
 
-  // Snapshot of what's in the DB — used for dirty detection
+  // Snapshot of what's in the DB - used for dirty detection
   const savedRef = useRef({ displayName: "", phoneNumber: "", dateOfBirth: "", newsletterConsent: false });
 
   const [form, setForm] = useState({
@@ -111,7 +111,7 @@ export function ProfileClient() {
 
     const payload = mobileOtpEnabled
       ? {
-          // OTP enabled: never save phone here — it's saved after OTP verification
+          // OTP enabled: never save phone here - it's saved after OTP verification
           displayName: form.displayName || undefined,
           dateOfBirth: form.dateOfBirth || undefined,
           newsletterConsent: form.newsletterConsent,
@@ -155,12 +155,12 @@ export function ProfileClient() {
     setAvailabilityError("");
     setCheckingAvailability(true);
 
-    // Step 1: check availability — is this number already linked to another account?
+    // Step 1: check availability - is this number already linked to another account?
     const availRes = await otpApi.checkAvailability({ phoneNumber: normalisePhone(form.phoneNumber) });
     setCheckingAvailability(false);
 
     if (!availRes.ok) {
-      // Network / server error — try to proceed anyway (backend will reject during send if taken)
+      // Network / server error - try to proceed anyway (backend will reject during send if taken)
       setVerifyOpen(true);
       return;
     }
@@ -172,7 +172,7 @@ export function ProfileClient() {
       return;
     }
 
-    // Step 2: number is available — open verification dialog (it calls /otp/send internally)
+    // Step 2: number is available - open verification dialog (it calls /otp/send internally)
     setVerifyOpen(true);
   }
 
@@ -301,7 +301,7 @@ export function ProfileClient() {
               </Button>
             )}
 
-            {/* Green check — phone matches saved verified number */}
+            {/* Green check - phone matches saved verified number */}
             {mobileOtpEnabled && isVerified && !phoneFieldChanged && (
               <CheckCircle className="size-5 text-success shrink-0" aria-label="Verified" />
             )}

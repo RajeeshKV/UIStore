@@ -84,7 +84,7 @@ export function AdminTicketsClient() {
       header: "Customer",
       render: (row) => (
         <div>
-          <p className="text-body-sm text-foreground">{row.customerName ?? "—"}</p>
+          <p className="text-body-sm text-foreground">{row.customerName ?? "-"}</p>
           <p className="text-caption text-foreground-muted">{row.customerEmail ?? ""}</p>
         </div>
       ),
@@ -110,7 +110,7 @@ export function AdminTicketsClient() {
       key: "order",
       header: "Order",
       render: (row) => (
-        <span className="text-body-sm text-foreground-muted">{row.orderNumber ?? "—"}</span>
+        <span className="text-body-sm text-foreground-muted">{row.orderNumber ?? "-"}</span>
       ),
     },
     {

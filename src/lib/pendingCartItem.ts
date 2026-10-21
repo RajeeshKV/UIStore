@@ -1,5 +1,5 @@
 /**
- * pendingCartItem — stores a single "add to cart" action that happened while
+ * pendingCartItem - stores a single "add to cart" action that happened while
  * the user was unauthenticated. After login, CartContext picks it up and
  * replays the add so the item appears in the cart without user re-doing it.
  *

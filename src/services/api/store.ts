@@ -81,7 +81,7 @@ export const storeApi = {
     }),
 
   /**
-   * Variant-aware product grid — GET /api/v1/store/products/variants.
+   * Variant-aware product grid - GET /api/v1/store/products/variants.
    * Returns one row per active variant; products without variants appear once
    * with variantId: null.
    *

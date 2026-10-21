@@ -20,7 +20,7 @@ import type { StorefrontProductSummaryResponse } from "@/types/api";
  * variants (the variants array only exists on StorefrontProductResponse).
  * Strategy: always show "Add to Cart" on cards. If the backend rejects the add
  * because a variant is required, the drawer opens automatically. For the initial
- * render we optimistically attempt a direct add — the drawer provides the fallback.
+ * render we optimistically attempt a direct add - the drawer provides the fallback.
  *
  * NOTE: "Choose Options" button is shown on cards where canPurchase is false or
  * where we've been told to show it explicitly. For products that are in stock and
@@ -53,7 +53,7 @@ export function CartAwareProductCard({
       router.push(`/auth/login?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
-    // Direct add — works for simple products with no variants
+    // Direct add - works for simple products with no variants
     if (p.canPurchase) {
       addItem(p.id, undefined, 1);
     }

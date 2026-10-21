@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProductDetailIsland — client component that owns variant selection state
+ * ProductDetailIsland - client component that owns variant selection state
  * for the PDP. It renders both the gallery and the information panel so that
  * selecting a variant can immediately swap the hero image without a server
  * round-trip.
@@ -96,7 +96,7 @@ export function ProductDetailIsland({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-      {/* Gallery — sticky on desktop */}
+      {/* Gallery - sticky on desktop */}
       <div className="lg:sticky lg:top-24">
         {showGallery ? (
           <ProductGallery

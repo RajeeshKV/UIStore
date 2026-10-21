@@ -82,7 +82,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
         className={cn(
           "fixed left-0 top-0 z-50 h-full w-60 flex flex-col",
           // Design: white surface, clean border
-          "bg-white border-r border-[#e1e2e4]",
+          "bg-white border-r border-border",
           "transition-transform duration-300 ease-out",
           open ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0 lg:static lg:z-auto",
@@ -90,24 +90,24 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
         aria-label="Admin navigation"
       >
         {/* Header */}
-        <div className="flex h-14 items-center justify-between border-b border-[#e1e2e4] px-4 shrink-0">
+        <div className="flex h-16 items-center justify-between border-b border-border px-5 shrink-0">
           <Link href="/admin" className="flex items-center gap-2 group" onClick={onClose}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Shopey" className="h-8 w-8 object-contain shrink-0" />
-            <span className="text-[13px] font-bold tracking-widest uppercase text-[#191c1e]">Admin</span>
+            <span className="text-[12px] font-bold tracking-[0.14em] uppercase text-foreground">Admin</span>
           </Link>
           <button
             aria-label="Close navigation"
             onClick={onClose}
-            className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg text-[#444748] hover:bg-[#f3f4f6] transition-colors"
+            className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:bg-surface transition-colors"
           >
             <X className="size-4" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2.5">
-          <ul className="flex flex-col gap-0.5">
+        <nav className="flex-1 overflow-y-auto py-4 px-3">
+          <ul className="flex flex-col gap-1">
             {NAV.map((item) => (
               <NavEntry key={item.label} item={item} onClose={onClose} />
             ))}
@@ -123,7 +123,7 @@ export function SidebarToggle({ onClick }: { onClick: () => void }) {
     <button
       aria-label="Open navigation menu"
       onClick={onClick}
-      className="lg:hidden flex h-9 w-9 items-center justify-center rounded-lg text-[#191c1e] hover:bg-[#f3f4f6] transition-colors"
+      className="lg:hidden flex h-9 w-9 items-center justify-center rounded-lg text-foreground hover:bg-surface transition-colors"
     >
       <Menu className="size-5" />
     </button>
@@ -148,8 +148,8 @@ function NavEntry({ item, onClose }: { item: NavItem; onClose: () => void }) {
             "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium",
             "transition-all duration-150",
             active
-              ? "bg-[#0D0D0D] text-white"
-              : "text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e]",
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-foreground-muted hover:bg-surface hover:text-foreground",
           )}
           aria-current={active ? "page" : undefined}
         >
@@ -170,7 +170,7 @@ function NavEntry({ item, onClose }: { item: NavItem; onClose: () => void }) {
         className={cn(
           "w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium",
           "transition-all duration-150",
-          anyActive ? "text-[#191c1e]" : "text-[#444748] hover:bg-[#f3f4f6] hover:text-[#191c1e]",
+          anyActive ? "text-foreground" : "text-foreground-muted hover:bg-surface hover:text-foreground",
         )}
       >
         {item.icon}
@@ -181,7 +181,7 @@ function NavEntry({ item, onClose }: { item: NavItem; onClose: () => void }) {
       </button>
 
       {open && (
-        <ul className="ml-7 mt-0.5 flex flex-col gap-0.5 border-l border-[#e1e2e4] pl-3">
+        <ul className="ml-7 mt-1 flex flex-col gap-0.5 border-l border-border pl-3">
           {item.children?.map((child) => {
             const active = pathname.startsWith(child.href);
             return (
@@ -192,8 +192,8 @@ function NavEntry({ item, onClose }: { item: NavItem; onClose: () => void }) {
                   className={cn(
                     "flex items-center rounded-lg px-2 py-2 text-[13px] transition-colors duration-150",
                     active
-                      ? "font-bold text-[#191c1e]"
-                      : "text-[#5A6578] hover:text-[#191c1e]",
+                      ? "font-bold text-foreground"
+                      : "text-foreground-muted hover:text-foreground",
                   )}
                   aria-current={active ? "page" : undefined}
                 >

@@ -7,7 +7,7 @@ import { useAdminAuth } from "./AdminAuthContext";
 /**
  * Used only on /admin/login (and forgot/reset password pages).
  * If the admin is already authenticated, redirect to the intended page
- * or the dashboard — so a logged-in admin never sees the login form.
+ * or the dashboard - so a logged-in admin never sees the login form.
  */
 export function AdminLoginGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAdminAuth();

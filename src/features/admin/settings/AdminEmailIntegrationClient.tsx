@@ -29,7 +29,7 @@ function StatusBadge({ status }: { status: IntegrationStatusResponse | null }) {
 }
 
 /**
- * Email integration — mode-first flow:
+ * Email integration - mode-first flow:
  * 1. Choose mode (KromicManaged | CustomerBrevo)
  * 2. Enable email sending (common to both modes)
  * 3. If CustomerBrevo: enter API key, sender name, sender email
@@ -97,7 +97,7 @@ export function AdminEmailIntegrationClient() {
     const settingsRes = await adminSettingsApi.updateEmailSettings({
       mode: mode || undefined,
       senderName: senderName.trim() || undefined,
-      // Omit senderEmail for KromicManaged — sending it is a 400
+      // Omit senderEmail for KromicManaged - sending it is a 400
       senderEmail: isKromicManaged ? undefined : (senderEmail.trim() || undefined),
     });
 
@@ -136,7 +136,7 @@ export function AdminEmailIntegrationClient() {
 
         <form onSubmit={handleSave} noValidate className="flex flex-col gap-4">
 
-          {/* Step 1 — Mode selector (master control) */}
+          {/* Step 1 - Mode selector (master control) */}
           <div className="flex flex-col gap-1.5">
             <label className="text-body-sm font-medium text-foreground">
               Mode <span className="text-danger" aria-hidden="true">*</span>
@@ -147,9 +147,9 @@ export function AdminEmailIntegrationClient() {
               aria-label="Email mode"
               className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
             >
-              <option value="">— Select mode —</option>
-              <option value="KromicManaged">Kromic Managed — Shopey handles email delivery</option>
-              <option value="CustomerBrevo">Your Brevo — use your own Brevo account</option>
+              <option value="">- Select mode -</option>
+              <option value="KromicManaged">Kromic Managed - Shopey handles email delivery</option>
+              <option value="CustomerBrevo">Your Brevo - use your own Brevo account</option>
             </select>
             {mode === "KromicManaged" && (
               <p className="text-caption text-foreground-muted">
@@ -163,7 +163,7 @@ export function AdminEmailIntegrationClient() {
             )}
           </div>
 
-          {/* Step 2 — Enable toggle (common to both modes) */}
+          {/* Step 2 - Enable toggle (common to both modes) */}
           {mode && (
             <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
               <div>
@@ -185,11 +185,11 @@ export function AdminEmailIntegrationClient() {
             </div>
           )}
 
-          {/* Step 3 — Credentials (CustomerBrevo only) */}
+          {/* Step 3 - Credentials (CustomerBrevo only) */}
           {isCustomerBrevo && (
             <div className="flex flex-col gap-3">
               <p className="text-caption text-warning bg-warning/5 border border-warning/20 rounded-md px-3 py-2">
-                API key is write-only — never shown after saving. Leave blank to keep the existing key.
+                API key is write-only - never shown after saving. Leave blank to keep the existing key.
               </p>
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
                 <Input
@@ -197,7 +197,7 @@ export function AdminEmailIntegrationClient() {
                   type="password"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  placeholder={status?.hasSecret ? "Configured — enter new to replace" : "Enter Brevo API key"}
+                  placeholder={status?.hasSecret ? "Configured - enter new to replace" : "Enter Brevo API key"}
                   autoComplete="new-password"
                 />
                 <Input
@@ -218,7 +218,7 @@ export function AdminEmailIntegrationClient() {
             </div>
           )}
 
-          {/* Step 3 — KromicManaged: sender name only */}
+          {/* Step 3 - KromicManaged: sender name only */}
           {isKromicManaged && (
             <div className="max-w-xs">
               <Input

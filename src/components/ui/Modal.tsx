@@ -33,7 +33,7 @@ export function Modal({
             {/* Backdrop */}
             <Dialog.Overlay asChild>
               <motion.div
-                className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+                className="fixed inset-0 z-50 bg-[var(--color-overlay)] backdrop-blur-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -46,7 +46,7 @@ export function Modal({
               <motion.div
                 className={cn(
                   "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2",
-                  "rounded-2xl bg-white border border-border shadow-xl",
+                  "rounded-panel bg-surface-elevated border border-border shadow-overlay",
                   "max-h-[90vh] overflow-y-auto p-0",
                   size,
                 )}

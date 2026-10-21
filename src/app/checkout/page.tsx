@@ -23,7 +23,7 @@ export default async function CheckoutPage() {
   const locale = settings?.culture ?? "en-IN";
   const storeName = settings?.businessName ?? "Shopey";
 
-  // These are hints only — authoritative values come from CheckoutSummaryResponse.paymentMethods[].
+  // These are hints only - authoritative values come from CheckoutSummaryResponse.paymentMethods[].
   const razorpayEnabled = settings?.payment?.razorpayEnabled ?? false;
   // codEnabled drives the initial UI: hide the COD option unless the admin has configured it.
   // delivery.codEnabled is the canonical field (set from Shipping settings).

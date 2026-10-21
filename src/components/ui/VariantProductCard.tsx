@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * VariantProductCard — renders one row from GET /api/v1/store/products/variants.
+ * VariantProductCard - renders one row from GET /api/v1/store/products/variants.
  *
  * Key rules from guide 41:
  * - `row.id` is the row's own id. POST it as `variantId` to cart.
  * - `row.variantId` is null for simple products (no variants). POST null to cart.
  * - Image fallback: variant primary → variant first → primaryImageUrl → placeholder.
- * - Gate add-to-cart on `canPurchase` only — it already encodes isActive + stock.
+ * - Gate add-to-cart on `canPurchase` only - it already encodes isActive + stock.
  * - `stockAvailability` renders as a badge; never show unit counts.
  * - `effectivePrice` is the final price; never show product.price alongside it.
  */
@@ -229,9 +229,9 @@ export function VariantProductCard({
           href={row.variantId ? `/products/${row.slug}?variant=${row.variantId}` : `/products/${row.slug}`}
           aria-label={`View ${row.name}${
             row.variantAttributes && row.variantAttributes.length > 0
-              ? ` — ${row.variantAttributes.map((a) => a.value).join(", ")}`
+              ? ` - ${row.variantAttributes.map((a) => a.value).join(", ")}`
               : row.variantDescription
-              ? ` — ${row.variantDescription}`
+              ? ` - ${row.variantDescription}`
               : ""
           }`}
           className="block w-full h-full"
@@ -265,7 +265,7 @@ export function VariantProductCard({
           {row.name}
         </Link>
 
-        {/* Variant label — attribute values only, e.g. "Orange · 256GB" */}
+        {/* Variant label - attribute values only, e.g. "Orange · 256GB" */}
         {(() => {
           if (row.variantAttributes && row.variantAttributes.length > 0) {
             return (

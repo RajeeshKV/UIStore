@@ -1,5 +1,5 @@
 /**
- * useIndianStates — fetches the list of Indian States/UTs from the
+ * useIndianStates - fetches the list of Indian States/UTs from the
  * Open Admin Data India API. Cached in module scope so the network request
  * only happens once per page load, even when the hook is mounted multiple times.
  */
@@ -17,7 +17,7 @@ interface StatesApiResponse {
   entities: IndianState[];
 }
 
-// Module-level cache — shared across all hook instances
+// Module-level cache - shared across all hook instances
 let cachedStates: IndianState[] | null = null;
 let fetchPromise: Promise<IndianState[]> | null = null;
 

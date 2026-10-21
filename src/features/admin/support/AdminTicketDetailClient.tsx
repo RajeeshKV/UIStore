@@ -142,7 +142,7 @@ function AdminComposer({
         onChange={(e) => setBody(e.target.value)}
         rows={compact ? 2 : 3}
         maxLength={10000}
-        placeholder={isInternal ? "Internal note — not visible to customer…" : "Reply to customer…"}
+        placeholder={isInternal ? "Internal note - not visible to customer…" : "Reply to customer…"}
         aria-label="Message body"
         className={cn(
           "w-full rounded-md border px-3 py-2 text-body-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-focus resize-none",
@@ -204,21 +204,21 @@ function AdminCommentNode({ comment, ticketId, maxAttachments, onPosted }: Admin
         comment.isInternalNote
           ? "bg-warning/5 border-warning/30"
           : comment.isAdminAuthor
-            ? "bg-[#f8f9fb] border-[#e1e2e4]"
-            : "bg-white border-[#e1e2e4]",
+            ? "bg-background border-border"
+            : "bg-white border-border",
       )}>
         {/* Internal note badge */}
         {comment.isInternalNote && (
           <div className="flex items-center gap-1.5 mb-1">
             <Lock className="size-3 text-warning" />
-            <span className="text-[10px] font-bold text-warning uppercase tracking-wide">Internal note — not visible to customer</span>
+            <span className="text-[10px] font-bold text-warning uppercase tracking-wide">Internal note - not visible to customer</span>
           </div>
         )}
 
         <div className="flex items-center gap-2">
           <span className={cn(
             "h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0",
-            comment.isAdminAuthor ? "bg-[#0D0D0D] text-white" : "bg-[#f3f4f6] text-[#191c1e]",
+            comment.isAdminAuthor ? "bg-primary text-white" : "bg-surface text-foreground",
           )}>
             {(comment.authorName?.[0] ?? "?").toUpperCase()}
           </span>
@@ -234,7 +234,7 @@ function AdminCommentNode({ comment, ticketId, maxAttachments, onPosted }: Admin
           </div>
         )}
 
-        {/* Reply — cannot reply under internal note from customer side; admin can */}
+        {/* Reply - cannot reply under internal note from customer side; admin can */}
         {comment.depth < 6 && (
           <button
             type="button"
@@ -434,7 +434,7 @@ export function AdminTicketDetailClient({ ticketId, maxAttachments = 6 }: Props)
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Thread — 2 cols */}
+          {/* Thread - 2 cols */}
           <div className="lg:col-span-2 flex flex-col gap-4">
             {ticket.comments.map((c) => (
               <AdminCommentNode key={c.id} comment={c} ticketId={ticket.id} maxAttachments={maxAttachments} onPosted={handlePosted} />
@@ -450,7 +450,7 @@ export function AdminTicketDetailClient({ ticketId, maxAttachments = 6 }: Props)
             </div>
           </div>
 
-          {/* Sidebar — 1 col */}
+          {/* Sidebar - 1 col */}
           <div className="flex flex-col gap-4">
             {/* History */}
             {ticket.history && ticket.history.length > 0 && (

@@ -17,7 +17,7 @@ export function AdminSupportSettingsClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Form state — mirrors the partial-update contract
+  // Form state - mirrors the partial-update contract
   const [autoClose, setAutoClose]           = useState("72");
   const [notifyCreated, setNotifyCreated]   = useState(true);
   const [notifyReopened, setNotifyReopened] = useState(true);
@@ -153,12 +153,12 @@ export function AdminSupportSettingsClient() {
           />
         </div>
 
-        {/* Admin notification address — read-only */}
+        {/* Admin notification address - read-only */}
         <div className="rounded-lg border border-border bg-background p-4 flex flex-col gap-3">
           <h3 className="text-body-sm font-semibold text-foreground border-b border-border pb-2">Admin notifications</h3>
           <div className="flex items-start gap-2 text-caption text-foreground-muted bg-muted/50 rounded-md px-3 py-2.5">
             <Info className="size-3.5 shrink-0 mt-0.5" />
-            <span>Admin notification address is configured at deployment via <code className="text-[10px] font-mono">Support__AdminNotificationEmail</code> — it cannot be changed here.</span>
+            <span>Admin notification address is configured at deployment via <code className="text-[10px] font-mono">Support__AdminNotificationEmail</code> - it cannot be changed here.</span>
           </div>
           {settings && (
             <div className="flex flex-col gap-1">
@@ -168,7 +168,7 @@ export function AdminSupportSettingsClient() {
                   {settings.adminNotificationTarget}
                 </code>
               ) : (
-                <span className="text-body-sm text-warning">Not configured — internal alerts will not be sent.</span>
+                <span className="text-body-sm text-warning">Not configured - internal alerts will not be sent.</span>
               )}
             </div>
           )}

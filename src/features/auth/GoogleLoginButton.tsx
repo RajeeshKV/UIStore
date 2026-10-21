@@ -133,11 +133,11 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
         aria-label="Continue with Google"
         className={cn(
           "relative flex h-12 w-full items-center justify-center gap-3 rounded-xl",
-          "border border-[#E5E7EB] bg-white",
-          "text-[14px] font-semibold text-[#191c1e]",
+          "border border-border bg-white",
+          "text-[14px] font-semibold text-foreground",
           "transition-all duration-150",
-          "hover:bg-[#f3f4f6] hover:border-[#c4c7c7] hover:shadow-sm",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D0D0D]",
+          "hover:bg-surface hover:border-border-strong hover:shadow-sm",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
           "disabled:cursor-not-allowed disabled:opacity-60",
           className,
         )}
@@ -192,7 +192,7 @@ function loadGoogleScript(): Promise<void> {
  * The flow:
  * 1. Create a hidden div, render the Google button into it
  * 2. google.accounts.id.initialize() sets up the callback
- * 3. Programmatically click the rendered button — opens Google account picker popup
+ * 3. Programmatically click the rendered button - opens Google account picker popup
  * 4. User selects account → callback fires with credential (ID token)
  * 5. Resolve with the ID token
  */
@@ -226,7 +226,7 @@ function getGoogleIdTokenViaPopup(clientId: string): Promise<string> {
     container.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;";
     document.body.appendChild(container);
 
-    // Render Google's button — this triggers the real popup flow (not One Tap)
+    // Render Google's button - this triggers the real popup flow (not One Tap)
     gid.renderButton(container, {
       type: "standard",
       size: "large",
@@ -239,10 +239,10 @@ function getGoogleIdTokenViaPopup(clientId: string): Promise<string> {
       if (btn) {
         btn.click();
       } else {
-        // renderButton may not have rendered yet — try the iframe button
+        // renderButton may not have rendered yet - try the iframe button
         const iframe = container.querySelector("iframe");
         if (iframe) {
-          // Can't click inside cross-origin iframe — fall back to prompt
+          // Can't click inside cross-origin iframe - fall back to prompt
           gid.prompt((notification) => {
             if (!resolved && (notification.isNotDisplayed() || notification.isSkippedMoment())) {
               if (!resolved) {

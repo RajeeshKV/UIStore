@@ -116,7 +116,7 @@ export function AdminProductsClient() {
             <p className="text-body-sm font-medium text-foreground truncate max-w-[200px]">
               {row.name}
             </p>
-            <p className="text-caption text-foreground-muted">{row.sku ?? "—"}</p>
+            <p className="text-caption text-foreground-muted">{row.sku ?? "-"}</p>
           </div>
         </div>
       ),
@@ -133,7 +133,7 @@ export function AdminProductsClient() {
       key: "category",
       header: "Category",
       render: (row) => (
-        <span className="text-body-sm text-foreground-muted truncate">{row.categoryName ?? "—"}</span>
+        <span className="text-body-sm text-foreground-muted truncate">{row.categoryName ?? "-"}</span>
       ),
     },
     {
@@ -175,7 +175,7 @@ export function AdminProductsClient() {
       className: "w-44",
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
-          {/* Edit — icon */}
+          {/* Edit - icon */}
           <Link
             href={`/admin/products/${row.id}`}
             aria-label="Edit product"
@@ -184,7 +184,7 @@ export function AdminProductsClient() {
             <Pencil className="size-3.5" />
           </Link>
 
-          {/* Publish / Unpublish — text button (prominent) */}
+          {/* Publish / Unpublish - text button (prominent) */}
           <button
             onClick={() => handlePublish(row)}
             disabled={publishingId === row.id}
@@ -203,7 +203,7 @@ export function AdminProductsClient() {
             )}
           </button>
 
-          {/* Archive — icon (danger) */}
+          {/* Archive - icon (danger) */}
           <button
             aria-label="Archive product"
             onClick={() => setArchiveTarget(row)}

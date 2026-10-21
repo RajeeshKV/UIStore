@@ -55,7 +55,7 @@ export function ProductGrid({
   }
 
   if (products.length === 0) {
-    return <EmptyState icon={<ShoppingBag className="size-8" />} title="No products found" description="Check back soon — new arrivals are on the way." />;
+    return <EmptyState icon={<ShoppingBag className="size-8" />} title="No products found" description="Check back soon - new arrivals are on the way." />;
   }
 
   const px = cardWidth[cols] ?? 170;

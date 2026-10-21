@@ -47,7 +47,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
     <div className="px-5 md:px-8 lg:px-10 py-8 md:py-12 min-h-[70vh]">
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
 
-        {/* Sidebar — desktop */}
+        {/* Sidebar - desktop */}
         <aside className="hidden lg:flex flex-col w-56 shrink-0">
           {/* Avatar + identity */}
           <div className="flex items-center gap-3 px-3 pb-5 mb-3 border-b border-border">
@@ -90,7 +90,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
           </nav>
         </aside>
 
-        {/* Mobile nav — horizontal scroll */}
+        {/* Mobile nav - horizontal scroll */}
         <nav
           aria-label="Account navigation"
           className="lg:hidden flex gap-1.5 overflow-x-auto pb-1 w-full"

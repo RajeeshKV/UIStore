@@ -147,7 +147,7 @@ export function AdminGoogleIntegrationClient() {
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
               placeholder="xxxxxx.apps.googleusercontent.com"
-              hint={status?.isConfigured ? "Shown masked — enter new value to replace." : "Your Google OAuth 2.0 Client ID."}
+              hint={status?.isConfigured ? "Shown masked - enter new value to replace." : "Your Google OAuth 2.0 Client ID."}
               autoComplete="off"
             />
             <Input
@@ -155,7 +155,7 @@ export function AdminGoogleIntegrationClient() {
               type="password"
               value={clientSecret}
               onChange={(e) => setClientSecret(e.target.value)}
-              placeholder={status?.hasSecret ? "Configured — leave blank to keep, or type new to replace" : "Enter Client Secret"}
+              placeholder={status?.hasSecret ? "Configured - leave blank to keep, or type new to replace" : "Enter Client Secret"}
               hint="Write-only. Leave blank to keep the existing secret."
               autoComplete="new-password"
             />

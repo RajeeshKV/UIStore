@@ -29,6 +29,22 @@ export const colorTokens = [
   "danger",
   "danger-foreground",
   "focus",
+  "admin-background",
+  "admin-surface",
+  "admin-surface-subtle",
+  "admin-foreground",
+  "admin-foreground-muted",
+  "admin-border",
+  "control-background",
+  "control-border",
+  "control-hover",
+  "focus-ring",
+  "rating",
 ] as const;
+
+export const typographyTokens = ["sans", "display", "mono"] as const;
+export const radiusTokens = ["control", "card", "panel"] as const;
+export const elevationTokens = ["card", "overlay"] as const;
+export const motionTokens = ["duration-fast", "duration-base", "duration-slow", "ease-out-smooth"] as const;
 
 export type ColorToken = (typeof colorTokens)[number];

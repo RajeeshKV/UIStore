@@ -1,5 +1,5 @@
 /**
- * Auth API — matches actual backend schema
+ * Auth API - matches actual backend schema
  *
  * Customer auth: Google OAuth only → POST /api/v1/auth/google
  * Admin auth:    email/username + password → POST /api/v1/auth/login

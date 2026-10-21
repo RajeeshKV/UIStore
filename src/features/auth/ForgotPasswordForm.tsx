@@ -21,7 +21,7 @@ export function ForgotPasswordForm() {
     }
     setEmailError("");
     setLoading(true);
-    // Always show success — enumeration-safe: don't reveal if email exists
+    // Always show success - enumeration-safe: don't reveal if email exists
     await authApi.requestPasswordReset(email.trim());
     setLoading(false);
     setSent(true);

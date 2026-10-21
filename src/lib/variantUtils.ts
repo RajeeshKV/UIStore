@@ -1,11 +1,11 @@
 /**
- * Shared variant utilities — used by ProductVariantSelector (PDP),
+ * Shared variant utilities - used by ProductVariantSelector (PDP),
  * VariantProductCard (grid), and any admin/storefront code that needs
  * to resolve variants or images.
  *
  * Rules:
- * - Never compute prices — use effectivePrice from the API.
- * - Never expose exact stock counts — use stockAvailability bands.
+ * - Never compute prices - use effectivePrice from the API.
+ * - Never expose exact stock counts - use stockAvailability bands.
  * - findVariant / isValueAvailable are the single source of truth for
  *   variant resolution. Do not duplicate in individual components.
  */
@@ -156,7 +156,7 @@ export function resolveProductImage(
 }
 
 /**
- * Simpler resolver for grid cards — accepts the GridRow shape directly.
+ * Simpler resolver for grid cards - accepts the GridRow shape directly.
  * secureUrl variant: GridImage uses secureUrl (not url).
  */
 export function resolveGridImage(

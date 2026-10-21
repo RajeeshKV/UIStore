@@ -34,7 +34,7 @@ export function AdminLoginForm() {
     setErrors({});
     setApiError("");
     setLoading(true);
-    // Do NOT trim password — intentional per spec
+    // Do NOT trim password - intentional per spec
     const result = await login(identifier, password);
     setLoading(false);
     if (!result.ok) {
@@ -102,7 +102,7 @@ export function AdminLoginForm() {
       <div className="text-center">
         <Link
           href="/admin/forgot-password"
-        className="text-[13px] text-[#5A6578] hover:text-[#191c1e] transition-colors"
+        className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
         >
           Forgot password?
         </Link>

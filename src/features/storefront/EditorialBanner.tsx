@@ -21,7 +21,7 @@ interface EditorialBannerConfig {
 
 /**
  * Full-width editorial promotional section.
- * Config is static here — easy to make settings-driven in a future phase
+ * Config is static here - easy to make settings-driven in a future phase
  * (e.g. fetch from store config or a CMS field).
  */
 
@@ -34,7 +34,7 @@ const DEFAULT_CONFIG: EditorialBannerConfig = {
   imageUrl:
     "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1200&q=80&auto=format&fit=crop",
   imageAlt:
-    "Elegant living room sofa with cushions — premium home furnishing collection",
+    "Elegant living room sofa with cushions - premium home furnishing collection",
   layout: "right",
 };
 

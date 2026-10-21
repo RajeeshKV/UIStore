@@ -1,5 +1,5 @@
 /**
- * Root loading UI — shown while the home page server component fetches data.
+ * Root loading UI - shown while the home page server component fetches data.
  * Mirrors the editorial composition: hero → trust bar → categories → products.
  */
 import { Skeleton } from "@/components/ui/Skeleton";

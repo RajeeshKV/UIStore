@@ -6,9 +6,9 @@
  * before the build runs. Runtime env vars do NOT work for NEXT_PUBLIC_*.
  *
  * Required variables:
- *   NEXT_PUBLIC_API_URL  — backend API base URL (no trailing slash)
- *   NEXT_PUBLIC_APP_URL  — this frontend's canonical URL
- *   NEXT_PUBLIC_ENV      — development | staging | production
+ *   NEXT_PUBLIC_API_URL  - backend API base URL (no trailing slash)
+ *   NEXT_PUBLIC_APP_URL  - this frontend's canonical URL
+ *   NEXT_PUBLIC_ENV      - development | staging | production
  */
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -16,7 +16,7 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
 // Fail the build loudly if the backend URL is missing in production.
 // An empty apiUrl causes ALL API calls to hit the frontend origin (/api/v1/...)
-// which returns 404s — this is the worst possible silent failure.
+// which returns 404s - this is the worst possible silent failure.
 if (!apiUrl && process.env.NODE_ENV === "production") {
   throw new Error(
     "\n\n" +

@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
  * - Authenticated → render children
  *
  * AdminAuthProvider is at admin/layout.tsx (root), so context is always available.
- * This guard is ONLY used inside (protected)/layout.tsx — never on auth pages.
+ * This guard is ONLY used inside (protected)/layout.tsx - never on auth pages.
  */
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAdminAuth();
@@ -51,7 +51,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Not authenticated — redirect in flight
+  // Not authenticated - redirect in flight
   if (!isAuthenticated) return null;
 
   return <>{children}</>;

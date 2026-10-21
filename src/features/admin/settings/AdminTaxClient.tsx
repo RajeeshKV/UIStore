@@ -123,7 +123,7 @@ export function AdminTaxClient() {
           <Toggle
             id="tax-inclusive"
             label="Tax-inclusive pricing"
-            hint="Prices already include tax — not added on top."
+            hint="Prices already include tax - not added on top."
             checked={form.isPriceInclusive}
             onChange={(v) => setForm((f) => ({ ...f, isPriceInclusive: v }))}
           />

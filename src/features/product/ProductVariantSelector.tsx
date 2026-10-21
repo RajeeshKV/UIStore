@@ -142,7 +142,7 @@ export function ProductVariantSelector({
                     type="button"
                     onClick={() => handleSelect(axis.id, val.id)}
                     aria-pressed={isSelected}
-                    aria-label={`${axis.name}: ${val.value}${!available ? " — unavailable" : ""}`}
+                    aria-label={`${axis.name}: ${val.value}${!available ? " - unavailable" : ""}`}
                     className={cn(
                       "h-10 min-w-10 px-4 rounded-lg border text-[13px] font-semibold relative",
                       "transition-all duration-150",
@@ -204,7 +204,7 @@ function SimpleVariantList({
               type="button"
               onClick={() => onSelect(v)}
               aria-pressed={isSelected}
-              aria-label={`Option ${i + 1}${v.sku ? ` (${v.sku})` : ""}${isUnavailable ? " — unavailable" : ""}`}
+              aria-label={`Option ${i + 1}${v.sku ? ` (${v.sku})` : ""}${isUnavailable ? " - unavailable" : ""}`}
               className={cn(
                 "h-10 px-4 rounded-lg border text-[13px] font-semibold transition-all duration-150",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",

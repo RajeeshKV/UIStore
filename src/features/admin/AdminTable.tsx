@@ -44,16 +44,16 @@ export function AdminTable<T>({
   }
 
   return (
-    <div className={cn("rounded-2xl border border-[#e1e2e4] overflow-hidden bg-white", className)}>
+    <div className={cn("rounded-xl border border-border overflow-hidden bg-white shadow-[0_1px_2px_rgb(23_24_23_/_3%)]", className)}>
       <div className="overflow-x-auto">
         <table className="w-full text-[13px]">
           <thead>
-            <tr className="border-b border-[#e1e2e4] bg-[#f8f9fb]">
+            <tr className="border-b border-border bg-surface">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-4 py-3 text-left text-[11px] font-bold text-[#444748] uppercase tracking-wider whitespace-nowrap",
+                    "px-4 py-3 text-left text-[10px] font-bold text-foreground-muted uppercase tracking-[0.1em] whitespace-nowrap",
                     col.className,
                   )}
                 >
@@ -65,7 +65,7 @@ export function AdminTable<T>({
           <tbody>
             {loading ? (
               Array.from({ length: skeletonRows }).map((_, i) => (
-                <tr key={i} className="border-b border-[#e1e2e4] last:border-none">
+                <tr key={i} className="border-b border-border last:border-none">
                   {columns.map((col) => (
                     <td key={col.key} className="px-4 py-3">
                       <Skeleton className="h-4 w-full max-w-xs" />
@@ -85,12 +85,12 @@ export function AdminTable<T>({
                   key={rowKey(row)}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                   className={cn(
-                    "border-b border-[#e1e2e4] last:border-none hover:bg-[#f8f9fb] transition-colors",
+                    "border-b border-border last:border-none hover:bg-surface transition-colors",
                     onRowClick && "cursor-pointer",
                   )}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className={cn("px-4 py-3 text-[#191c1e] overflow-hidden", col.className)}>
+                    <td key={col.key} className={cn("px-4 py-3 text-foreground overflow-hidden", col.className)}>
                       {col.render(row)}
                     </td>
                   ))}

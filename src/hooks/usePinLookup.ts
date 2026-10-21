@@ -1,5 +1,5 @@
 /**
- * usePinLookup — fetches Indian postal PIN code details.
+ * usePinLookup - fetches Indian postal PIN code details.
  *
  * Triggers automatically when `pin` reaches exactly 6 digits.
  * Cancels stale requests when `pin` changes before the previous call resolves.
@@ -63,7 +63,7 @@ export function usePinLookup(pin: string): UsePinLookupResult {
   useEffect(() => {
     const trimmed = pin.replace(/\D/g, "");
 
-    // Not a full 6-digit PIN — reset without fetching
+    // Not a full 6-digit PIN - reset without fetching
     if (trimmed.length !== 6) {
       setStatus("idle");
       setResult(null);
@@ -72,7 +72,7 @@ export function usePinLookup(pin: string): UsePinLookupResult {
       return;
     }
 
-    // Cache hit — no network call needed
+    // Cache hit - no network call needed
     if (resultCache.has(trimmed)) {
       const cached = resultCache.get(trimmed)!;
       setStatus("success");
@@ -150,7 +150,7 @@ export function usePinLookup(pin: string): UsePinLookupResult {
       })
       .catch((err) => {
         if (currentPinRef.current !== trimmed) return;
-        // AbortError means a newer PIN cancelled this — not a real error
+        // AbortError means a newer PIN cancelled this - not a real error
         if (err instanceof DOMException && err.name === "AbortError") return;
 
         setStatus("error");

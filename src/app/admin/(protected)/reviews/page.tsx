@@ -4,7 +4,7 @@ import { AdminReviewsClient } from "@/features/admin/reviews/AdminReviewsClient"
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Reviews — Admin",
+  title: "Reviews - Admin",
 };
 
 export default function AdminReviewsPage() {

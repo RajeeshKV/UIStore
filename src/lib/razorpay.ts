@@ -15,7 +15,7 @@ declare global {
 
 const RAZORPAY_SCRIPT = "https://checkout.razorpay.com/v1/checkout.js";
 
-/** Load the Razorpay browser SDK on demand. Idempotent — safe to call multiple times. */
+/** Load the Razorpay browser SDK on demand. Idempotent - safe to call multiple times. */
 export function loadRazorpayScript(): Promise<boolean> {
   return new Promise((resolve) => {
     if (typeof window === "undefined") { resolve(false); return; }

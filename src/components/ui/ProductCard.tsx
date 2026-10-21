@@ -45,7 +45,7 @@ interface ProductCardProps {
   currency?: string;
   locale?: string;
   onAddToCart?: (product: StorefrontProductSummaryResponse) => void;
-  /** Called when user clicks "Choose Options" — triggers variant drawer */
+  /** Called when user clicks "Choose Options" - triggers variant drawer */
   onChooseOptions?: (product: StorefrontProductSummaryResponse) => void;
   className?: string;
   eager?: boolean;

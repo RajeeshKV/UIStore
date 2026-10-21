@@ -26,7 +26,7 @@ export function OrderSuccessClient({ orderId, currency, locale }: OrderSuccessCl
       if (result.ok) {
         setOrder(result.data);
       } else {
-        setError("Could not load order details. Your order was placed — check your email for confirmation.");
+        setError("Could not load order details. Your order was placed - check your email for confirmation.");
       }
       setLoading(false);
     };

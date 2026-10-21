@@ -127,7 +127,7 @@ function NewTicketForm({ orders, onCreated, onClose }: NewTicketFormProps) {
             aria-label="Related order"
             className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
           >
-            <option value="">— No specific order —</option>
+            <option value="">- No specific order -</option>
             {orders.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.orderNumber ?? o.id.slice(0, 8).toUpperCase()}

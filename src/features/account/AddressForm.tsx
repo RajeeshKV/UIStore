@@ -73,7 +73,7 @@ function LockedField({
     <div className="flex flex-col gap-1">
       <span className="text-[13px] font-semibold text-foreground">{label}</span>
       <div className="flex items-center gap-2 h-11 px-3 rounded-md border border-border bg-muted text-[14px] text-foreground">
-        <span className="flex-1 truncate">{value || "—"}</span>
+        <span className="flex-1 truncate">{value || "-"}</span>
         <button
           type="button"
           onClick={onUnlock}
@@ -218,7 +218,7 @@ export function AddressForm({
           const data = await res.json();
           const addr = data.address ?? {};
 
-          // Extract PIN code — try postcode first
+          // Extract PIN code - try postcode first
           const pin = (addr.postcode ?? "").replace(/\D/g, "").slice(0, 6);
 
           setForm((f) => ({
@@ -485,7 +485,7 @@ export function AddressForm({
           onChange={(v) => setForm((f) => ({ ...f, city: v }))}
           placeholder="Select post office…"
           error={errors.city}
-          hint="Multiple post offices found — select the closest one."
+          hint="Multiple post offices found - select the closest one."
         />
       ) : (
         <Input
@@ -495,7 +495,7 @@ export function AddressForm({
           onChange={set("city")}
           placeholder="e.g. Bangalore GPO"
           error={errors.city}
-          hint={postOfficeOptions.length === 1 ? "Auto-filled from PIN — you can change this." : undefined}
+          hint={postOfficeOptions.length === 1 ? "Auto-filled from PIN - you can change this." : undefined}
           autoComplete="address-level2"
         />
       )}

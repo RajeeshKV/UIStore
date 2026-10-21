@@ -7,7 +7,7 @@ import { useAuth } from "./AuthContext";
 /**
  * Used on /auth/login.
  * If the user is already authenticated, redirect them to the intended
- * destination (or home). Renders nothing — purely a redirect guard.
+ * destination (or home). Renders nothing - purely a redirect guard.
  */
 export function AuthRedirectGuard() {
   const { isAuthenticated, isLoading } = useAuth();

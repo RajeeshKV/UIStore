@@ -93,7 +93,7 @@ export function AdminOrdersClient() {
       header: "Payment",
       render: (row) => (
         <span className="text-body-sm text-foreground-muted capitalize">
-          {row.paymentMethod ?? "—"}
+          {row.paymentMethod ?? "-"}
         </span>
       ),
     },

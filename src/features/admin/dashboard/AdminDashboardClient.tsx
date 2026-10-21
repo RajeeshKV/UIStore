@@ -36,7 +36,7 @@ function StatCard({ label, value, icon, href, loading }: StatCardProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 rounded-lg border border-border bg-background p-5 hover:border-border-strong transition-colors"
+      className="flex items-center gap-4 rounded-xl border border-border bg-background p-4 md:p-5 shadow-[0_1px_2px_rgb(23_24_23_/_3%)] hover:border-border-strong transition-colors"
     >
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">
         {icon}
@@ -129,31 +129,31 @@ export function AdminDashboardClient() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <StatCard
           label="Products"
-          value={data?.productCount ?? "—"}
+          value={data?.productCount ?? "-"}
           icon={<Package className="size-5" />}
           href="/admin/products"
           loading={loading}
         />
         <StatCard
           label="Orders"
-          value={data?.orderCount ?? "—"}
+          value={data?.orderCount ?? "-"}
           icon={<ShoppingCart className="size-5" />}
           href="/admin/orders"
           loading={loading}
         />
         <StatCard
           label="Categories"
-          value={data?.categoryCount ?? "—"}
+          value={data?.categoryCount ?? "-"}
           icon={<Tag className="size-5" />}
           href="/admin/categories"
           loading={loading}
         />
         <StatCard
           label="Brands"
-          value={data?.brandCount ?? "—"}
+          value={data?.brandCount ?? "-"}
           icon={<Bookmark className="size-5" />}
           href="/admin/brands"
           loading={loading}
@@ -163,7 +163,7 @@ export function AdminDashboardClient() {
       {/* Recent orders + recent products */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent orders */}
-        <section className="rounded-lg border border-border bg-background overflow-hidden">
+        <section className="rounded-xl border border-border bg-background overflow-hidden shadow-[0_1px_2px_rgb(23_24_23_/_3%)]">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <h2 className="text-body font-semibold text-foreground flex items-center gap-2">
               <Clock className="size-4 text-foreground-muted" />
@@ -217,7 +217,7 @@ export function AdminDashboardClient() {
         </section>
 
         {/* Recent products */}
-        <section className="rounded-lg border border-border bg-background overflow-hidden">
+        <section className="rounded-xl border border-border bg-background overflow-hidden shadow-[0_1px_2px_rgb(23_24_23_/_3%)]">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <h2 className="text-body font-semibold text-foreground flex items-center gap-2">
               <TrendingUp className="size-4 text-foreground-muted" />

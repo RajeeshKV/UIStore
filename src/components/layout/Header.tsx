@@ -85,7 +85,7 @@ export function Header({
           <Link
             href="/"
             className="shrink-0 flex items-center mr-8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded"
-            aria-label={`${storeName} — home`}
+            aria-label={`${storeName} - home`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

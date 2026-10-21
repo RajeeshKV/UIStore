@@ -3,7 +3,7 @@
  *
  * Centralised animation variants for Motion (Framer Motion).
  * All durations/easings here must mirror the CSS token values in globals.css.
- * Components import from this file — never inline animation objects ad-hoc.
+ * Components import from this file - never inline animation objects ad-hoc.
  */
 
 import type { Variants, Transition } from "motion/react";

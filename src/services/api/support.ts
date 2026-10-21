@@ -3,7 +3,7 @@
  * Customer routes: /api/v1/tickets/**
  * Admin routes:    /api/v1/admin/tickets/** and /api/v1/admin/support/settings
  *
- * Invoice endpoints (Part 2) are NOT implemented here — they are not live yet.
+ * Invoice endpoints (Part 2) are NOT implemented here - they are not live yet.
  * Do not add them until the backend ships.
  */
 import { apiClient } from "./client";
@@ -41,7 +41,7 @@ export const ticketsApi = {
   },
 
   /**
-   * POST /api/v1/tickets — create a new ticket.
+   * POST /api/v1/tickets - create a new ticket.
    * Returns 201 TicketSummaryResponse.
    */
   create: (data: CreateTicketRequest) =>
@@ -56,16 +56,16 @@ export const ticketsApi = {
 
   /**
    * POST /api/v1/tickets/{ticketId}/comments
-   * Returns 201 TicketCommentResponse — append directly to the thread.
+   * Returns 201 TicketCommentResponse - append directly to the thread.
    * Replying to a closed ticket silently reopens it.
    */
   postComment: (ticketId: string, data: PostTicketCommentRequest) =>
     apiClient.post<TicketCommentResponse>(`/api/v1/tickets/${ticketId}/comments`, data),
 
   /**
-   * POST /api/v1/tickets/media — multipart/form-data
+   * POST /api/v1/tickets/media - multipart/form-data
    * Step 1 of the two-step attachment flow.
-   * Returns TicketAttachment (without id — that is assigned on the comment).
+   * Returns TicketAttachment (without id - that is assigned on the comment).
    */
   uploadMedia: (file: File, altText?: string) => {
     const fd = new FormData();
@@ -94,7 +94,7 @@ export const ticketsApi = {
 export const adminTicketsApi = {
   /**
    * GET /api/v1/admin/tickets
-   * Unknown status/priority values return 400 — never silently ignored.
+   * Unknown status/priority values return 400 - never silently ignored.
    */
   list: (params: {
     status?: TicketStatus;
@@ -120,7 +120,7 @@ export const adminTicketsApi = {
 
   /**
    * POST /api/v1/admin/tickets/{ticketId}/comments?isInternalNote=true
-   * isInternalNote is a QUERY PARAMETER — not a body field.
+   * isInternalNote is a QUERY PARAMETER - not a body field.
    */
   postComment: (ticketId: string, data: PostTicketCommentRequest, isInternalNote = false) =>
     apiClient.post<TicketCommentResponse>(
@@ -145,7 +145,7 @@ export const adminTicketsApi = {
 
   /**
    * GET /api/v1/admin/support/settings
-   * PUT /api/v1/admin/support/settings — partial update, omit fields to leave as-is
+   * PUT /api/v1/admin/support/settings - partial update, omit fields to leave as-is
    */
   getSettings: () =>
     apiClient.get<SupportSettingsResponse>("/api/v1/admin/support/settings"),

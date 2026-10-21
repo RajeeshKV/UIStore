@@ -104,7 +104,7 @@ async function request<T>(
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
   const headers: Record<string, string> = {
-    // Don't set Content-Type for FormData — browser sets it with correct boundary
+    // Don't set Content-Type for FormData - browser sets it with correct boundary
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(init.headers as Record<string, string>),
   };
@@ -123,7 +123,7 @@ async function request<T>(
     res = await fetch(url, {
       ...init,
       headers,
-      // Never cache API responses — backend is the source of truth.
+      // Never cache API responses - backend is the source of truth.
       // Next.js extended fetch caches GET responses by default; this disables it.
       cache: "no-store",
       body: body !== undefined ? (isFormData ? (body as FormData) : JSON.stringify(body)) : undefined,
@@ -144,7 +144,7 @@ async function request<T>(
       // Retry original request with new token
       return request<T>(path, { ...options, skipRefresh: true });
     }
-    // Refresh failed — dispatch event so app can react (e.g. redirect to login)
+    // Refresh failed - dispatch event so app can react (e.g. redirect to login)
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("kromic:session-expired"));
     }
@@ -229,7 +229,7 @@ export const apiClient = {
     request<T>(path, { ...options, method: "DELETE" }),
 
   /**
-   * Multipart/form-data POST — used for file uploads (e.g. product images).
+   * Multipart/form-data POST - used for file uploads (e.g. product images).
    * Passes FormData directly; does NOT set Content-Type (browser sets it with boundary).
    */
   postForm: <T>(path: string, formData: FormData, options?: Omit<RequestOptions, "method" | "body">) => {
@@ -240,7 +240,7 @@ export const apiClient = {
   },
 
   /**
-   * Multipart/form-data PUT — used for image replacement (category image, brand logo).
+   * Multipart/form-data PUT - used for image replacement (category image, brand logo).
    */
   putForm: <T>(path: string, formData: FormData, options?: Omit<RequestOptions, "method" | "body">) => {
     const { headers: extraHeaders, ...rest } = options ?? {};

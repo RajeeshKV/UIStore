@@ -63,7 +63,7 @@ export const cartApi = {
     }),
 
   /**
-   * §2.2 NEW — POST /api/v1/cart/coupon
+   * §2.2 NEW - POST /api/v1/cart/coupon
    * Auth required. Returns full CheckoutSummaryResponse (recalculated).
    * On rejection (400) the cart is left unchanged.
    */
@@ -71,8 +71,8 @@ export const cartApi = {
     apiClient.post<CheckoutSummaryResponse>("/api/v1/cart/coupon", data),
 
   /**
-   * §2.3 NEW — DELETE /api/v1/cart/coupon
-   * Auth required. Idempotent — safe to call with no coupon applied.
+   * §2.3 NEW - DELETE /api/v1/cart/coupon
+   * Auth required. Idempotent - safe to call with no coupon applied.
    * Returns full CheckoutSummaryResponse with no discount applied.
    */
   removeCoupon: () =>

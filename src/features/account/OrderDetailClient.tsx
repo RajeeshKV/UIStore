@@ -51,7 +51,7 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
     const result = await ordersApi.cancel(orderId);
     setCancelOpen(false);
 
-    // §1.11: 409 REFUND_FAILED — the order is genuinely still live.
+    // §1.11: 409 REFUND_FAILED - the order is genuinely still live.
     // Do NOT mark it cancelled; show the server's message as-is.
     if (!result.ok) {
       const err = result.error as { code?: string; message?: string; status?: number };
@@ -75,7 +75,7 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
         return;
       }
 
-      // §3 CONCURRENCY_CONFLICT: retryable — refresh then let customer retry.
+      // §3 CONCURRENCY_CONFLICT: retryable - refresh then let customer retry.
       if (err?.code === "CONCURRENCY_CONFLICT") {
         setConcurrencyNote(true);
         await load();
@@ -121,10 +121,10 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
   const effectiveCurrency = order.currency ?? currency;
   // Cancel allowed for PendingPayment and Confirmed only
   // (backend returns 409 CANNOT_CANCEL for Processing or later).
-  // §1.10: Cancelled orders can later become Refunded — both are "money-returned" states.
+  // §1.10: Cancelled orders can later become Refunded - both are "money-returned" states.
   const canCancel = order.status === "PendingPayment" || order.status === "Confirmed";
   const isMoneyReturned = order.status === "Refunded";
-  // §1.10: Cancelled → Refunded is now reachable — a previously-cancelled order
+  // §1.10: Cancelled → Refunded is now reachable - a previously-cancelled order
   // can show as Refunded once the provider confirms settlement.
   const wasCancelledNowRefunded = isMoneyReturned;
 
@@ -142,7 +142,7 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
       {/* §3 Concurrency note: order refreshed, customer can retry */}
       {concurrencyNote && (
         <div role="alert" className="flex items-start gap-3 rounded-lg bg-warning/5 border border-warning/20 px-4 py-3 text-body-sm text-foreground">
-          <span className="flex-1">Your order was updated. The page has been refreshed — please review and try again if needed.</span>
+          <span className="flex-1">Your order was updated. The page has been refreshed - please review and try again if needed.</span>
           <button onClick={() => setConcurrencyNote(false)} className="text-foreground-muted hover:text-foreground shrink-0">✕</button>
         </div>
       )}
@@ -164,7 +164,7 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
           {/* §1.10: show refund notice for any Refunded order (incl. Cancelled→Refunded path) */}
           {wasCancelledNowRefunded && (
             <span className="text-caption text-foreground-muted">
-              Refund issued — funds arrive within 5–7 business days
+              Refund issued - funds arrive within 5–7 business days
             </span>
           )}
           {canCancel && (
@@ -192,7 +192,7 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
           <ul>
             {order.items.map((item) => (
               <li key={item.id} className="flex items-center gap-3 px-5 py-4 border-b border-border last:border-none">
-                {/* Thumbnail — links to product page when slug available */}
+                {/* Thumbnail - links to product page when slug available */}
                 {item.primaryImageUrl ? (
                   item.productSlug ? (
                     <Link href={`/products/${item.productSlug}${item.variantId ? `?variant=${item.variantId}` : ""}`} className="shrink-0" tabIndex={-1} aria-label={`View ${item.productName}`}>
@@ -295,7 +295,7 @@ export function OrderDetailClient({ orderId, currency, locale }: OrderDetailClie
         </div>
       )}
 
-      {/* Remarks / Cancellation reason — shown when admin has provided one */}
+      {/* Remarks / Cancellation reason - shown when admin has provided one */}
       {order.cancellationReason && (
         <div className="rounded-xl border border-warning/30 bg-warning/5 p-5">
           <div className="flex items-center gap-2 mb-2">

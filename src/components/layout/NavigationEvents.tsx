@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 /**
  * Scrolls the window back to the top on every client-side navigation.
- * Respects prefers-reduced-motion — uses "auto" instead of "smooth" when
+ * Respects prefers-reduced-motion - uses "auto" instead of "smooth" when
  * the user has requested reduced motion.
  *
  * Must be wrapped in <Suspense> because useSearchParams() requires it.

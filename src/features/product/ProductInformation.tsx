@@ -244,7 +244,7 @@ export function ProductInformation({ product, currency, locale, codEnabled = fal
                 <tr key={attr.name} className="border-b border-border last:border-none">
                   <td className="py-2 pr-4 text-foreground-muted font-semibold w-1/3 align-top">{attr.name}</td>
                   <td className="py-2 text-foreground align-top">
-                    {attr.values?.map((v) => v.value).filter(Boolean).join(", ") ?? "—"}
+                    {attr.values?.map((v) => v.value).filter(Boolean).join(", ") ?? "-"}
                   </td>
                 </tr>
               ))}
@@ -289,7 +289,7 @@ function StockBadge({ availability }: { availability: StockAvailability }) {
   if (availability === "LowStock") {
     return (
       <p className="flex items-center gap-1.5 text-[13px] text-warning font-semibold">
-        <AlertTriangle className="size-4" aria-hidden="true" /> Low Stock — Order soon
+        <AlertTriangle className="size-4" aria-hidden="true" /> Low Stock - Order soon
       </p>
     );
   }

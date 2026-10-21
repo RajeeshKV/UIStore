@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProductForm — variant-aware product editor.
+ * ProductForm - variant-aware product editor.
  *
  * Three-button toolbar: Cancel · Publish · Save
  * - Cancel: reloads from server, discards all local edits
@@ -9,9 +9,9 @@
  * - Save: orchestrates ALL dirty sections in parallel; all-or-nothing rollback on failure
  *
  * Dirty tracking:
- *   basicInfo  — any top-form field changed
- *   attributes — any axis name/value edited (sends one PUT per dirty axis)
- *   variants   — per variant: sku / priceOverride / isActive / onHand / lowStockThreshold
+ *   basicInfo  - any top-form field changed
+ *   attributes - any axis name/value edited (sends one PUT per dirty axis)
+ *   variants   - per variant: sku / priceOverride / isActive / onHand / lowStockThreshold
  *
  * No per-row or per-axis Save buttons.
  */
@@ -98,7 +98,7 @@ function CardFlush({ title, description, children }: { title: string; descriptio
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// StockBadge — inline stock state for variant rows
+// StockBadge - inline stock state for variant rows
 // ─────────────────────────────────────────────────────────────────────────────
 
 function StockBadge({ inv }: { inv: VariantRowState }) {
@@ -375,7 +375,7 @@ function StockManager({
         >
           Set stock
         </Button>
-        {/* Adjust ± button — only when inventory exists */}
+        {/* Adjust ± button - only when inventory exists */}
         {inventory && (
           <Button
             type="button"
@@ -726,7 +726,7 @@ function AttributeEditor({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Variant row state — lifted into the VariantEditor, merged after save
+// Variant row state - lifted into the VariantEditor, merged after save
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface VariantRowState {
@@ -775,7 +775,7 @@ function isVariantRowDirty(row: VariantRowState): boolean {
 
 function variantResponseToRow(v: VariantResponse): VariantRowState {
   const onHand = v.availableStock != null ? String(v.availableStock) : "0";
-  // lowStockThreshold is not returned by VariantResponse — only available after
+  // lowStockThreshold is not returned by VariantResponse - only available after
   // adminInventoryApi.set/adjust returns an InventoryResponse (mergeInventoryIntoRow).
   // Keep as "" so the save call sends undefined (server preserves its stored value).
   const lowStockThreshold = "";
@@ -846,7 +846,7 @@ function mergeVariantResponseIntoRow(row: VariantRowState, v: VariantResponse): 
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Variant matrix row — always editable, no save button, no stock button
+// Variant matrix row - always editable, no save button, no stock button
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface VariantMatrixRowProps {
@@ -919,7 +919,7 @@ function VariantMatrixRow({ productId, row, attrLabel, productPrice, saving, onC
           step={0.01}
           value={row.compareAtPrice}
           onChange={(e) => onChange(row.id, { compareAtPrice: e.target.value })}
-          placeholder="—"
+          placeholder="-"
           aria-label="Compare-at price"
           disabled={saving}
           className="w-28 h-7 px-2 rounded border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-1 focus:ring-focus disabled:opacity-50"
@@ -1281,7 +1281,7 @@ function VariantEditor({
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Main ProductForm — 3-button toolbar + consolidated save
+// Main ProductForm - 3-button toolbar + consolidated save
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface ProductFormProps {
@@ -1377,15 +1377,15 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
     return e;
   }
 
-  // ── Cancel — reload from server ────────────────────────────────────────────
+  // ── Cancel - reload from server ────────────────────────────────────────────
   async function handleCancel() {
     if (!productId) { router.push("/admin/products"); return; }
-    // Trigger parent reload — this re-mounts ProductForm with fresh server data
+    // Trigger parent reload - this re-mounts ProductForm with fresh server data
     if (onRefresh) onRefresh();
     else router.push("/admin/products");
   }
 
-  // ── Publish — independent state transition ─────────────────────────────────
+  // ── Publish - independent state transition ─────────────────────────────────
   async function handlePublish() {
     if (!productId) return;
     setPublishing(true);
@@ -1399,7 +1399,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
     }
   }
 
-  // ── Save — orchestrate all dirty sections in parallel ─────────────────────
+  // ── Save - orchestrate all dirty sections in parallel ─────────────────────
   async function handleSave() {
     if (!isEdit || !productId) {
       // New product: just submit
@@ -1472,7 +1472,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
       );
     }
 
-    // Attribute axes — one PUT per dirty axis
+    // Attribute axes - one PUT per dirty axis
     for (const { attrId, payload } of axisPayloads) {
       calls.push(
         adminAttributesApi.upsert(productId, payload).then((res) => {
@@ -1482,7 +1482,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
       );
     }
 
-    // Dirty variant rows — variant + stock in parallel per row
+    // Dirty variant rows - variant + stock in parallel per row
     for (const row of dirtyRows) {
       const onHandParsed = parseInt(row.onHand);
       const thresholdParsed = row.lowStockThreshold.trim() !== "" ? parseInt(row.lowStockThreshold) : undefined;
@@ -1575,7 +1575,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
       {/* Main header row */}
       <div className="flex items-center justify-between gap-3 px-4 sm:px-6 pb-3">
         <div className="flex items-center gap-3 min-w-0">
-          {/* Product thumbnail — derived from images array (admin type has no primaryImageUrl) */}
+          {/* Product thumbnail - derived from images array (admin type has no primaryImageUrl) */}
           {isEdit && (() => {
             const thumb = product!.images?.find((i) => i.isPrimary)?.asset?.secureUrl
               ?? product!.images?.[0]?.asset?.secureUrl;
@@ -1637,7 +1637,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                 ? "bg-danger text-white hover:bg-danger/90"
                 : saveState === "saved"
                 ? "bg-success text-white"
-                : "bg-[#0D0D0D] text-white hover:bg-[#1a1a1a]"
+                : "bg-primary text-white hover:bg-primary/90"
             )}
           >
             {saveState === "saving" && (
@@ -1683,7 +1683,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
         />
       </Card>
 
-      {/* Images — only when no variants/attributes */}
+      {/* Images - only when no variants/attributes */}
       {attributes.length === 0 && (
         <Card title="Images">
           <ImageManager
@@ -1700,7 +1700,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
     <>
       {toolbar}
 
-      {/* Spacer for fixed toolbar — prevents body from being hidden under it */}
+      {/* Spacer for fixed toolbar - prevents body from being hidden under it */}
       <div className="h-[80px] shrink-0" aria-hidden="true" />
 
       {/* ── Two-panel body ─────────────────────────────────────────────────── */}
@@ -1812,7 +1812,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                   aria-label="Category"
                   className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
                 >
-                  <option value="">— None —</option>
+                  <option value="">- None -</option>
                   {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
@@ -1824,7 +1824,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
                   aria-label="Brand"
                   className="h-9 px-3 rounded-md border border-border bg-background text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-focus"
                 >
-                  <option value="">— None —</option>
+                  <option value="">- None -</option>
                   {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
@@ -1851,7 +1851,7 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
               </label>
             </Card>
 
-            {/* Product-level stock — only when no variants */}
+            {/* Product-level stock - only when no variants */}
             {isEdit && productId && (
               <Card title="Stock">
                 <p className="text-caption text-foreground-muted -mt-1">
@@ -1893,13 +1893,13 @@ export function ProductForm({ product, categories, brands, onRefresh }: ProductF
             </div>
           )}
 
-          {/* Row 3: Variants — full width of left column */}
+          {/* Row 3: Variants - full width of left column */}
           {isEdit && productId && (
             <CardFlush
               title="Variants"
               description={
                 isDirty
-                  ? <span className="text-warning text-caption">Unsaved changes — click Save in the toolbar to commit all changes.</span>
+                  ? <span className="text-warning text-caption">Unsaved changes - click Save in the toolbar to commit all changes.</span>
                   : "Generate all axis combinations, set individual prices, SKUs and stock levels."
               }
             >

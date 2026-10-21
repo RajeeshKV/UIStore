@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * OtpInput — always renders exactly 4 digit boxes.
+ * OtpInput - always renders exactly 4 digit boxes.
  * No dynamic length, no server dependency. 4-digit OTP is the fixed contract.
  */
 
@@ -93,7 +93,7 @@ export function OtpInput({ value, onChange, disabled, error, autoFocus }: OtpInp
             onFocus={(e) => e.target.select()}
             onPaste={handlePaste}
             className={cn(
-              // Size — comfortable touch target, slightly smaller on mobile
+              // Size - comfortable touch target, slightly smaller on mobile
               "w-12 h-14 sm:w-14 sm:h-16",
               // Typography
               "text-2xl font-bold font-mono text-center",

@@ -2,7 +2,7 @@
  * Shopey – Shared API Types
  *
  * Mirrors the actual backend API schemas.
- * Last audited: Phase 9 — all fields verified against api-documentation.json.
+ * Last audited: Phase 9 - all fields verified against api-documentation.json.
  * Never extend with frontend-only fields.
  */
 
@@ -45,7 +45,7 @@ export interface ResetPasswordRequest {
 }
 
 /**
- * Admin login — identifier accepts either username or email.
+ * Admin login - identifier accepts either username or email.
  * Field name is 'identifier' per backend contract, NOT 'email'.
  */
 export interface LoginRequest {
@@ -55,7 +55,7 @@ export interface LoginRequest {
 }
 
 /**
- * Google OAuth — POST /api/v1/auth/google
+ * Google OAuth - POST /api/v1/auth/google
  * idToken: Google ID token from Google Sign-In (NOT the application JWT).
  */
 export interface GoogleCallbackRequest {
@@ -88,7 +88,7 @@ export interface MeResponse {
  */
 export interface PublicAuthSettingsDto {
   googleOAuthEnabled: boolean;
-  /** Public Google OAuth Client ID — safe to expose to browser */
+  /** Public Google OAuth Client ID - safe to expose to browser */
   googleClientId?: string;
   emailPasswordEnabled?: boolean;
   mobileOtpEnabled?: boolean;
@@ -126,7 +126,7 @@ export interface TrackingSettingsDto {
 export interface PaymentSettingsDto {
   razorpayEnabled: boolean;
   codEnabled: boolean;
-  /** Public Razorpay Key ID — safe for browser. Use to init widget. */
+  /** Public Razorpay Key ID - safe for browser. Use to init widget. */
   razorpayKeyId?: string;
 }
 
@@ -153,9 +153,9 @@ export interface PublicBusinessSettingsResponse {
   seo?: SeoSettingsDto;
   delivery?: DeliverySettingsDto;
   tracking?: TrackingSettingsDto;
-  /** Auth settings — includes googleOAuthEnabled and googleClientId for storefront */
+  /** Auth settings - includes googleOAuthEnabled and googleClientId for storefront */
   auth?: PublicAuthSettingsDto;
-  /** Payment settings — controls which methods are shown on checkout */
+  /** Payment settings - controls which methods are shown on checkout */
   payment?: PaymentSettingsDto;
 }
 
@@ -262,7 +262,7 @@ export interface GridRow {
   /**
    * Resolved variant attribute values for this row.
    * Null for simple products (variantId === null).
-   * Use for display in product cards and grids — e.g. "Orange · 256GB".
+   * Use for display in product cards and grids - e.g. "Orange · 256GB".
    */
   variantAttributes: VariantAttributeValueResponse[] | null;
 }
@@ -291,7 +291,7 @@ export interface ProductAttributeDto {
 }
 
 /**
- * §1.6: Resolved variant attribute — added to both StorefrontVariantResponse and VariantResponse.
+ * §1.6: Resolved variant attribute - added to both StorefrontVariantResponse and VariantResponse.
  * Use this for display; do NOT assume it matches attributeValueIds in length
  * (values deleted from an attribute are omitted here but may still appear in attributeValueIds).
  */
@@ -304,10 +304,10 @@ export interface VariantAttributeValueResponse {
 
 /**
  * Actual StorefrontVariantResponse from the API.
- * Note: no 'name' field — variant identity is from attribute values.
+ * Note: no 'name' field - variant identity is from attribute values.
  * 'effectivePrice' is the backend-calculated final price (not 'price').
  * 'attributeValueIds' is a comma-separated string of AttributeValue IDs.
- * §1.6 ADDED: attributes — resolved display names (optional, backward-compatible).
+ * §1.6 ADDED: attributes - resolved display names (optional, backward-compatible).
  * §1.7: inactive variants are excluded from purchase; canPurchase is now false for inactive variants regardless of stock.
  */
 export interface StorefrontVariantResponse {
@@ -321,12 +321,12 @@ export interface StorefrontVariantResponse {
   compareAtPrice?: number;
   sortOrder: number;
   isActive: boolean;
-  /** Comma-separated AttributeValue IDs (e.g. "uuid1,uuid2") — legacy echo, use attributes for display */
+  /** Comma-separated AttributeValue IDs (e.g. "uuid1,uuid2") - legacy echo, use attributes for display */
   attributeValueIds?: string;
   stockAvailability: StockAvailability;
   /** §1.7: now false for inactive variant regardless of stock */
   canPurchase: boolean;
-  /** §1.6 NEW — resolved attribute values; use for display labels */
+  /** §1.6 NEW - resolved attribute values; use for display labels */
   attributes?: VariantAttributeValueResponse[];
   images?: StorefrontImageResponse[];
 }
@@ -361,7 +361,7 @@ export interface StorefrontProductSummaryResponse {
   ratingAverage?: number;
   /** Number of published reviews */
   ratingCount?: number;
-  /** True when ratingCount > 0 — use this as the display gate */
+  /** True when ratingCount > 0 - use this as the display gate */
   hasRatings?: boolean;
 }
 
@@ -394,7 +394,7 @@ export interface CartItemResponse {
   productSlug?: string;
   variantId?: string;
   variantDescription?: string;
-  /** Structured variant attribute breakdown — use for richer display if present */
+  /** Structured variant attribute breakdown - use for richer display if present */
   variantAttributes?: VariantAttributeValueResponse[];
   sku?: string;
   unitPrice: number;
@@ -410,8 +410,8 @@ export interface CartItemResponse {
  * Actual CartResponse from the backend.
  * 'cartId' is the cart identifier (used as X-Cart-Token).
  * 'totalItems' is the item count (not 'itemCount').
- * No 'cartToken' field — the 'cartId' (UUID) is sent as X-Cart-Token.
- * §1.1: couponCode is ADDED — normalised upper-case code in effect, or null.
+ * No 'cartToken' field - the 'cartId' (UUID) is sent as X-Cart-Token.
+ * §1.1: couponCode is ADDED - normalised upper-case code in effect, or null.
  * CRITICAL: subtotal is pre-discount. The payable total is grandTotal from CheckoutSummaryResponse.
  */
 export interface CartResponse {
@@ -421,7 +421,7 @@ export interface CartResponse {
   currency?: string;
   totalItems: number;
   isEmpty: boolean;
-  /** §1.1 NEW — normalised, upper-cased coupon code currently applied, or null */
+  /** §1.1 NEW - normalised, upper-cased coupon code currently applied, or null */
   couponCode: string | null;
 }
 
@@ -447,12 +447,12 @@ export interface UpdateCartItemRequest {
 export interface OrderItemResponse {
   id: string;
   productId: string;
-  /** Slug for linking to the product detail page — `/products/{productSlug}` */
+  /** Slug for linking to the product detail page - `/products/{productSlug}` */
   productSlug?: string;
   variantId?: string;
   productName?: string;
   variantDescription?: string;
-  /** Structured variant attribute breakdown — use for richer display if present */
+  /** Structured variant attribute breakdown - use for richer display if present */
   variantAttributes?: VariantAttributeValueResponse[];
   sku?: string;
   unitPrice: number;
@@ -486,7 +486,7 @@ export interface UpdateAddressRequest {
   phone?: string;
 }
 
-/** Lightweight order summary — returned by GET /api/v1/orders list */
+/** Lightweight order summary - returned by GET /api/v1/orders list */
 export interface OrderSummaryResponse {
   id: string;
   orderNumber?: string;
@@ -589,9 +589,9 @@ export interface UpdateCustomerProfileRequest {
 // ── Checkout ──────────────────────────────────────────────────────────────────
 
 /**
- * §1.2 NEW — GET /api/v1/checkout/summary query parameters.
+ * §1.2 NEW - GET /api/v1/checkout/summary query parameters.
  * Omit paymentMethod while the customer is still choosing.
- * A blank/whitespace couponCode means "no override" — does NOT remove the cart coupon.
+ * A blank/whitespace couponCode means "no override" - does NOT remove the cart coupon.
  */
 export interface GetCheckoutSummaryParams {
   paymentMethod?: "Razorpay" | "CashOnDelivery";
@@ -604,9 +604,9 @@ export type CheckoutSummaryDiscountType  = "Percentage" | "FixedAmount";
 export type CheckoutSummaryStockAvailability = "InStock" | "LowStock" | "OutOfStock";
 
 /**
- * §1.2 NEW — GET /api/v1/checkout/summary response.
+ * §1.2 NEW - GET /api/v1/checkout/summary response.
  * This is the AUTHORITATIVE quote. grandTotal is what gets charged.
- * NEVER add taxAmount to grandTotal — it is already included regardless of isPriceInclusive.
+ * NEVER add taxAmount to grandTotal - it is already included regardless of isPriceInclusive.
  *
  * Coupon trap: appliedCouponCode !== null does NOT mean the coupon is active.
  * When a coupon is rejected, appliedCouponCode still carries the submitted code
@@ -622,7 +622,7 @@ export interface CheckoutSummaryResponse {
     productName: string;
     productSlug: string;
     variantDescription: string | null;
-    /** Structured variant attribute breakdown — use for richer display if present */
+    /** Structured variant attribute breakdown - use for richer display if present */
     variantAttributes?: VariantAttributeValueResponse[];
     sku: string | null;
     unitPrice: number;
@@ -679,7 +679,7 @@ export interface CheckoutSummaryResponse {
   blockingReasons: Array<{ code: string; message: string }>;
 }
 
-/** §1.3 NEW — POST /api/v1/cart/coupon request body */
+/** §1.3 NEW - POST /api/v1/cart/coupon request body */
 export interface ApplyCouponRequest {
   couponCode: string; // exactly as customer typed; normalised server-side
 }
@@ -707,7 +707,7 @@ export interface CheckoutResponse {
   currency?: string;
   appliedCouponCode?: string;
   providerOrderId?: string;
-  /** Public Razorpay Key ID — safe for browser, returned at runtime. Never in env. */
+  /** Public Razorpay Key ID - safe for browser, returned at runtime. Never in env. */
   razorpayKeyId?: string;
   createdAtUtc: string;
 }
@@ -735,7 +735,7 @@ export interface ValidateCouponRequest {
 // ── Product Attributes (Admin) ───────────────────────────────────────────────
 
 /**
- * §2.4 NEW — GET /api/v1/products/{productId}/attributes response.
+ * §2.4 NEW - GET /api/v1/products/{productId}/attributes response.
  * A product with no attributes returns attributes: [] and behaves as single-variant.
  */
 export interface ProductAttributeValueItem {
@@ -757,8 +757,8 @@ export interface ProductAttributesResponse {
 }
 
 /**
- * §2.5 NEW — PUT /api/v1/products/{productId}/attributes request.
- * Replaces ONE attribute and its value list — not the whole product.
+ * §2.5 NEW - PUT /api/v1/products/{productId}/attributes request.
+ * Replaces ONE attribute and its value list - not the whole product.
  * Matched by name; existing attribute with same name is updated, otherwise created.
  * ⚠️ Send the COMPLETE value list; omitting a value deletes it.
  */
@@ -821,7 +821,7 @@ export interface ProductSummaryPagedResponse {
 }
 
 export interface MediaAssetDto {
-  /** Cloudinary public ID — do not display this to customers */
+  /** Cloudinary public ID - do not display this to customers */
   publicId?: string;
   secureUrl?: string;
   format?: string;
@@ -853,11 +853,11 @@ export interface VariantImageDto {
 
 /** Request body for PUT /api/v1/products/{productId}/variants/{variantId}/images/reorder */
 export interface ReorderVariantImagesRequest {
-  /** Full ordered list: same shape as product image reorder — items[].{imageId, sortOrder} */
+  /** Full ordered list: same shape as product image reorder - items[].{imageId, sortOrder} */
   items: Array<{ imageId: string; sortOrder: number }>;
 }
 
-/** Admin variant — includes priceOverride and attributeValueIds */
+/** Admin variant - includes priceOverride and attributeValueIds */
 export interface VariantResponse {
   id: string;
   sku?: string;
@@ -870,17 +870,17 @@ export interface VariantResponse {
   compareAtPrice?: number;
   sortOrder: number;
   isActive: boolean;
-  /** Comma-separated AttributeValue IDs (response only) — use attributes for display */
+  /** Comma-separated AttributeValue IDs (response only) - use attributes for display */
   attributeValueIds?: string;
   availableStock?: number;
-  /** §1.6 NEW — resolved attribute values; use for display labels */
+  /** §1.6 NEW - resolved attribute values; use for display labels */
   attributes?: VariantAttributeValueResponse[];
   /** Variant-level image gallery (A.1 NEW) */
   images?: VariantImageDto[];
 }
 
 /**
- * Create variant request — attributeValueIds is an array of UUIDs in the request body.
+ * Create variant request - attributeValueIds is an array of UUIDs in the request body.
  * (The response still returns them as a comma-separated string for storefront compat.)
  */
 export interface CreateVariantRequest {
@@ -892,7 +892,7 @@ export interface CreateVariantRequest {
   attributeValueIds?: string[];
 }
 
-/** Update variant request — same as create but includes isActive */
+/** Update variant request - same as create but includes isActive */
 export interface UpdateVariantRequest extends CreateVariantRequest {
   isActive?: boolean;
 }
@@ -921,7 +921,7 @@ export interface ProductResponse {
   attributes?: ProductAttributeDto[];
   variants?: VariantResponse[];
   /**
-   * §6 NEW — inventory record for simple products (no variants).
+   * §6 NEW - inventory record for simple products (no variants).
    * Populated when `variants` is empty; null when the product has variants
    * (inventory is then managed per-variant via InventoryResponse).
    */
@@ -1005,7 +1005,7 @@ export interface InventoryResponse {
   lowStockThreshold: number;
   isLowStock: boolean;
   isOutOfStock: boolean;
-  /** ISO timestamp — previously `updatedAt`, now `updatedAtUtc` per API contract §7 */
+  /** ISO timestamp - previously `updatedAt`, now `updatedAtUtc` per API contract §7 */
   updatedAtUtc: string;
   /** @deprecated Use updatedAtUtc. Kept for backward compat during migration. */
   updatedAt?: string;
@@ -1123,7 +1123,7 @@ export interface StoreAuthSettingsDto {
   otpResendCooldownSeconds: number;
   otpMaxAttempts: number;
   smsProvider?: string;
-  /** Public Google OAuth Client ID — safe to expose to browser */
+  /** Public Google OAuth Client ID - safe to expose to browser */
   googleClientId?: string;
 }
 
@@ -1181,7 +1181,7 @@ export interface UpdateAuthSettingsRequest {
   otpResendCooldownSeconds?: number;
   otpMaxAttempts?: number;
   /**
-   * @deprecated Ignored by the backend — provider is set exclusively through
+   * @deprecated Ignored by the backend - provider is set exclusively through
    * PUT /api/v1/admin/integrations/sms. Omit this field; do not send it.
    */
   smsProvider?: never;
@@ -1196,7 +1196,7 @@ export interface UpsertStorePolicyRequest {
   isPublished: boolean;
 }
 
-/** Admin order status update — status is a strict enum per backend contract */
+/** Admin order status update - status is a strict enum per backend contract */
 export interface UpdateOrderStatusRequest {
   /** Exact enum: PendingPayment | PaymentProcessing | Confirmed | Processing | Packed | Shipped | Delivered | Cancelled | Failed | RefundPending | Refunded */
   status?: string;
@@ -1206,7 +1206,7 @@ export interface UpdateOrderStatusRequest {
 }
 
 /**
- * Integration status — returned by GET /api/v1/admin/integrations/*
+ * Integration status - returned by GET /api/v1/admin/integrations/*
  * maskedKeyId shows only the last 4 chars of the key.
  * hasSecret confirms a secret is stored without revealing it.
  * Secrets are NEVER returned in full.
@@ -1235,7 +1235,7 @@ export interface UpdateGoogleOAuthConfigRequest {
 }
 
 /**
- * PUT /api/v1/admin/integrations/email — Integration-level email config.
+ * PUT /api/v1/admin/integrations/email - Integration-level email config.
  * Contract fields: enabled, mode, senderName, senderEmail, apiKey.
  */
 export interface UpdateEmailConfigRequest {
@@ -1247,7 +1247,7 @@ export interface UpdateEmailConfigRequest {
 }
 
 /**
- * PUT /api/v1/admin/settings/email — Email settings (display config, not integration secrets).
+ * PUT /api/v1/admin/settings/email - Email settings (display config, not integration secrets).
  * Note: this is different from UpdateEmailConfigRequest (integration).
  */
 export interface UpdateEmailSettingsRequest {
@@ -1258,7 +1258,7 @@ export interface UpdateEmailSettingsRequest {
 
 /**
  * PUT /api/v1/admin/integrations/sms
- * Returns 200 with the updated IntegrationStatusResponse — NOT 204.
+ * Returns 200 with the updated IntegrationStatusResponse - NOT 204.
  * Use the returned object directly to update UI state; no follow-up GET needed.
  *
  * Staged setup: save with enabled:false to store partial credentials,
@@ -1276,7 +1276,7 @@ export interface UpdateSmsConfigRequest {
 
 export type OtpPurpose = "PhoneVerification" | "Login" | "PasswordReset";
 
-/** POST /api/v1/otp/check-availability — checks if a phone number can be used */
+/** POST /api/v1/otp/check-availability - checks if a phone number can be used */
 export interface OtpCheckAvailabilityRequest {
   phoneNumber: string;
 }
@@ -1299,7 +1299,7 @@ export interface OtpSendResponse {
   resendAvailableAtUtc: string;
 }
 
-/** POST /api/v1/otp/verify — returns 204 No Content on success */
+/** POST /api/v1/otp/verify - returns 204 No Content on success */
 export interface OtpVerifyRequest {
   phoneNumber?: string;
   otp?: string;
@@ -1318,11 +1318,11 @@ export interface PhoneVerificationStatusResponse {
   verified: boolean;
   /**
    * A number submitted via PUT /me/profile that has not yet been verified.
-   * Render this as "pending verification" — never treat phoneNumber alone as
+   * Render this as "pending verification" - never treat phoneNumber alone as
    * proof the requested change took effect.
    */
   pendingPhoneNumber?: string | null;
-  /** Gate on this — already true when verification is not required */
+  /** Gate on this - already true when verification is not required */
   verificationSatisfied: boolean;
   /** Render OTP input at this width (default 4) */
   otpLength: number;
@@ -1334,7 +1334,7 @@ export interface PhoneVerificationStatusResponse {
 
 /**
  * GET /api/v1/admin/integrations/sms/providers
- * Full field schema per provider — the UI renders fields from this, not from hardcoded lists.
+ * Full field schema per provider - the UI renders fields from this, not from hardcoded lists.
  */
 export interface SmsProviderSettingField {
   /** Wire key used in PUT /admin/integrations/sms providerSettings object */
@@ -1358,7 +1358,7 @@ export interface SmsProviderOptionResponse {
   description?: string;
   /** Wire keys that must be non-empty when enabled:true */
   requiredSettings: string[];
-  /** All configurable settings for this provider — render the form from this */
+  /** All configurable settings for this provider - render the form from this */
   settings: SmsProviderSettingField[];
   /** Provider-specific guidance notes */
   notes?: string[];
@@ -1366,13 +1366,13 @@ export interface SmsProviderOptionResponse {
 
 /**
  * GET /api/v1/admin/integrations/sms response.
- * missingSettings may be absent or null when not applicable — always treat as optional.
+ * missingSettings may be absent or null when not applicable - always treat as optional.
  */
 export interface SmsIntegrationStatusResponse {
   enabled: boolean;
   provider?: string | null;
   isConfigured: boolean;
-  /** Keys that are required but not yet saved. May be absent/null — always default to []. */
+  /** Keys that are required but not yet saved. May be absent/null - always default to []. */
   missingSettings?: string[] | null;
 }
 
@@ -1403,7 +1403,7 @@ export interface UpdateSmsTemplateRequest {
 }
 
 /**
- * EmailSettingsDto — nested in AdminBusinessSettingsResponse.email
+ * EmailSettingsDto - nested in AdminBusinessSettingsResponse.email
  * Contract fields: mode, senderName, senderEmail (no enabled/provider/fromEmail).
  */
 export interface EmailSettingsDto {
@@ -1427,7 +1427,7 @@ export interface ReorderImagesRequest {
 /**
  * A single carousel slide as returned by GET /api/v1/store/carousel.
  * Maps directly from StorefrontCarouselSlideResponse in the backend.
- * CtaTarget is always "/shop" — fixed by the server, not configurable per-slide.
+ * CtaTarget is always "/shop" - fixed by the server, not configurable per-slide.
  */
 export interface StorefrontCarouselSlideResponse {
   id: string;
@@ -1436,14 +1436,14 @@ export interface StorefrontCarouselSlideResponse {
   imageUrl: string;
   ctaText?: string | null;
   sortOrder: number;
-  ctaTarget: string; // always "/shop" — server-enforced constant
+  ctaTarget: string; // always "/shop" - server-enforced constant
 }
 
 // ── Admin: Carousel ───────────────────────────────────────────────────────────
 
 /**
  * Full carousel slide as returned by admin endpoints.
- * Includes imagePublicId, isActive, and audit timestamps — not exposed on the storefront shape.
+ * Includes imagePublicId, isActive, and audit timestamps - not exposed on the storefront shape.
  */
 export interface CarouselSlideResponse {
   id: string;
@@ -1551,7 +1551,7 @@ export interface ReviewListResponse {
   breakdown: RatingBreakdown;
 }
 
-/** Customer's own review — returned from POST/PUT/GET mine */
+/** Customer's own review - returned from POST/PUT/GET mine */
 export interface MyReviewResponse {
   id: string;
   productId: string;
@@ -1597,7 +1597,7 @@ export interface ReviewImageUploadResponse {
   url: string;
 }
 
-/** Admin review item — includes customer info */
+/** Admin review item - includes customer info */
 export interface AdminReviewResponse {
   id: string;
   productId: string;
@@ -1632,7 +1632,7 @@ export type TicketPriority = "Low" | "Normal" | "High" | "Urgent";
 export type TicketActor    = "User" | "Admin" | "System";
 export type AttachmentKind = "Image" | "Video";
 
-/** Attachment — returned inside comments and from POST /tickets/media */
+/** Attachment - returned inside comments and from POST /tickets/media */
 export interface TicketAttachment {
   id?: string;
   kind: AttachmentKind;
@@ -1647,7 +1647,7 @@ export interface TicketAttachment {
   altText?: string | null;
 }
 
-/** Recursive comment node — server provides depth and replies[] */
+/** Recursive comment node - server provides depth and replies[] */
 export interface TicketCommentResponse {
   id: string;
   parentCommentId?: string | null;
@@ -1674,7 +1674,7 @@ export interface TicketHistoryEntry {
   occurredAtUtc: string;
 }
 
-/** Lightweight ticket — returned by list endpoints */
+/** Lightweight ticket - returned by list endpoints */
 export interface TicketSummaryResponse {
   id: string;
   ticketNumber: string;
@@ -1697,7 +1697,7 @@ export interface TicketSummaryResponse {
   autoCloseAtUtc?: string | null;
 }
 
-/** Full ticket detail — the "ticket" wrapper in GET /tickets/{id} */
+/** Full ticket detail - the "ticket" wrapper in GET /tickets/{id} */
 export interface TicketDetailResponse {
   id: string;
   ticketNumber: string;
@@ -1730,7 +1730,7 @@ export interface TicketDetailEnvelope {
   fullHistory?: TicketHistoryEntry[];
 }
 
-// ── Support — request bodies ──────────────────────────────────────────────
+// ── Support - request bodies ──────────────────────────────────────────────
 
 export interface CreateTicketRequest {
   subject: string;
@@ -1772,7 +1772,7 @@ export interface SupportSettingsResponse {
   notifyCustomerOnTicketResolved: boolean;
   maxAttachmentsPerComment: number;
   adminNotificationConfigured: boolean;
-  /** Masked address or literal "not configured" — never empty string */
+  /** Masked address or literal "not configured" - never empty string */
   adminNotificationTarget: string;
 }
 

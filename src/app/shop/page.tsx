@@ -27,8 +27,8 @@ export async function generateMetadata({
   const storeName = settings?.businessName ?? "Shopey";
 
   const title = search
-    ? `Search: "${search}" — ${storeName}`
-    : `Shop All Products — ${storeName}`;
+    ? `Search: "${search}" - ${storeName}`
+    : `Shop All Products - ${storeName}`;
 
   return {
     title,
@@ -50,7 +50,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   const params = parseCatalogParams(urlSp);
   if (!params.PageSize) params.PageSize = DEFAULT_PAGE_SIZE;
 
-  // Parallel data fetch — shop page always fetches all three
+  // Parallel data fetch - shop page always fetches all three
   const [settingsRes, policiesRes, categoriesRes, brandsRes, productsRes] =
     await Promise.allSettled([
       storeApi.getSettings(),

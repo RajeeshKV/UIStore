@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * QuickAddDrawer — shown when a product grid card needs variant selection.
+ * QuickAddDrawer - shown when a product grid card needs variant selection.
  * Fetches full StorefrontProductResponse on demand, renders variant selector + add to cart.
  */
 

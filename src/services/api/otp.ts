@@ -2,10 +2,10 @@
  * OTP / Phone Verification API
  * Endpoints verified against api-documentation.json.
  *
- * POST /otp/send    — auth optional; works for anonymous and authenticated callers.
+ * POST /otp/send    - auth optional; works for anonymous and authenticated callers.
  *                     When authenticated, a successful verify binds the number to the account.
- * POST /otp/verify  — returns 204 No Content on success.
- * GET  /otp/verification-status — requires auth; single source of truth for checkout gate.
+ * POST /otp/verify  - returns 204 No Content on success.
+ * GET  /otp/verification-status - requires auth; single source of truth for checkout gate.
  */
 import { apiClient } from "./client";
 import type {
@@ -17,7 +17,7 @@ import type {
   PhoneVerificationStatusResponse,
 } from "@/types/api";
 
-// Indian mobile number validation — mirrors the backend's SmsPhoneNumber.TryToNational.
+// Indian mobile number validation - mirrors the backend's SmsPhoneNumber.TryToNational.
 // Exactly 10 digits, first digit 6–9.
 const NATIONAL_MOBILE_RE = /^[6-9]\d{9}$/;
 
@@ -59,7 +59,7 @@ export const otpApi = {
   /**
    * POST /api/v1/otp/send
    * Rate limited: 5 req / 60 s per IP.
-   * Auth optional — works for anonymous callers too.
+   * Auth optional - works for anonymous callers too.
    */
   send: (data: OtpSendRequest) =>
     apiClient.post<OtpSendResponse>("/api/v1/otp/send", data),
@@ -67,7 +67,7 @@ export const otpApi = {
   /**
    * POST /api/v1/otp/verify
    * Returns 204 No Content on success (no body).
-   * Rate limited — shares budget with send.
+   * Rate limited - shares budget with send.
    */
   verify: (data: OtpVerifyRequest) =>
     apiClient.post<void>("/api/v1/otp/verify", data),
@@ -117,7 +117,7 @@ export function describeOtpError(
     case "OTP_COOLDOWN":
       return { tone: "banner-neutral", text: "You can request another code shortly." };
     case "PHONE_VERIFICATION_NOT_PENDING":
-      // 409 — the number being verified is no longer the pending number on the account.
+      // 409 - the number being verified is no longer the pending number on the account.
       // Not an error the user caused; prompt a fresh code request.
       return { tone: "banner-neutral", text: "This code is for a number you are no longer verifying. Request a new code." };
     case "OTP_SEND_FAILED":

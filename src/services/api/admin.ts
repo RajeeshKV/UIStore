@@ -1,5 +1,5 @@
 /**
- * Admin API services — all require Admin JWT.
+ * Admin API services - all require Admin JWT.
  * Endpoints verified against api-documentation.json.
  */
 import { apiClient } from "./client";
@@ -64,7 +64,7 @@ import type {
 // ── Products ─────────────────────────────────────────────────────────────────
 
 export const adminProductsApi = {
-  /** Admin product list — GET /api/v1/products/admin (includes all statuses) */
+  /** Admin product list - GET /api/v1/products/admin (includes all statuses) */
   list: (params: Record<string, string | number | boolean | undefined> = {}) => {
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {
@@ -76,7 +76,7 @@ export const adminProductsApi = {
     );
   },
 
-  /** Admin single product — GET /api/v1/products/admin/{id} */
+  /** Admin single product - GET /api/v1/products/admin/{id} */
   getById: (id: string) =>
     apiClient.get<ProductResponse>(`/api/v1/products/admin/${id}`),
 
@@ -98,10 +98,10 @@ export const adminProductsApi = {
   /**
    * POST /api/v1/products/{productId}/images
    * Contract: multipart/form-data with { file (binary), altText?, isPrimary? }
-   * The backend does NOT accept a JSON URL — it requires a binary file upload.
+   * The backend does NOT accept a JSON URL - it requires a binary file upload.
    */
   /**
-   * POST /api/v1/products/{productId}/images — batch upload 1–10 files (multipart/form-data)
+   * POST /api/v1/products/{productId}/images - batch upload 1–10 files (multipart/form-data)
    * Files sent as multiple `files` fields in a single FormData.
    */
   addImages: (productId: string, formData: FormData) =>
@@ -114,7 +114,7 @@ export const adminProductsApi = {
   deleteImage: (productId: string, imageId: string) =>
     apiClient.delete<void>(`/api/v1/products/${productId}/images/${imageId}`),
 
-  /** PUT /api/v1/products/{productId}/images/reorder — returns ordered list */
+  /** PUT /api/v1/products/{productId}/images/reorder - returns ordered list */
   reorderImages: (productId: string, data: ReorderImagesRequest) =>
     apiClient.put<ProductImageDto[]>(`/api/v1/products/${productId}/images/reorder`, data),
 };
@@ -144,7 +144,7 @@ export const adminVariantImagesApi = {
   /**
    * POST /api/v1/products/{productId}/variants/{variantId}/images
    * Batch upload 1–10 files (multipart/form-data, field name "files").
-   * Returns VariantImageDto[] — the first image becomes isPrimary automatically.
+   * Returns VariantImageDto[] - the first image becomes isPrimary automatically.
    * Errors: 400 TOO_MANY_FILES | INVALID_MIME_TYPE, 404 VARIANT_NOT_FOUND, 502 UPLOAD_FAILED.
    */
   upload: (productId: string, variantId: string, formData: FormData) =>
@@ -203,11 +203,11 @@ export const adminCategoriesApi = {
   delete: (id: string) =>
     apiClient.delete<void>(`/api/v1/categories/${id}`),
 
-  /** PUT /api/v1/categories/{id}/image — upload/replace category image (multipart/form-data) */
+  /** PUT /api/v1/categories/{id}/image - upload/replace category image (multipart/form-data) */
   uploadImage: (id: string, formData: FormData) =>
     apiClient.putForm<CategoryResponse>(`/api/v1/categories/${id}/image`, formData),
 
-  /** DELETE /api/v1/categories/{id}/image — remove category image */
+  /** DELETE /api/v1/categories/{id}/image - remove category image */
   deleteImage: (id: string) =>
     apiClient.delete<void>(`/api/v1/categories/${id}/image`),
 };
@@ -230,11 +230,11 @@ export const adminBrandsApi = {
   delete: (id: string) =>
     apiClient.delete<void>(`/api/v1/brands/${id}`),
 
-  /** PUT /api/v1/brands/{id}/logo — upload/replace brand logo (multipart/form-data) */
+  /** PUT /api/v1/brands/{id}/logo - upload/replace brand logo (multipart/form-data) */
   uploadLogo: (id: string, formData: FormData) =>
     apiClient.putForm<BrandResponse>(`/api/v1/brands/${id}/logo`, formData),
 
-  /** DELETE /api/v1/brands/{id}/logo — remove brand logo */
+  /** DELETE /api/v1/brands/{id}/logo - remove brand logo */
   deleteLogo: (id: string) =>
     apiClient.delete<void>(`/api/v1/brands/${id}/logo`),
 };
@@ -256,7 +256,7 @@ export const adminOrdersApi = {
   getById: (id: string) =>
     apiClient.get<OrderResponse>(`/api/v1/admin/orders/${id}`),
 
-  /** PUT /api/v1/admin/orders/{id}/status — returns OrderResponse (was 204) */
+  /** PUT /api/v1/admin/orders/{id}/status - returns OrderResponse (was 204) */
   updateStatus: (id: string, data: UpdateOrderStatusRequest) =>
     apiClient.put<OrderResponse>(`/api/v1/admin/orders/${id}/status`, data),
 };
@@ -325,7 +325,7 @@ export const adminSettingsApi = {
   updateAuth: (data: UpdateAuthSettingsRequest) =>
     apiClient.put<AdminBusinessSettingsResponse>("/api/v1/admin/settings/auth", data),
 
-  /** PUT /api/v1/admin/settings/email — email display settings (mode, senderName, senderEmail) */
+  /** PUT /api/v1/admin/settings/email - email display settings (mode, senderName, senderEmail) */
   updateEmailSettings: (data: UpdateEmailSettingsRequest) =>
     apiClient.put<AdminBusinessSettingsResponse>("/api/v1/admin/settings/email", data),
 
@@ -339,7 +339,7 @@ export const adminPoliciesApi = {
   list: () =>
     apiClient.get<StorePolicyResponse[]>("/api/v1/admin/policies"),
 
-  /** PUT /api/v1/admin/policies — contract method is PUT, not POST */
+  /** PUT /api/v1/admin/policies - contract method is PUT, not POST */
   upsert: (data: UpsertStorePolicyRequest) =>
     apiClient.put<StorePolicyResponse>("/api/v1/admin/policies", data),
 
@@ -376,7 +376,7 @@ export const adminIntegrationsApi = {
 
   /**
    * PUT /api/v1/admin/integrations/sms
-   * Returns 200 with updated SmsIntegrationStatusResponse — no follow-up GET needed.
+   * Returns 200 with updated SmsIntegrationStatusResponse - no follow-up GET needed.
    * Blank secret values preserve the stored credential.
    */
   updateSms: (data: UpdateSmsConfigRequest) =>
@@ -411,7 +411,7 @@ export const adminInventoryApi = {
 
 export const adminAttributesApi = {
   /**
-   * §2.4 NEW — GET /api/v1/products/{productId}/attributes
+   * §2.4 NEW - GET /api/v1/products/{productId}/attributes
    * AdminOnly. Trigger on admin variant-editor mount.
    * Returns all attribute axes and their values for the product.
    */
@@ -419,7 +419,7 @@ export const adminAttributesApi = {
     apiClient.get<ProductAttributesResponse>(`/api/v1/products/${productId}/attributes`),
 
   /**
-   * §2.5 NEW — PUT /api/v1/products/{productId}/attributes
+   * §2.5 NEW - PUT /api/v1/products/{productId}/attributes
    * AdminOnly. Replaces ONE attribute (matched by name) and its full value list.
    * ⚠️ Always send the complete value list; omitting a value deletes it.
    * Include existing value id to edit/reorder; omit id to create new value.
@@ -428,7 +428,7 @@ export const adminAttributesApi = {
     apiClient.put<ProductAttributesResponse>(`/api/v1/products/${productId}/attributes`, data),
 
   /**
-   * §2.6 NEW — DELETE /api/v1/products/{productId}/attributes/{attributeId}
+   * §2.6 NEW - DELETE /api/v1/products/{productId}/attributes/{attributeId}
    * AdminOnly. Deletes the attribute and all its values. Idempotent.
    */
   delete: (productId: string, attributeId: string) =>
@@ -438,7 +438,7 @@ export const adminAttributesApi = {
 // ── SMS Admin (providers + templates) ────────────────────────────────────────
 
 export const adminSmsApi = {
-  /** GET /api/v1/admin/integrations/sms/providers — list of supported SMS providers */
+  /** GET /api/v1/admin/integrations/sms/providers - list of supported SMS providers */
   getProviders: () =>
     apiClient.get<SmsProviderOptionResponse[]>("/api/v1/admin/integrations/sms/providers"),
 
@@ -484,7 +484,7 @@ export const adminCarouselApi = {
   delete: (id: string) =>
     apiClient.delete<void>(`/api/v1/admin/carousel/${id}`),
 
-  /** PUT /api/v1/admin/carousel/{id}/image — multipart/form-data with "file" field */
+  /** PUT /api/v1/admin/carousel/{id}/image - multipart/form-data with "file" field */
   uploadImage: (id: string, formData: FormData) =>
     apiClient.putForm<CarouselSlideResponse>(
       `/api/v1/admin/carousel/${id}/image`,

@@ -64,7 +64,7 @@ function HeroCarouselInner({
     <section
       aria-label="Hero carousel"
       aria-roledescription="carousel"
-      className="relative w-full px-5 md:px-8 lg:px-10 pt-4 md:pt-5"
+      className="relative w-full px-4 sm:px-5 md:px-8 lg:px-10 pt-3 md:pt-5"
     >
       {/* Prev arrow */}
       {sorted.length > 1 && (
@@ -85,8 +85,8 @@ function HeroCarouselInner({
 
       {/* Slide card */}
       <div
-        className="relative w-full overflow-hidden rounded-3xl shadow-[0_12px_36px_rgba(0,0,0,0.06)] bg-surface-container"
-        style={{ height: "clamp(220px, 34vw, 490px)" }}
+        className="relative w-full overflow-hidden rounded-2xl md:rounded-[1.25rem] shadow-[0_12px_36px_rgba(0,0,0,0.055)] bg-surface-container"
+        style={{ height: "clamp(280px, 36vw, 500px)" }}
       >
         <AnimatePresence mode="wait" initial={false} custom={dir}>
           <motion.div
@@ -114,26 +114,26 @@ function HeroCarouselInner({
               <div className="absolute inset-0 bg-background" />
             )}
 
-            {/* Gradient — left side only */}
+            {/* Gradient - left side only */}
             <div
-              className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 md:via-background/40 to-transparent"
+              className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/78 md:via-background/45 to-transparent"
               aria-hidden="true"
             />
 
             {/* Text content */}
-            <div className="relative z-10 h-full flex items-center pl-8 sm:pl-14 lg:pl-16">
-              <div className="max-w-[45%]">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-elevated/90 backdrop-blur-md border border-surface-elevated/60 shadow-sm text-[11px] font-bold tracking-widest text-foreground uppercase mb-3">
+            <div className="relative z-10 h-full flex items-center pl-6 sm:pl-10 lg:pl-16 pr-5">
+              <div className="max-w-[88%] sm:max-w-[70%] lg:max-w-[48%]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-elevated/90 backdrop-blur-md border border-surface-elevated/60 text-[10px] font-bold tracking-[0.14em] text-foreground uppercase mb-3">
                   <span className="text-secondary text-sm">✦</span>
                   NEW ARRIVALS
                 </span>
 
-                <h1 className="text-[clamp(1.2rem,3.5vw,3.25rem)] font-extrabold text-foreground tracking-tight leading-[1.1] mb-3">
+                <h1 className="text-[clamp(1.65rem,4vw,3.5rem)] font-bold text-foreground tracking-[-0.035em] leading-[1.04] mb-3">
                   {slide.title}
                 </h1>
 
                 {slide.subtitle && (
-                  <p className="text-[clamp(0.75rem,1.5vw,1.125rem)] text-foreground-muted leading-relaxed mb-4 max-w-md">
+                  <p className="text-[clamp(0.84rem,1.35vw,1.0625rem)] text-foreground-muted leading-relaxed mb-5 max-w-md line-clamp-3 sm:line-clamp-none">
                     {slide.subtitle}
                   </p>
                 )}
@@ -143,7 +143,7 @@ function HeroCarouselInner({
                   className={cn(
                     "inline-flex items-center gap-2",
                     "h-[clamp(36px,4vw,48px)] px-[clamp(16px,3vw,28px)]",
-                    "rounded-full bg-primary text-primary-foreground",
+                    "rounded-md bg-primary text-primary-foreground",
                     "text-[clamp(11px,1.2vw,14px)] font-bold tracking-wide",
                     "hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5",
                     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
@@ -203,10 +203,10 @@ function HeroCarouselInner({
 
 export function HeroCarouselSkeleton() {
   return (
-    <div className="w-full px-5 md:px-8 lg:px-10 pt-4 md:pt-5">
+    <div className="w-full px-4 sm:px-5 md:px-8 lg:px-10 pt-3 md:pt-5">
       <Skeleton
-        className="w-full rounded-3xl"
-        style={{ height: "clamp(220px, 34vw, 490px)" }}
+        className="w-full rounded-2xl md:rounded-[1.25rem]"
+        style={{ height: "clamp(280px, 36vw, 500px)" }}
       />
     </div>
   );

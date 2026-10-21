@@ -44,7 +44,7 @@ export function AdminProductEditClient({ productId }: AdminProductEditClientProp
     setLoading(false);
   }, [productId]);
 
-  // First load — show the skeleton
+  // First load - show the skeleton
   useEffect(() => { void load(true); }, [load]);
 
   if (loading) {

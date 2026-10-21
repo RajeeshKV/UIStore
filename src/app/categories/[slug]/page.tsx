@@ -39,10 +39,10 @@ export async function generateMetadata({
   }
 
   const storeName = settings?.businessName ?? "Shopey";
-  const title = `${cat.name} — ${storeName}`;
+  const title = `${cat.name} - ${storeName}`;
   const description =
     cat.description ??
-    `Shop ${cat.name} products${cat.productCount ? ` — ${cat.productCount} items` : ""}.`;
+    `Shop ${cat.name} products${cat.productCount ? ` - ${cat.productCount} items` : ""}.`;
 
   return {
     title,

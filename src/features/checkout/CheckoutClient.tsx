@@ -24,6 +24,7 @@ import { Modal } from "@/components/ui/Modal";
 import { AddressForm } from "@/features/account/AddressForm";
 import { VerificationDialog } from "@/features/otp/VerificationDialog";
 import { loadRazorpayScript, openRazorpay } from "@/lib/razorpay";
+import { getThemeColor } from "@/theme/runtime";
 import { pendingPaymentStore } from "@/lib/pendingPayment";
 import { useIndianStates, matchStateName } from "@/hooks/useIndianStates";
 import { usePinLookup } from "@/hooks/usePinLookup";
@@ -131,7 +132,7 @@ export function CheckoutClient({
   const [addressesLoading, setAddressesLoading] = useState(true);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
-  // Inline form — only rendered when addresses.length === 0
+  // Inline form - only rendered when addresses.length === 0
   const [inlineForm, setInlineForm] = useState<InlineAddressForm>(emptyInlineAddress());
   const [inlineErrors, setInlineErrors] = useState<Record<string, string>>({});
 
@@ -286,7 +287,7 @@ export function CheckoutClient({
 
   const effectiveCurrency = cart?.currency ?? currency;
 
-  // ── §1.2 Coupon active check — NEVER branch on appliedCouponCode alone ──────
+  // ── §1.2 Coupon active check - NEVER branch on appliedCouponCode alone ──────
   // Correct: couponErrorCode === null && appliedCouponCode !== null
   const couponActive =
     summary !== null &&
@@ -338,7 +339,7 @@ export function CheckoutClient({
         });
       }
     }
-    // fetchSummary intentionally not in deps — only runs on mount
+    // fetchSummary intentionally not in deps - only runs on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, loadAddresses, mobileOtpEnabled]);
 
@@ -364,7 +365,7 @@ export function CheckoutClient({
     setSavingAddress(false);
   }, []);
 
-  // ── Set delivery address — updates backend default + local selection ────────
+  // ── Set delivery address - updates backend default + local selection ────────
   const [settingDefaultAddr, setSettingDefaultAddr] = useState<string | null>(null);
 
   const handleUseAddress = useCallback(async (id: string) => {
@@ -398,7 +399,7 @@ export function CheckoutClient({
         setCouponError("");
       }
     } else {
-      // 400 — cart unchanged, coupon rejected at the HTTP level
+      // 400 - cart unchanged, coupon rejected at the HTTP level
       setCouponError(extractApiError(result.error, "Coupon could not be applied."));
     }
   }, [couponInput]);
@@ -413,7 +414,7 @@ export function CheckoutClient({
       setSummary(result.data);
       setCouponInput("");
     }
-    // Idempotent — safe even if no coupon was applied
+    // Idempotent - safe even if no coupon was applied
   }, []);
 
   // ── Summary cart mutations: qty change + remove ───────────────────────────
@@ -454,7 +455,7 @@ export function CheckoutClient({
             ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || undefined
             : undefined;
 
-      // Format phone for Razorpay — needs country code prefix (+91 for India)
+      // Format phone for Razorpay - needs country code prefix (+91 for India)
       // Falls back in order: selected address → inline form → user profile
       const rawPhone = addr?.phone || inlineForm.phone || user?.phoneNumber;
       const prefillContact = rawPhone
@@ -465,7 +466,7 @@ export function CheckoutClient({
 
       openRazorpay({
         key: checkout.razorpayKeyId,
-        amount: Math.round(checkout.grandTotal * 100), // paise — server total
+        amount: Math.round(checkout.grandTotal * 100), // paise - server total
         currency: checkout.currency ?? effectiveCurrency,
         name: storeName,
         description: `Order #${checkout.orderNumber ?? checkout.orderId}`,
@@ -475,7 +476,7 @@ export function CheckoutClient({
           email: user?.email,
           contact: prefillContact, // pre-fills the widget; user can still edit it
         },
-        theme: { color: "#09090b" },
+        theme: { color: getThemeColor() },
         handler: async (response) => {
           setStep("verifying");
           const verifyResult = await checkoutApi.verifyPayment(checkout.orderId, {
@@ -484,12 +485,12 @@ export function CheckoutClient({
             razorpaySignature: response.razorpay_signature,
           });
           if (verifyResult.ok) {
-            // Payment confirmed — clear persisted state
+            // Payment confirmed - clear persisted state
             pendingPaymentStore.clear();
             setStep("success");
             router.push(`/order-success/${checkout.orderId}`);
           } else {
-            // Spec: do NOT let user retry silently — payment may already be captured.
+            // Spec: do NOT let user retry silently - payment may already be captured.
             pendingPaymentStore.clear();
             setStepError(
               `Payment could not be verified. Please contact support with your order number: ${checkout.orderNumber ?? checkout.orderId}`,
@@ -500,7 +501,7 @@ export function CheckoutClient({
         modal: {
           ondismiss: () => {
             // Order is in PendingPayment state. Show Retry / Cancel options.
-            // Keep same idempotency key — backend returns the existing order on retry.
+            // Keep same idempotency key - backend returns the existing order on retry.
             setStep("dismissed");
           },
         },
@@ -530,7 +531,7 @@ export function CheckoutClient({
     setStep("cancelling");
     const cancelResult = await ordersApi.cancel(confirmedCheckout.orderId, "Customer cancelled pending payment");
 
-    // §1.11 / §3.4 — 409 REFUND_FAILED: order is genuinely still live
+    // §1.11 / §3.4 - 409 REFUND_FAILED: order is genuinely still live
     if (!cancelResult.ok) {
       const err = cancelResult.error;
       const code = "code" in err ? (err as { code?: string }).code : undefined;
@@ -545,7 +546,7 @@ export function CheckoutClient({
       }
     }
 
-    // 200 — refund accepted by provider (not yet settled; funds arrive in 5–7 days)
+    // 200 - refund accepted by provider (not yet settled; funds arrive in 5–7 days)
     pendingPaymentStore.clear();
     setConfirmedCheckout(null);
     // Generate a fresh idempotency key so user can start a new order
@@ -587,12 +588,12 @@ export function CheckoutClient({
       if (freshVerif.ok) {
         setVerifStatus(freshVerif.data);
         if (!freshVerif.data.verificationSatisfied) {
-          // Show blocking verification dialog — do not submit
+          // Show blocking verification dialog - do not submit
           setVerifyOpen(true);
           return;
         }
       }
-      // If getVerificationStatus fails (e.g. network): allow checkout attempt — server enforces.
+      // If getVerificationStatus fails (e.g. network): allow checkout attempt - server enforces.
     }
 
     // ── Resolve address ID ────────────────────────────────────────────────────
@@ -679,9 +680,9 @@ export function CheckoutClient({
         return;
       }
 
-      // ── Address phone mismatch — address phone ≠ verified account phone ────
+      // ── Address phone mismatch - address phone ≠ verified account phone ────
       // Resolution: the user must update the address phone to match their verified number.
-      // Do NOT let the user type an arbitrary override — that defeats the verification gate.
+      // Do NOT let the user type an arbitrary override - that defeats the verification gate.
       if (code === "ADDRESS_PHONE_MISMATCH") {
         setStep("idle");
         setStepError(
@@ -789,10 +790,10 @@ export function CheckoutClient({
 
   // ── Phone verification gate ───────────────────────────────────────────────────
   // When mobileOtpEnabled is true, block the entire checkout page until phone is verified.
-  // verifStatus === null means still loading — show skeleton rather than flash the checkout.
+  // verifStatus === null means still loading - show skeleton rather than flash the checkout.
   // Once fetched and not satisfied, render checkout behind a non-dismissible verification dialog.
   if (mobileOtpEnabled) {
-    // Still loading verification status — don't flash the checkout form
+    // Still loading verification status - don't flash the checkout form
     if (verifStatus === null) {
       return <CheckoutSkeleton />;
     }
@@ -812,7 +813,7 @@ export function CheckoutClient({
             }}
             onVerified={(status) => {
               setVerifStatus(status);
-              // Status is now satisfied — the condition above will re-evaluate
+              // Status is now satisfied - the condition above will re-evaluate
               // and the checkout form will render normally
             }}
             initialPhone={user?.phoneNumber ?? ""}
@@ -826,11 +827,11 @@ export function CheckoutClient({
     }
   }
 
-  // ── Phone number required gate (always — regardless of OTP setting) ────────────
+  // ── Phone number required gate (always - regardless of OTP setting) ────────────
   // Even when mobileOtpEnabled is false, a phone number must be on the account
   // for delivery contact and Razorpay prefill. profilePhone is fetched on mount.
   // Wait until profile has loaded (profilePhone === "" AND profile fetch hasn't run yet
-  // would be ambiguous — use a dedicated loading flag instead).
+  // would be ambiguous - use a dedicated loading flag instead).
   if (!profilePhone && !profileLoading) {
     return (
       <div className="px-5 md:px-8 lg:px-10 py-16 max-w-sm mx-auto text-center min-h-[60vh] flex flex-col items-center justify-center gap-5">
@@ -859,7 +860,7 @@ export function CheckoutClient({
     );
   }
 
-  // ── Empty cart (also handles blockingReasons CART_EMPTY — 200 with zeroed totals) ─
+  // ── Empty cart (also handles blockingReasons CART_EMPTY - 200 with zeroed totals) ─
   const cartItems = cart?.items ?? [];
   if (cartItems.length === 0) {
     return (
@@ -1038,12 +1039,12 @@ export function CheckoutClient({
                   )}
                 </div>
 
-                {/* State — locked after PIN fill, edit button to unlock */}
+                {/* State - locked after PIN fill, edit button to unlock */}
                 {inlinePinPopulated && !inlineStateUnlocked && inlinePinStatus === "success" ? (
                   <div className="flex flex-col gap-1">
                     <span className="text-[13px] font-semibold text-foreground">State *</span>
                     <div className="flex items-center gap-2 h-11 px-3 rounded-md border border-border bg-muted text-[14px] text-foreground">
-                      <span className="flex-1 truncate">{inlineForm.state || "—"}</span>
+                      <span className="flex-1 truncate">{inlineForm.state || "-"}</span>
                       <button type="button" onClick={() => setInlineStateUnlocked(true)}
                         className="shrink-0 flex items-center gap-1 text-[11px] text-foreground-muted hover:text-foreground transition-colors">
                         <Pencil className="size-3" /> Edit
@@ -1065,18 +1066,18 @@ export function CheckoutClient({
                     placeholder="Search state…"
                     loading={statesLoading}
                     error={inlineErrors.state}
-                    hint={inlinePinStatus === "success" ? "Auto-filled from PIN — you can change this." : undefined}
+                    hint={inlinePinStatus === "success" ? "Auto-filled from PIN - you can change this." : undefined}
                     autoComplete="address-level1"
                     clearable={false}
                   />
                 )}
 
-                {/* District — locked after PIN fill (single district), edit to unlock */}
+                {/* District - locked after PIN fill (single district), edit to unlock */}
                 {inlinePinPopulated && !inlineDistrictUnlocked && inlinePinStatus === "success" && inlineDistrictOptions.length <= 1 ? (
                   <div className="flex flex-col gap-1">
                     <span className="text-[13px] font-semibold text-foreground">District</span>
                     <div className="flex items-center gap-2 h-11 px-3 rounded-md border border-border bg-muted text-[14px] text-foreground">
-                      <span className="flex-1 truncate">{inlineForm.district || "—"}</span>
+                      <span className="flex-1 truncate">{inlineForm.district || "-"}</span>
                       <button type="button" onClick={() => setInlineDistrictUnlocked(true)}
                         className="shrink-0 flex items-center gap-1 text-[11px] text-foreground-muted hover:text-foreground transition-colors">
                         <Pencil className="size-3" /> Edit
@@ -1092,7 +1093,7 @@ export function CheckoutClient({
                     value={inlineForm.district}
                     onChange={(v) => setInlineForm((f) => ({ ...f, district: v }))}
                     placeholder="Select district…"
-                    hint="Multiple districts for this PIN — select yours."
+                    hint="Multiple districts for this PIN - select yours."
                   />
                 ) : (
                   <Input
@@ -1100,7 +1101,7 @@ export function CheckoutClient({
                     value={inlineForm.district}
                     onChange={setInline("district")}
                     placeholder="Auto-filled from PIN"
-                    hint={inlinePinStatus === "success" ? "Auto-filled from PIN — you can change this." : undefined}
+                    hint={inlinePinStatus === "success" ? "Auto-filled from PIN - you can change this." : undefined}
                   />
                 )}
 
@@ -1118,7 +1119,7 @@ export function CheckoutClient({
                     }}
                     placeholder="Select post office…"
                     error={inlineErrors.city}
-                    hint="Multiple post offices found — select the closest one."
+                    hint="Multiple post offices found - select the closest one."
                   />
                 ) : (
                   <Input
@@ -1128,7 +1129,7 @@ export function CheckoutClient({
                     onChange={setInline("city")}
                     error={inlineErrors.city}
                     placeholder="e.g. Bangalore GPO"
-                    hint={inlinePostOfficeOptions.length === 1 ? "Auto-filled from PIN — you can change this." : undefined}
+                    hint={inlinePostOfficeOptions.length === 1 ? "Auto-filled from PIN - you can change this." : undefined}
                     autoComplete="address-level2"
                   />
                 )}
@@ -1138,7 +1139,7 @@ export function CheckoutClient({
             ) : (
               /* ── Has saved addresses: show selected + alternatives ── */
               <div className="flex flex-col gap-3">
-                {/* Selected address — highlighted */}
+                {/* Selected address - highlighted */}
                 {addresses.filter((a) => a.id === selectedAddressId).map((addr) => (
                   <div
                     key={addr.id}
@@ -1168,7 +1169,7 @@ export function CheckoutClient({
                   </div>
                 ))}
 
-                {/* Other addresses — each has a "Deliver here" button */}
+                {/* Other addresses - each has a "Deliver here" button */}
                 {addresses.filter((a) => a.id !== selectedAddressId).map((addr) => (
                   <div
                     key={addr.id}
@@ -1234,7 +1235,7 @@ export function CheckoutClient({
                     onSelect={() => handlePaymentMethodChange("Razorpay")}
                     icon={<CreditCard className="size-4" />}
                     label="Pay Online"
-                    description="Cards, UPI, Net Banking, Wallets — powered by Razorpay"
+                    description="Cards, UPI, Net Banking, Wallets - powered by Razorpay"
                   />
                 )}
                 {(codMethod?.isAvailable ?? codEnabled) && (
@@ -1331,7 +1332,7 @@ export function CheckoutClient({
                 const href = slug ? `/products/${slug}${variantId ? `?variant=${variantId}` : ""}` : undefined;
                 return (
                   <li key={itemId} className="flex items-center gap-3 py-2.5 px-1 text-body-sm">
-                    {/* Thumbnail — links to PDP when slug available */}
+                    {/* Thumbnail - links to PDP when slug available */}
                     <div className="h-12 w-12 rounded-lg bg-surface-container border border-border shrink-0 overflow-hidden">
                       {imgUrl ? (
                         href ? (
@@ -1367,7 +1368,7 @@ export function CheckoutClient({
                         <span className="block truncate text-[11px] text-foreground-muted">{item.variantDescription}</span>
                       ) : null}
 
-                      {/* Qty controls — only when we have a cartItemId to mutate */}
+                      {/* Qty controls - only when we have a cartItemId to mutate */}
                       {"cartItemId" in item && (
                         <div className="flex items-center gap-1.5 mt-1">
                           <button
@@ -1445,7 +1446,7 @@ export function CheckoutClient({
                     highlight
                   />
                 )}
-                {/* §1.2: tax row — never add to grandTotal */}
+                {/* §1.2: tax row - never add to grandTotal */}
                 {summary.taxAmount > 0 && (
                   <SummaryRow
                     label={summary.isPriceInclusive
@@ -1455,7 +1456,7 @@ export function CheckoutClient({
                     muted={summary.isPriceInclusive}
                   />
                 )}
-                {/* Free shipping progress — only when shipping has a cost and threshold exists */}
+                {/* Free shipping progress - only when shipping has a cost and threshold exists */}
                 {!summary.isFreeShipping && summary.shippingAmount > 0 && summary.freeShippingThreshold && summary.remainingForFreeShipping > 0 && (
                   <p className="text-caption text-foreground-muted">
                     Add {formatPrice(summary.remainingForFreeShipping, effectiveCurrency, locale)} more for free shipping
@@ -1467,7 +1468,7 @@ export function CheckoutClient({
             {!summaryLoading && summary && (
               <div className="flex justify-between py-3 border-t border-border">
                 <span className="text-[14px] font-bold text-foreground">Total</span>
-                {/* §1.2: grandTotal is what gets charged — display directly */}
+                {/* §1.2: grandTotal is what gets charged - display directly */}
                 <span className="text-[16px] font-extrabold text-foreground tabular-nums">
                   {formatPrice(summary.grandTotal, effectiveCurrency, locale)}
                 </span>
@@ -1482,7 +1483,7 @@ export function CheckoutClient({
               </>
             )}
 
-            {/* §1.2: blocking reasons — shown as informational when not ready */}
+            {/* §1.2: blocking reasons - shown as informational when not ready */}
             {summary && !summary.isReadyToCheckout && summary.blockingReasons.length > 0 && (
               <div role="alert" className="flex flex-col gap-1.5 text-body-sm text-warning bg-warning/5 border border-warning/20 rounded-md px-3 py-2">
                 {summary.blockingReasons.map((r) => (
@@ -1516,7 +1517,7 @@ export function CheckoutClient({
               </p>
             )}
 
-            {/* ── Step: dismissed — Retry / Cancel ── */}
+            {/* ── Step: dismissed - Retry / Cancel ── */}
             {step === "dismissed" && (
               <div className="flex flex-col gap-2">
                 <p className="text-body-sm text-foreground-muted text-center">
@@ -1608,7 +1609,7 @@ export function CheckoutClient({
         onVerified={async (status) => {
           setVerifStatus(status);
           setVerifyOpen(false);
-          // Re-enable the CTA immediately — verification satisfied
+          // Re-enable the CTA immediately - verification satisfied
         }}
         initialPhone={user?.phoneNumber ?? ""}
         purpose="PhoneVerification"

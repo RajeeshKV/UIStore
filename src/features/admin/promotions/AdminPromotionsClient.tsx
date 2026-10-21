@@ -56,7 +56,7 @@ export function AdminPromotionsClient() {
       const items = res.data.items;
       setPromotions(items);
       // Guard against inflated server metadata: if fewer items came back than
-      // a full page, this must be the last page — cap totalPages accordingly.
+      // a full page, this must be the last page - cap totalPages accordingly.
       const serverPages = res.data.totalPages ?? 1;
       const cappedPages = items.length < PAGE_SIZE ? page : serverPages;
       setTotalPages(Math.max(1, cappedPages));
@@ -64,7 +64,7 @@ export function AdminPromotionsClient() {
       // so the header count is never larger than what actually exists.
       const derivedCount = (page - 1) * PAGE_SIZE + items.length;
       const serverCount = res.data.totalCount ?? derivedCount;
-      // If items < PAGE_SIZE this is the final page — derived count is exact.
+      // If items < PAGE_SIZE this is the final page - derived count is exact.
       setTotalCount(items.length < PAGE_SIZE ? derivedCount : serverCount);
     } else {
       setError(extractApiError(res.error, "Failed to load promotions."));
@@ -210,7 +210,7 @@ export function AdminPromotionsClient() {
       header: "Valid",
       render: (row) => (
         <span className="text-caption text-foreground-muted whitespace-nowrap">
-          {row.startsAt ? new Date(row.startsAt).toLocaleDateString("en-IN") : "—"}
+          {row.startsAt ? new Date(row.startsAt).toLocaleDateString("en-IN") : "-"}
           {" – "}
           {row.expiresAt ? new Date(row.expiresAt).toLocaleDateString("en-IN") : "∞"}
         </span>

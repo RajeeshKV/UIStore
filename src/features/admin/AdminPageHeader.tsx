@@ -11,9 +11,9 @@ export function AdminPageHeader({ title, description, action, className }: Admin
   return (
     <div className={cn("flex items-start justify-between gap-4 mb-6", className)}>
       <div>
-        <h2 className="text-[20px] font-extrabold text-[#191c1e] tracking-tight">{title}</h2>
+        <h2 className="text-[21px] font-bold text-foreground tracking-tight">{title}</h2>
         {description && (
-          <p className="mt-1 text-[13px] text-[#444748]">{description}</p>
+          <p className="mt-1 text-[13px] text-foreground-muted">{description}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}

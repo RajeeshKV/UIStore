@@ -84,7 +84,7 @@ export function CategoryImageCard({ category }: { category: StorefrontCategoryRe
         "shadow-sm hover:shadow-xl transition-all duration-300",
         "focus-visible:outline-2 focus-visible:outline-primary",
       )}
-      aria-label={`${category.name}${category.productCount != null ? ` — ${category.productCount} products` : ""}`}
+      aria-label={`${category.name}${category.productCount != null ? ` - ${category.productCount} products` : ""}`}
     >
       {category.imageUrl ? (
         <Image
@@ -101,13 +101,13 @@ export function CategoryImageCard({ category }: { category: StorefrontCategoryRe
 
       {/* Gradient overlay */}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-[#191c1e] via-[#191c1e]/40 to-transparent"
+        className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/40 to-transparent"
         aria-hidden="true"
       />
 
       {category.productCount != null && (
         <div className="relative z-10 p-3.5 flex justify-end">
-          <span className="px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-md border border-white/60 text-[11px] font-bold text-[#191c1e] tracking-wider uppercase shadow-sm">
+          <span className="px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-md border border-white/60 text-[11px] font-bold text-foreground tracking-wider uppercase shadow-sm">
             {category.productCount} products
           </span>
         </div>
@@ -125,7 +125,7 @@ export function CategoryImageCard({ category }: { category: StorefrontCategoryRe
         <div
           className={cn(
             "w-9 h-9 rounded-full bg-white/90 backdrop-blur-md border border-white/60",
-            "flex items-center justify-center text-[#191c1e] shadow-sm",
+            "flex items-center justify-center text-foreground shadow-sm",
             "group-hover:bg-primary group-hover:border-primary group-hover:text-primary-foreground",
             "transition-all duration-300",
           )}
@@ -149,7 +149,7 @@ export function CategoryEditorialCard({ category }: { category: StorefrontCatego
         "flex flex-col",
         "focus-visible:outline-2 focus-visible:outline-primary",
       )}
-      aria-label={`${category.name}${category.productCount != null ? ` — ${category.productCount} products` : ""}`}
+      aria-label={`${category.name}${category.productCount != null ? ` - ${category.productCount} products` : ""}`}
     >
       <div className="relative w-full h-80 overflow-hidden bg-surface-container">
         {category.imageUrl ? (

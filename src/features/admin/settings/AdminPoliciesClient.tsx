@@ -67,7 +67,7 @@ export function AdminPoliciesClient() {
   function openEdit(policy: StorePolicyResponse) {
     setEditTarget(policy);
     setForm({
-      // Backend field is 'policyType' — confirmed in API docs
+      // Backend field is 'policyType' - confirmed in API docs
       policyType: policy.policyType ?? "PrivacyPolicy",
       title: policy.title ?? "",
       content: policy.content ?? "",

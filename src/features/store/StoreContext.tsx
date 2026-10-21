@@ -7,7 +7,7 @@ import { storeApi } from "@/services/api/store";
 interface StoreContextValue {
   settings: PublicBusinessSettingsResponse | null;
   isLoading: boolean;
-  /** True when at least one active brand exists — drives Brands nav item */
+  /** True when at least one active brand exists - drives Brands nav item */
   hasBrands: boolean;
 }
 

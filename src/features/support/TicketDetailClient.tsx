@@ -70,7 +70,7 @@ function AttachmentPicker({ uploads, onChange, maxCount }: AttachmentPickerProps
     } else {
       const code = (res.error as { code?: string }).code;
       if (code === "UPLOAD_FAILED") {
-        setUploadError("Upload failed — you can still send your message without this file, or try again.");
+        setUploadError("Upload failed - you can still send your message without this file, or try again.");
       } else {
         setUploadError(extractApiError(res.error, "Upload failed."));
       }
@@ -236,28 +236,28 @@ function CommentNode({ comment, ticketId, maxAttachments, isClosed, onPosted }: 
       <div className={cn(
         "rounded-xl px-4 py-3 flex flex-col gap-2",
         comment.isAdminAuthor
-          ? "bg-[#f8f9fb] border border-[#e1e2e4]"
-          : "bg-white border border-[#e1e2e4]",
+          ? "bg-background border border-border"
+          : "bg-white border border-border",
       )}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className={cn(
               "h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0",
-              comment.isAdminAuthor ? "bg-[#0D0D0D] text-white" : "bg-[#f3f4f6] text-[#191c1e]",
+              comment.isAdminAuthor ? "bg-primary text-white" : "bg-surface text-foreground",
             )}>
               {(comment.authorName?.[0] ?? "?").toUpperCase()}
             </span>
             <div>
-              <span className="text-[13px] font-semibold text-[#191c1e]">
+              <span className="text-[13px] font-semibold text-foreground">
                 {comment.isAdminAuthor ? "Support Team" : comment.authorName ?? "You"}
               </span>
-              <span className="text-[11px] text-[#5A6578] ml-2">{time}</span>
+              <span className="text-[11px] text-foreground-muted ml-2">{time}</span>
             </div>
           </div>
         </div>
 
         {comment.body && (
-          <p className="text-[13px] text-[#444748] leading-relaxed whitespace-pre-wrap">{comment.body}</p>
+          <p className="text-[13px] text-foreground-muted leading-relaxed whitespace-pre-wrap">{comment.body}</p>
         )}
 
         {comment.attachments.length > 0 && (
@@ -272,7 +272,7 @@ function CommentNode({ comment, ticketId, maxAttachments, isClosed, onPosted }: 
           <button
             type="button"
             onClick={() => setReplyOpen((v) => !v)}
-            className="self-start text-[11px] text-[#5A6578] hover:text-[#191c1e] underline underline-offset-2 transition-colors"
+            className="self-start text-[11px] text-foreground-muted hover:text-foreground underline underline-offset-2 transition-colors"
           >
             {replyOpen ? "Cancel reply" : "Reply"}
           </button>
@@ -317,16 +317,16 @@ function HistoryRow({ entry }: { entry: TicketHistoryEntry }) {
     : `${actor} updated`;
 
   return (
-    <div className="flex items-start gap-3 py-2 border-b border-[#f3f4f6] last:border-none">
+    <div className="flex items-start gap-3 py-2 border-b border-border last:border-none">
       <div className={cn(
         "h-2 w-2 rounded-full mt-1.5 shrink-0",
-        entry.actor === "System" ? "bg-foreground-muted" : entry.isAdminAuthor ? "bg-[#0D0D0D]" : "bg-blue-500",
+        entry.actor === "System" ? "bg-foreground-muted" : entry.isAdminAuthor ? "bg-primary" : "bg-blue-500",
       )} />
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] text-[#444748]">{desc}</p>
-        {entry.note && <p className="text-[12px] text-[#5A6578] italic mt-0.5">"{entry.note}"</p>}
+        <p className="text-[12px] text-foreground-muted">{desc}</p>
+        {entry.note && <p className="text-[12px] text-foreground-muted italic mt-0.5">"{entry.note}"</p>}
       </div>
-      <span className="text-[11px] text-[#5A6578] shrink-0">{time}</span>
+      <span className="text-[11px] text-foreground-muted shrink-0">{time}</span>
     </div>
   );
 }
@@ -360,7 +360,7 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
     setLoading(false);
   }, [ticketId]);
 
-  // Refetch on window focus — auto-close may have fired
+  // Refetch on window focus - auto-close may have fired
   useEffect(() => {
     void load();
     const onFocus = () => void load();
@@ -418,7 +418,7 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
       {/* Back */}
-      <Link href="/account/support" className="inline-flex items-center gap-1.5 text-[13px] text-[#5A6578] hover:text-[#191c1e] w-fit">
+      <Link href="/account/support" className="inline-flex items-center gap-1.5 text-[13px] text-foreground-muted hover:text-foreground w-fit">
         <ArrowLeft className="size-3.5" />
         Back to requests
       </Link>
@@ -427,14 +427,14 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
-            <h1 className="text-[18px] font-bold text-[#191c1e] leading-snug">{ticket.subject}</h1>
-            <p className="text-[11px] font-mono text-[#5A6578] mt-0.5">{ticket.ticketNumber}</p>
+            <h1 className="text-[18px] font-bold text-foreground leading-snug">{ticket.subject}</h1>
+            <p className="text-[11px] font-mono text-foreground-muted mt-0.5">{ticket.ticketNumber}</p>
           </div>
           <TicketStatusBadge status={ticket.status} />
         </div>
-        <div className="flex items-center gap-3 flex-wrap text-[12px] text-[#5A6578]">
+        <div className="flex items-center gap-3 flex-wrap text-[12px] text-foreground-muted">
           {ticket.orderNumber && (
-            <Link href={`/account/orders/${ticket.relatedOrderId}`} className="underline underline-offset-2 hover:text-[#191c1e]">
+            <Link href={`/account/orders/${ticket.relatedOrderId}`} className="underline underline-offset-2 hover:text-foreground">
               Order {ticket.orderNumber}
             </Link>
           )}
@@ -443,7 +443,7 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
             <span className="text-warning font-medium">Reopened {ticket.reopenCount}×</span>
           )}
           {isResolved && ticket.autoCloseAtUtc && (
-            <span className="text-[#5A6578]">
+            <span className="text-foreground-muted">
               Auto-closes {new Date(ticket.autoCloseAtUtc).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
             </span>
           )}
@@ -465,7 +465,7 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
       </div>
 
       {/* Top-level composer */}
-      <div className="rounded-2xl border border-[#e1e2e4] bg-white p-4">
+      <div className="rounded-2xl border border-border bg-white p-4">
         <Composer
           ticketId={ticket.id}
           maxAttachments={maxAttachments}
@@ -478,8 +478,8 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
       {isResolved && (
         <div className="rounded-2xl border border-success/20 bg-success/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[13px] font-semibold text-[#191c1e]">Was your issue resolved?</p>
-            <p className="text-[12px] text-[#5A6578] mt-0.5">Close the request if you're satisfied, or reopen if you still need help.</p>
+            <p className="text-[13px] font-semibold text-foreground">Was your issue resolved?</p>
+            <p className="text-[12px] text-foreground-muted mt-0.5">Close the request if you're satisfied, or reopen if you still need help.</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button
@@ -507,7 +507,7 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
       {/* Closed reopen */}
       {isClosed && (
         <div className="rounded-2xl border border-border bg-muted/40 p-4 flex items-center justify-between gap-4">
-          <p className="text-[13px] text-[#5A6578]">This request is closed.</p>
+          <p className="text-[13px] text-foreground-muted">This request is closed.</p>
           <Button variant="outline" size="sm" loading={reopening} onClick={handleReopen} iconLeft={<RotateCcw className="size-3.5" />}>
             Reopen
           </Button>
@@ -516,8 +516,8 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
 
       {/* History */}
       {ticket.history && ticket.history.length > 0 && (
-        <div className="rounded-2xl border border-[#e1e2e4] bg-white p-4">
-          <h2 className="text-[13px] font-semibold text-[#191c1e] mb-3">Activity</h2>
+        <div className="rounded-2xl border border-border bg-white p-4">
+          <h2 className="text-[13px] font-semibold text-foreground mb-3">Activity</h2>
           <div className="flex flex-col">
             {ticket.history.map((h) => <HistoryRow key={h.id} entry={h} />)}
           </div>

@@ -3,7 +3,7 @@
  *
  * This is the ONE place to change the visual identity of a customer deployment.
  * All values must map to CSS variable names defined in globals.css.
- * Future themes: swap this config, update globals.css @theme block — zero component edits.
+ * Future themes: swap this config, update globals.css @theme block - zero component edits.
  */
 
 export type ThemeConfig = {
@@ -19,7 +19,7 @@ export type ThemeConfig = {
 };
 
 /**
- * Default theme: Kromic — monochrome black/white/neutral.
+ * Default theme: Kromic - monochrome black/white/neutral.
  * Product photography always remains colorful.
  */
 export const defaultTheme: ThemeConfig = {

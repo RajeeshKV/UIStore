@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * VariantImageManager — inline variant-level image management.
+ * VariantImageManager - inline variant-level image management.
  *
  * Rendered inside each VariantMatrixRow. Shows a horizontal strip of
  * 48×48px thumbnails for the variant's images. Supports:
@@ -11,7 +11,7 @@
  *   - Drag-to-reorder (PUT /reorder on drag-end)
  *
  * All mutations update local state immediately from API response so
- * no parent refresh is needed — the strip is fully self-contained.
+ * no parent refresh is needed - the strip is fully self-contained.
  *
  * Error messages appear inline below the strip, never as toasts, because
  * this is a form-embedded component (admin guideline).
@@ -212,7 +212,7 @@ export function VariantImageManager({
       const msg = extractApiError(res.error, "Reorder failed.");
       if (msg.includes("IMAGE_NOT_FOUND")) setError("Some images were deleted. Refresh.");
       else setError(msg);
-      // Revert to server order on failure — re-fetch not available here, just show error
+      // Revert to server order on failure - re-fetch not available here, just show error
     }
   }
 
@@ -283,7 +283,7 @@ export function VariantImageManager({
 
             {/* Hover actions */}
             <div className="absolute inset-0 rounded-lg hidden group-hover:flex flex-col items-center justify-center gap-0.5 bg-black/50">
-              {/* Set primary — only show when not already primary */}
+              {/* Set primary - only show when not already primary */}
               {!img.isPrimary && (
                 <button
                   type="button"
@@ -317,7 +317,7 @@ export function VariantImageManager({
           </div>
         ))}
 
-        {/* Upload button — always shown at end */}
+        {/* Upload button - always shown at end */}
         <button
           type="button"
           aria-label={`Upload images for ${variantLabel ?? "variant"}`}
