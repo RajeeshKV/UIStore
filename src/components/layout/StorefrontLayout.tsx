@@ -5,6 +5,8 @@ import { CartAwareHeader } from "./CartAwareHeader";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { WishlistProvider } from "@/features/wishlist/WishlistContext";
 import { PendingPaymentResumeDialog } from "@/features/checkout/PendingPaymentResumeDialog";
+import { getThemeConfig } from "@/theme";
+import { getConfiguredStoreTheme } from "@/theme/server";
 import type {
   PublicBusinessSettingsResponse,
   StorePolicyResponse,
@@ -30,6 +32,7 @@ export function StorefrontLayout({
   const locale = settings?.culture ?? "en-IN";
   // Normalize null to empty array - API may return null when backend is unreachable
   const policyList = policies ?? [];
+  const themeLogo = getThemeConfig(getConfiguredStoreTheme()).logo;
 
   return (
     <AuthProvider>
@@ -38,12 +41,12 @@ export function StorefrontLayout({
           <div className="storefront-editorial flex flex-col min-h-screen">
             <CartAwareHeader
               storeName={settings?.businessName ?? "Shopey"}
-              logoUrl={settings?.logoUrl}
+              logoUrl={settings?.logoUrl ?? themeLogo}
             />
             <main id="main-content" className="flex-1">
               {children}
             </main>
-            <Footer settings={settings} policies={policyList} />
+            <Footer settings={settings} policies={policyList} themeLogo={themeLogo} />
           </div>
           <CartDrawer currency={currency} locale={locale} />
           <PendingPaymentResumeDialog />

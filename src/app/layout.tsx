@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
+import Script from "next/script";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
 import { StoreProvider } from "@/features/store/StoreContext";
 import { storeApi } from "@/services/api/store";
 import { ScrollResetter } from "@/components/layout/NavigationEvents";
 import { DevThemeSwitcher } from "@/components/dev/ThemeSwitcher";
+import { getThemeConfig, getThemeCssVariables, themeCatalog } from "@/theme";
 import { getConfiguredStoreTheme } from "@/theme/server";
 import type { PublicBusinessSettingsResponse } from "@/types/api";
 
@@ -53,11 +55,23 @@ export default async function RootLayout({
 }) {
   const settings = await getStoreSettings();
   const storeTheme = getConfiguredStoreTheme();
+  const configuredTheme = getThemeConfig(storeTheme);
+  const previewEnabled = process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_THEME_SWITCHER === "true";
+  const previewMap = JSON.stringify(Object.fromEntries(themeCatalog.map((item) => [item.id, {
+    variables: getThemeCssVariables(item.id), presentation: item.presentation,
+  }])));
 
   return (
     <html
       lang="en"
       data-theme={storeTheme === "default" ? undefined : storeTheme}
+      data-theme-header={configuredTheme.presentation.header}
+      data-theme-hero={configuredTheme.presentation.hero}
+      data-theme-categories={configuredTheme.presentation.categories}
+      data-theme-featured={configuredTheme.presentation.featured}
+      data-theme-products={configuredTheme.presentation.productCards}
+      data-theme-footer={configuredTheme.presentation.footer}
+      style={getThemeCssVariables(storeTheme) as React.CSSProperties}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
@@ -70,6 +84,11 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        {previewEnabled && (
+          <Script id="restore-theme-preview" strategy="beforeInteractive">
+            {`(function(){try{var m=${previewMap},t=localStorage.getItem("kromic_dev_theme"),v=m[t],r=document.documentElement;if(!v)return;if(t==="default")r.removeAttribute("data-theme");else r.setAttribute("data-theme",t);Object.keys(v.variables).forEach(function(k){r.style.setProperty(k,v.variables[k])});Object.keys(v.presentation).forEach(function(k){var a={header:"themeHeader",hero:"themeHero",categories:"themeCategories",featured:"themeFeatured",productCards:"themeProducts",footer:"themeFooter"}[k];if(a)r.dataset[a]=v.presentation[k]})}catch(_){}})();`}
+          </Script>
+        )}
         {/* Skip to main content - accessibility */}
         <a
           href="#main-content"

@@ -34,13 +34,13 @@ export function TrustBar({ settings }: TrustBarProps) {
   const benefits = buildBenefits(settings);
 
   return (
-    <section aria-label="Service benefits" className="w-full px-5 md:px-8 lg:px-10 py-3 md:py-4">
+    <section aria-label="Service benefits" className="theme-trustbar w-full px-5 md:px-8 lg:px-10 py-3 md:py-4">
       <motion.div
         initial={shouldReduce ? undefined : { opacity: 0, y: 8 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-20px" }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-surface-elevated rounded-[var(--radius-theme-card)] border border-border/50 shadow-card px-3 py-3 md:px-5 md:py-4"
+        className="theme-trustbar-panel bg-surface-elevated rounded-[var(--radius-theme-card)] border border-border/50 shadow-card px-3 py-3 md:px-5 md:py-4"
       >
         <ul role="list" className="grid grid-cols-2 md:grid-cols-4 gap-0">
           {benefits.map((b, i) => (

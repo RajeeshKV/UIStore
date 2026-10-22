@@ -26,7 +26,7 @@ export function CategoryShowcase({
   if (!loading && !error && categories.length === 0) return null;
 
   return (
-    <section aria-labelledby="categories-heading" className="py-[var(--theme-section-space)] bg-background">
+    <section aria-labelledby="categories-heading" className="theme-category-section py-[var(--theme-section-space)] bg-background">
       <div className="px-5 md:px-8 lg:px-10">
         <div className="flex items-end justify-between mb-5">
           <div>
@@ -55,7 +55,7 @@ export function CategoryShowcase({
         )}
 
         {!loading && !error && categories.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="theme-category-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {categories.slice(0, 8).map((cat, i) => (
               <motion.div
                 key={cat.id}
@@ -79,7 +79,7 @@ export function CategoryImageCard({ category }: { category: StorefrontCategoryRe
     <Link
       href={`/categories/${category.slug}`}
       className={cn(
-        "group relative flex flex-col justify-between h-56 rounded-[var(--radius-theme-card)] overflow-hidden",
+        "theme-category-card group relative flex flex-col justify-between h-56 rounded-[var(--radius-theme-card)] overflow-hidden",
         "bg-surface-container border border-border/40",
         "shadow-sm hover:shadow-xl transition-all duration-300",
         "focus-visible:outline-2 focus-visible:outline-primary",

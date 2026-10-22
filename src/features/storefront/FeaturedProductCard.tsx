@@ -81,7 +81,7 @@ export function FeaturedProductCard({
       whileHover={{ y: -3, boxShadow: "0 16px 40px rgba(0,0,0,0.10)" }}
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "group relative flex flex-col bg-surface-elevated rounded-[var(--radius-theme-card)] p-4",
+        "theme-product-card group relative flex flex-col bg-product-surface rounded-[var(--radius-theme-card)] p-4",
         "border border-border/60 shadow-sm",
         "transition-shadow duration-300",
         isOutOfStock && "opacity-70",
@@ -133,8 +133,7 @@ export function FeaturedProductCard({
       <Link
         href={`/products/${product.slug}`}
         aria-label={`View ${product.name}`}
-        className="block w-full rounded-xl bg-background overflow-hidden mb-4 group-hover:bg-muted transition-colors"
-        style={{ aspectRatio: "1/1" }}
+        className="theme-product-image-link block w-full rounded-xl bg-background overflow-hidden mb-4 group-hover:bg-muted transition-colors"
       >
         {product.primaryImageUrl && !imgError ? (
           <div className="relative w-full h-full p-3">
@@ -159,7 +158,7 @@ export function FeaturedProductCard({
       <div className="flex flex-col gap-1 flex-1">
         <Link
           href={`/products/${product.slug}`}
-          className="text-[13px] font-bold text-foreground line-clamp-1 hover:text-foreground/70 transition-colors leading-snug"
+          className="theme-product-title text-[13px] font-bold text-foreground line-clamp-1 hover:text-foreground/70 transition-colors leading-snug"
         >
           {product.name}
         </Link>
@@ -184,7 +183,7 @@ export function FeaturedProductCard({
           </div>
         )}
 
-        <div className="flex items-baseline gap-2 mt-0.5">
+        <div className="theme-product-price flex items-baseline gap-2 mt-0.5">
           <span className="text-[20px] font-black text-foreground leading-none tabular-nums">
             {priceStr}
           </span>
@@ -203,7 +202,7 @@ export function FeaturedProductCard({
           aria-label={`Add ${product.name} to cart`}
           disabled={addingToCart}
           className={cn(
-            "mt-4 w-full flex items-center justify-center gap-2",
+            "theme-product-action mt-4 w-full flex items-center justify-center gap-2",
             "py-3 px-4 rounded-xl",
             "bg-primary text-primary-foreground text-[13px] font-bold tracking-wide",
             "hover:bg-primary/90 active:scale-[0.98] transition-all duration-150",

@@ -21,7 +21,7 @@ export function BrandShowcase({ brands, loading = false }: BrandShowcaseProps) {
   return (
     <section
       aria-labelledby="brands-heading"
-      className="py-[var(--theme-section-space)] bg-background border-t border-border"
+      className="theme-brand-section py-[var(--theme-section-space)] bg-background border-t border-border"
     >
       <div className="px-5 md:px-8 lg:px-10">
         <div className="flex items-end justify-between mb-5">
@@ -48,7 +48,7 @@ export function BrandShowcase({ brands, loading = false }: BrandShowcaseProps) {
         {loading ? (
           <BrandGridSkeleton />
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="theme-brand-grid grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {activeBrands.slice(0, 8).map((brand, i) => (
               <motion.div
                 key={brand.id}
@@ -72,7 +72,7 @@ export function BrandImageCard({ brand }: { brand: StorefrontBrandResponse }) {
     <Link
       href={`/brands/${brand.slug}`}
       className={cn(
-        "group relative flex flex-col justify-between h-56 rounded-[var(--radius-theme-card)] overflow-hidden",
+        "theme-brand-card group relative flex flex-col justify-between h-56 rounded-[var(--radius-theme-card)] overflow-hidden",
         "bg-surface-container border border-border/40",
         "shadow-sm hover:shadow-xl transition-all duration-300",
         "focus-visible:outline-2 focus-visible:outline-primary",

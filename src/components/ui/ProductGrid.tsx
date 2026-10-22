@@ -62,7 +62,7 @@ export function ProductGrid({
   void px; // kept for future per-layout customisation
 
   return (
-    <div className={cn("grid-product-cards", className)}>
+    <div className={cn("theme-catalog-grid grid-product-cards", className)}>
       {products.map((p, i) => (
         <CartAwareProductCard key={p.id} product={p} currency={currency} locale={locale} eager={i < eagerCount} />
       ))}

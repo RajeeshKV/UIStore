@@ -10,27 +10,28 @@ import type { PublicBusinessSettingsResponse, StorePolicyResponse } from "@/type
 interface FooterProps {
   settings?: PublicBusinessSettingsResponse | null;
   policies?: StorePolicyResponse[];
+  themeLogo?: string;
 }
 
-export function Footer({ settings, policies }: FooterProps) {
+export function Footer({ settings, policies, themeLogo }: FooterProps) {
   const year       = new Date().getFullYear();
   const name       = settings?.businessName ?? "Shopey";
   const policyList = policies ?? [];
 
   return (
-    <footer className="border-t border-border bg-muted mt-auto" aria-label="Site footer">
+    <footer className="theme-footer border-t border-border bg-muted mt-auto" aria-label="Site footer">
       <div className="px-5 md:px-8 lg:px-10 pt-10 pb-8 md:pt-14 md:pb-12">
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-10">
+        <div className="theme-footer-grid grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-10">
 
           {/* ── Brand column ─────────────────────────────────────────────── */}
           <div className="flex flex-col gap-4">
             <Link href="/" className="w-fit">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={settings?.logoUrl ?? "/logo-large.png"}
+                src={settings?.logoUrl ?? themeLogo ?? "/logo-large.png"}
                 alt={name}
-                className={cn("h-9 w-auto object-contain object-left", !settings?.logoUrl && "store-brand-logo")}
+                className={cn("h-9 w-auto object-contain object-left", !settings?.logoUrl && !themeLogo && "store-brand-logo")}
               />
             </Link>
 

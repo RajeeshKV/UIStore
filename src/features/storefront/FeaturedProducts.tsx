@@ -36,7 +36,7 @@ export function FeaturedProducts({
   return (
     <section
       aria-labelledby="featured-heading"
-      className="py-[var(--theme-section-space)] bg-surface-elevated border-t border-border"
+      className="theme-featured-section py-[var(--theme-section-space)] bg-section-background border-t border-border"
     >
       <div className="px-5 md:px-8 lg:px-10">
         {/* Section header */}
@@ -123,7 +123,7 @@ function FeaturedGrid({
   }
 
   return (
-    <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
+    <div className="theme-featured-grid grid gap-5" data-layout="configured">
       {products.slice(0, 4).map((product, i) => (
         <motion.div
           key={product.id}

@@ -30,6 +30,7 @@ function HeroCarouselInner({
   const sorted = [...slides].sort((a, b) => a.sortOrder - b.sortOrder);
   const [current, setCurrent] = useState(0);
   const [dir, setDir]         = useState<1 | -1>(1);
+  const [imageFailed, setImageFailed] = useState(false);
   const timerRef              = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const goTo = useCallback((idx: number, direction: 1 | -1 = 1) => {
@@ -58,13 +59,14 @@ function HeroCarouselInner({
   }, [next, shouldReduce, sorted.length]);
 
   const slide = sorted[current];
+  useEffect(() => setImageFailed(false), [slide.id]);
   const ctaLabel = slide.ctaText ?? "Shop Now";
 
   return (
     <section
       aria-label="Hero carousel"
       aria-roledescription="carousel"
-      className="relative w-full px-4 sm:px-5 md:px-8 lg:px-10 pt-3 md:pt-5"
+      className="theme-hero-section relative w-full px-4 sm:px-5 md:px-8 lg:px-10 pt-3 md:pt-5"
     >
       {/* Prev arrow */}
       {sorted.length > 1 && (
@@ -85,7 +87,7 @@ function HeroCarouselInner({
 
       {/* Slide card */}
       <div
-        className="relative w-full overflow-hidden rounded-2xl md:rounded-[1.25rem] shadow-[0_12px_36px_rgba(0,0,0,0.055)] bg-surface-container"
+        className="theme-hero-card relative w-full overflow-hidden rounded-[var(--radius-theme-card)] shadow-card bg-surface-container"
         style={{ height: "clamp(280px, 36vw, 500px)" }}
       >
         <AnimatePresence mode="wait" initial={false} custom={dir}>
@@ -97,38 +99,41 @@ function HeroCarouselInner({
             animate="center"
             exit="exit"
             transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0"
+            className="theme-hero-slide absolute inset-0"
             aria-roledescription="slide"
             aria-label={`Slide ${current + 1} of ${sorted.length}: ${slide.title}`}
           >
-            {slide.imageUrl ? (
-              <Image
-                src={slide.imageUrl}
-                alt={slide.title ?? ""}
-                fill
-                priority={current === 0}
-                sizes="(max-width: 1440px) 100vw"
-                className="object-cover object-center scale-[1.01]"
-              />
+            {slide.imageUrl && !imageFailed ? (
+              <div className="theme-hero-media absolute inset-0">
+                <Image
+                  src={slide.imageUrl}
+                  alt={slide.title ?? ""}
+                  fill
+                  priority={current === 0}
+                  sizes="(max-width: 1440px) 100vw"
+                  className="theme-hero-image object-cover object-center scale-[1.01]"
+                  onError={() => setImageFailed(true)}
+                />
+              </div>
             ) : (
-              <div className="absolute inset-0 bg-background" />
+              <div className="theme-hero-media-fallback absolute inset-0 bg-surface-container" aria-hidden="true" />
             )}
 
             {/* Gradient - left side only */}
             <div
-              className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/78 md:via-background/45 to-transparent"
+              className="theme-hero-overlay absolute inset-0 bg-gradient-to-r from-background/95 via-background/78 md:via-background/45 to-transparent"
               aria-hidden="true"
             />
 
             {/* Text content */}
-            <div className="relative z-10 h-full flex items-center pl-6 sm:pl-10 lg:pl-16 pr-5">
-              <div className="max-w-[88%] sm:max-w-[70%] lg:max-w-[48%]">
+            <div className="theme-hero-content relative z-10 h-full flex items-center pl-6 sm:pl-10 lg:pl-16 pr-5">
+              <div className="theme-hero-copy max-w-[88%] sm:max-w-[70%] lg:max-w-[48%]">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-elevated/90 backdrop-blur-md border border-surface-elevated/60 text-[10px] font-bold tracking-[0.14em] text-foreground uppercase mb-3">
                   <span className="text-secondary text-sm">✦</span>
                   NEW ARRIVALS
                 </span>
 
-                <h1 className="text-[clamp(1.65rem,4vw,3.5rem)] font-bold text-foreground tracking-[-0.035em] leading-[1.04] mb-3">
+                <h1 className="theme-hero-title text-[clamp(1.65rem,4vw,3.5rem)] font-bold text-foreground tracking-[-0.035em] leading-[1.04] mb-3">
                   {slide.title}
                 </h1>
 

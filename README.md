@@ -171,6 +171,10 @@ Add new feature modules as needed in Phase 3+.
 | `SHOPEY_STORE_THEME` | No | Server-only fixed catalog ID for this customer deployment; defaults to `default` |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Phase 6 | Razorpay public key only |
 
+### Customer storefront themes
+
+Theme setup is registry driven. Add or tailor a `StoreThemeDefinition` in `src/theme/index.ts`: set its brand palette, typography, optional theme logo, and presentation recipe (header, hero, categories, featured products, catalog cards, and footer). The shared storefront components render those recipes, so a customer theme does not require a fork of the shopping UI. The uploaded business logo in store settings takes precedence over the theme fallback logo. Assign the resulting theme ID to `SHOPEY_STORE_THEME` for that customer's deployment. In development, `NEXT_PUBLIC_THEME_SWITCHER=true` enables previewing all registry entries; previews are not persisted to production.
+
 **Never expose:** Razorpay secret, Google OAuth secret, Brevo credentials, JWT signing secrets, database credentials.
 
 ---

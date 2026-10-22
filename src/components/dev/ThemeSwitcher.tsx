@@ -1,14 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { isThemeId, themeCatalog, type ThemeId } from "@/theme";
+import { getThemeConfig, getThemeCssVariables, isThemeId, themeCatalog, type ThemeId } from "@/theme";
 
 const STORAGE_KEY = "kromic_dev_theme";
 
 function applyTheme(id: ThemeId) {
   const html = document.documentElement;
+  const config = getThemeConfig(id);
   if (id === "default") html.removeAttribute("data-theme");
   else html.setAttribute("data-theme", id);
+  for (const [property, value] of Object.entries(getThemeCssVariables(id))) {
+    html.style.setProperty(property, value);
+  }
+  html.dataset.themeHeader = config.presentation.header;
+  html.dataset.themeHero = config.presentation.hero;
+  html.dataset.themeCategories = config.presentation.categories;
+  html.dataset.themeFeatured = config.presentation.featured;
+  html.dataset.themeProducts = config.presentation.productCards;
+  html.dataset.themeFooter = config.presentation.footer;
 }
 
 function ThemeSwitcherInner({ initialTheme }: { initialTheme: ThemeId }) {

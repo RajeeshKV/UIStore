@@ -73,13 +73,13 @@ export function Header({
     <header
       className={cn(
         "sticky top-0 z-40 w-full",
-        "bg-header-background/95 backdrop-blur-xl border-b border-border/60",
+        "theme-header bg-header-background/95 backdrop-blur-xl border-b border-border/60",
         "transition-shadow duration-300",
         scrolled && "shadow-md",
       )}
     >
       <div className="w-full px-5 md:px-8 lg:px-10">
-        <div className="flex h-14 md:h-16 items-center gap-0">
+        <div className="theme-header-row flex h-14 md:h-16 items-center gap-0">
 
           {/* ── Logo ────────────────────────────────────────────────────── */}
           <Link
@@ -97,13 +97,13 @@ export function Header({
 
           {/* ── Nav + Search ─────────────────────────────────────────────── */}
           <div className="hidden md:flex flex-1 items-center gap-5">
-            <nav aria-label="Main navigation" className="hidden xl:flex items-center gap-6 shrink-0">
+            <nav aria-label="Main navigation" className="theme-primary-nav hidden xl:flex items-center gap-6 shrink-0">
               {navItems.map((item) => (
                 <DesktopNavItem key={item.label} item={item} pathname={pathname} search={search} />
               ))}
             </nav>
 
-            <form role="search" onSubmit={handleSearch} className="flex-1 max-w-[380px]">
+            <form role="search" onSubmit={handleSearch} className="theme-header-search flex-1 max-w-[380px]">
               <div className="relative group">
                 <Search
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 size-[15px] text-foreground-muted group-focus-within:text-foreground transition-colors pointer-events-none"

@@ -110,7 +110,7 @@ export function ProductCard({
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "group relative flex flex-col rounded-[var(--radius-theme-card)] overflow-hidden border border-border bg-surface-elevated",
+        "theme-catalog-card group relative flex flex-col rounded-[var(--radius-theme-card)] overflow-hidden border border-border bg-product-surface",
         "hover:shadow-hover transition-shadow duration-200",
         isOutOfStock && "opacity-70",
         className,
