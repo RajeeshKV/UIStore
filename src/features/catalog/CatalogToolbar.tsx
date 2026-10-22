@@ -55,7 +55,7 @@ export function CatalogToolbar({
           aria-label={`Open filters${activeFilterCount > 0 ? ` (${activeFilterCount} active)` : ""}`}
           className={cn(
             "lg:hidden flex items-center gap-2 h-9 px-4 rounded-full shrink-0",
-            "border border-border bg-white text-[13px] font-semibold text-foreground",
+            "border border-border bg-surface-elevated text-[13px] font-semibold text-foreground",
             "hover:border-primary hover:shadow-sm transition-all duration-150",
           )}
         >

@@ -108,7 +108,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
 
   return (
     <StorefrontLayout settings={settings} policies={policies}>
-      <div className="bg-white">
+      <div className="bg-surface-elevated">
         {/* Breadcrumb */}
         <div className="px-5 md:px-8 lg:px-10 pt-6 pb-0">
           <CatalogBreadcrumb items={breadcrumbs} />

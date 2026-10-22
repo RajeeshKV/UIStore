@@ -57,7 +57,7 @@ export function AccountOverviewClient({ currency, locale }: AccountOverviewClien
             href={href}
             className={cn(
               "flex items-start gap-3 p-4 rounded-2xl border border-border bg-surface-elevated",
-              "hover:border-border-strong hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all",
+              "hover:border-border-strong hover:shadow-hover transition-all",
               "focus-visible:outline-2 focus-visible:outline-primary",
             )}
           >
@@ -106,7 +106,7 @@ export function AccountOverviewClient({ currency, locale }: AccountOverviewClien
                 href={`/account/orders/${order.id}`}
                 className={cn(
                   "flex items-center justify-between gap-4 p-4 rounded-2xl border border-border bg-surface-elevated",
-                  "hover:border-border-strong hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all",
+                  "hover:border-border-strong hover:shadow-hover transition-all",
                 )}
               >
                 <div className="flex flex-col gap-0.5 min-w-0">

@@ -250,7 +250,7 @@ export function TicketsClient() {
               <Link
                 key={t.id}
                 href={`/account/support/${t.id}`}
-                className="group rounded-2xl border border-border bg-surface-elevated p-4 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all flex flex-col gap-2"
+                className="group rounded-2xl border border-border bg-surface-elevated p-4 hover:shadow-hover transition-all flex flex-col gap-2"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -280,7 +280,7 @@ export function TicketsClient() {
                     <span className="text-warning font-medium">{autoCloseCountdown(t.autoCloseAtUtc)}</span>
                   )}
                   {t.status === "Open" && t.awaitingFirstResponse && (
-                    <span className="text-blue-600 font-medium">Awaiting response</span>
+                    <span className="text-info font-medium">Awaiting response</span>
                   )}
                 </div>
               </Link>

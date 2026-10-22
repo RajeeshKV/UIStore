@@ -93,7 +93,7 @@ export function CartPageClient({ currency, locale }: CartPageClientProps) {
 
           {/* Summary */}
           <div className="lg:sticky lg:top-24">
-            <div className="rounded-2xl border border-border bg-surface-elevated p-6 flex flex-col gap-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+            <div className="rounded-2xl border border-border bg-surface-elevated p-6 flex flex-col gap-4 shadow-card">
               <h2 className="text-[16px] font-bold text-foreground tracking-tight">Order Summary</h2>
 
               <div className="flex flex-col gap-2.5 text-[13px]">

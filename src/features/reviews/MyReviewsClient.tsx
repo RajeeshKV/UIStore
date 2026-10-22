@@ -128,7 +128,7 @@ export function MyReviewsClient() {
 
       <div className="flex flex-col gap-4">
         {reviews.map((review) => (
-          <div key={review.id} className="rounded-2xl border border-border bg-white p-4 flex flex-col gap-3">
+          <div key={review.id} className="rounded-2xl border border-border bg-surface-elevated p-4 flex flex-col gap-3">
             {/* Header */}
             <div className="flex items-start justify-between gap-2">
               <div className="flex flex-col gap-1">

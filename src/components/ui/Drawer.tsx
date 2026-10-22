@@ -51,7 +51,7 @@ export function Drawer({
               <motion.div
                 className={cn(
                   "fixed inset-y-0 z-50 flex flex-col",
-                  "bg-white border-border shadow-xl",
+                  "bg-dialog-surface border border-border shadow-overlay",
                   side === "right" ? "right-0 border-l" : "left-0 border-r",
                   width,
                 )}

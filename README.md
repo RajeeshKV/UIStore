@@ -118,7 +118,8 @@ src/
 ├── config/
 │   └── env.ts            # Environment variable access with validation
 └── theme/
-    ├── index.ts          # Customer theme config (swap here for new customer)
+    ├── index.ts          # Theme catalog and customer theme config
+    ├── server.ts         # Server-only deployment theme selection
     └── tokens.ts         # Semantic color token names
 ```
 
@@ -126,12 +127,13 @@ src/
 
 ## Theme System
 
-All customer branding is driven by CSS custom properties in `src/app/globals.css`.
+All customer branding is driven by semantic CSS custom properties in `src/app/globals.css`.
 
-**To deploy for a new customer:**
-1. Update the `:root` block in `globals.css` with the customer's palette
-2. Update `src/theme/index.ts` with the customer's name, logo path, and font preferences
-3. No component code changes required
+**Customer deployment:** set the server-only `SHOPEY_STORE_THEME` environment variable to one catalog ID in `src/theme/index.ts`. The root server layout applies that fixed theme to every shopper request for the deployment; unset or invalid values fall back to `default`. This is deployment-level configuration and does not add a field to the store API contract. Add customer logo and font metadata in `src/theme/index.ts` as needed.
+
+**Theme preview:** the floating selector is available only in development when `NEXT_PUBLIC_THEME_SWITCHER=true`. Its local browser preference is a preview convenience and is never used to configure production storefronts.
+
+The 12 catalog identities span five families: dark — Obsidian Luxury (`luxe`) and Midnight Tech (`amazon`); mild-dark — Graphite Modern (`adidas`); mid-tone — Coffeehouse (`starbucks`) and Earthy Organic (`patagonia`); mild-light — Soft Premium (`sephora`), Editorial Minimal (`tiffany`), and Couture Editorial (`dior`); bright-light — Swiss Modern (`default`), Bold Contemporary (`levis`), Vibrant Retail (`ikea`), and Pop Retail (`coca-cola`).
 
 **Semantic tokens available** (consumed as Tailwind utilities):
 - `bg-background`, `bg-surface`, `bg-surface-elevated`
@@ -166,6 +168,7 @@ Add new feature modules as needed in Phase 3+.
 | `NEXT_PUBLIC_API_URL` | Yes | Kromic Commerce API base URL |
 | `NEXT_PUBLIC_APP_URL` | Yes | This frontend's public URL |
 | `NEXT_PUBLIC_ENV` | No | `development` / `staging` / `production` |
+| `SHOPEY_STORE_THEME` | No | Server-only fixed catalog ID for this customer deployment; defaults to `default` |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Phase 6 | Razorpay public key only |
 
 **Never expose:** Razorpay secret, Google OAuth secret, Brevo credentials, JWT signing secrets, database credentials.

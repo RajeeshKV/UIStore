@@ -30,7 +30,7 @@ export function Footer({ settings, policies }: FooterProps) {
               <img
                 src={settings?.logoUrl ?? "/logo-large.png"}
                 alt={name}
-                className="h-9 w-auto object-contain object-left"
+                className={cn("h-9 w-auto object-contain object-left", !settings?.logoUrl && "store-brand-logo")}
               />
             </Link>
 

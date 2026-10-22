@@ -40,7 +40,7 @@ export function TrustBar({ settings }: TrustBarProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-20px" }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-surface-elevated rounded-2xl border border-border/50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] px-3 py-3 md:px-5 md:py-4"
+        className="bg-surface-elevated rounded-[var(--radius-theme-card)] border border-border/50 shadow-card px-3 py-3 md:px-5 md:py-4"
       >
         <ul role="list" className="grid grid-cols-2 md:grid-cols-4 gap-0">
           {benefits.map((b, i) => (

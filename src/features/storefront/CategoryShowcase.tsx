@@ -26,7 +26,7 @@ export function CategoryShowcase({
   if (!loading && !error && categories.length === 0) return null;
 
   return (
-    <section aria-labelledby="categories-heading" className="py-8 md:py-10 bg-background">
+    <section aria-labelledby="categories-heading" className="py-[var(--theme-section-space)] bg-background">
       <div className="px-5 md:px-8 lg:px-10">
         <div className="flex items-end justify-between mb-5">
           <div>
@@ -79,7 +79,7 @@ export function CategoryImageCard({ category }: { category: StorefrontCategoryRe
     <Link
       href={`/categories/${category.slug}`}
       className={cn(
-        "group relative flex flex-col justify-between h-56 rounded-2xl overflow-hidden",
+        "group relative flex flex-col justify-between h-56 rounded-[var(--radius-theme-card)] overflow-hidden",
         "bg-surface-container border border-border/40",
         "shadow-sm hover:shadow-xl transition-all duration-300",
         "focus-visible:outline-2 focus-visible:outline-primary",
@@ -101,13 +101,13 @@ export function CategoryImageCard({ category }: { category: StorefrontCategoryRe
 
       {/* Gradient overlay */}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/40 to-transparent"
+        className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent"
         aria-hidden="true"
       />
 
       {category.productCount != null && (
         <div className="relative z-10 p-3.5 flex justify-end">
-          <span className="px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-md border border-white/60 text-[11px] font-bold text-foreground tracking-wider uppercase shadow-sm">
+          <span className="px-2.5 py-1 rounded-full bg-surface-elevated/90 backdrop-blur-md border border-border text-[11px] font-bold text-foreground tracking-wider uppercase shadow-sm">
             {category.productCount} products
           </span>
         </div>
@@ -124,7 +124,7 @@ export function CategoryImageCard({ category }: { category: StorefrontCategoryRe
         </div>
         <div
           className={cn(
-            "w-9 h-9 rounded-full bg-white/90 backdrop-blur-md border border-white/60",
+            "w-9 h-9 rounded-full bg-surface-elevated/90 backdrop-blur-md border border-border",
             "flex items-center justify-center text-foreground shadow-sm",
             "group-hover:bg-primary group-hover:border-primary group-hover:text-primary-foreground",
             "transition-all duration-300",
@@ -143,7 +143,7 @@ export function CategoryEditorialCard({ category }: { category: StorefrontCatego
     <Link
       href={`/categories/${category.slug}`}
       className={cn(
-        "group relative overflow-hidden rounded-3xl",
+        "group relative overflow-hidden rounded-[var(--radius-theme-card)]",
         "bg-surface-elevated border border-border/40",
         "shadow-sm hover:shadow-xl transition-all duration-500",
         "flex flex-col",

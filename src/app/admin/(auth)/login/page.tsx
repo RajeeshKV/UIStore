@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Form card */}
-        <div className="bg-white rounded-3xl border border-border shadow-[0_8px_32px_rgba(0,0,0,0.06)] p-7">
+        <div className="bg-surface-elevated rounded-3xl border border-border shadow-overlay p-7">
           <Suspense>
             <AdminLoginForm />
           </Suspense>

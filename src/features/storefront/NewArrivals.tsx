@@ -20,7 +20,7 @@ export function NewArrivals({ products, loading = false, error = false, currency
   if (!loading && !error && products.length === 0) return null;
 
   return (
-    <section aria-labelledby="new-arrivals-heading" className="py-8 md:py-12 bg-surface">
+    <section aria-labelledby="new-arrivals-heading" className="py-[var(--theme-section-space)] bg-surface">
       <div className="container-x mx-auto">
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <div>

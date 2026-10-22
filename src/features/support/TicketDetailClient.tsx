@@ -237,7 +237,7 @@ function CommentNode({ comment, ticketId, maxAttachments, isClosed, onPosted }: 
         "rounded-xl px-4 py-3 flex flex-col gap-2",
         comment.isAdminAuthor
           ? "bg-background border border-border"
-          : "bg-white border border-border",
+          : "bg-surface-elevated border border-border",
       )}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -320,7 +320,7 @@ function HistoryRow({ entry }: { entry: TicketHistoryEntry }) {
     <div className="flex items-start gap-3 py-2 border-b border-border last:border-none">
       <div className={cn(
         "h-2 w-2 rounded-full mt-1.5 shrink-0",
-        entry.actor === "System" ? "bg-foreground-muted" : entry.isAdminAuthor ? "bg-primary" : "bg-blue-500",
+        entry.actor === "System" ? "bg-foreground-muted" : entry.isAdminAuthor ? "bg-primary" : "bg-info",
       )} />
       <div className="flex-1 min-w-0">
         <p className="text-[12px] text-foreground-muted">{desc}</p>
@@ -465,7 +465,7 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
       </div>
 
       {/* Top-level composer */}
-      <div className="rounded-2xl border border-border bg-white p-4">
+      <div className="rounded-2xl border border-border bg-surface-elevated p-4">
         <Composer
           ticketId={ticket.id}
           maxAttachments={maxAttachments}
@@ -516,7 +516,7 @@ export function TicketDetailClient({ ticketId, maxAttachments = 6 }: TicketDetai
 
       {/* History */}
       {ticket.history && ticket.history.length > 0 && (
-        <div className="rounded-2xl border border-border bg-white p-4">
+        <div className="rounded-2xl border border-border bg-surface-elevated p-4">
           <h2 className="text-[13px] font-semibold text-foreground mb-3">Activity</h2>
           <div className="flex flex-col">
             {ticket.history.map((h) => <HistoryRow key={h.id} entry={h} />)}

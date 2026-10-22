@@ -28,7 +28,7 @@ export default async function LoginPage() {
       <div className="min-h-[80vh] flex items-center justify-center py-16 px-4 bg-background">
         <div className="w-full max-w-[400px]">
           {/* Auth card */}
-          <div className="bg-white rounded-3xl border border-border shadow-[0_8px_32px_rgba(0,0,0,0.06)] px-8 py-10">
+          <div className="bg-surface-elevated rounded-3xl border border-border shadow-overlay px-8 py-10">
             {/* Logo / brand */}
             <div className="mb-8 text-center">
               {/* Always show logo image - use logoUrl from settings, fall back to logo-large.png */}

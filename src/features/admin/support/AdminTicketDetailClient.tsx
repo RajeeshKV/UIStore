@@ -205,7 +205,7 @@ function AdminCommentNode({ comment, ticketId, maxAttachments, onPosted }: Admin
           ? "bg-warning/5 border-warning/30"
           : comment.isAdminAuthor
             ? "bg-background border-border"
-            : "bg-white border-border",
+            : "bg-surface-elevated border-border",
       )}>
         {/* Internal note badge */}
         {comment.isInternalNote && (

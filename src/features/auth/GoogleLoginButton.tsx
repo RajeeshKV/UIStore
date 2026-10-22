@@ -133,7 +133,7 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
         aria-label="Continue with Google"
         className={cn(
           "relative flex h-12 w-full items-center justify-center gap-3 rounded-xl",
-          "border border-border bg-white",
+          "border border-border bg-surface-elevated",
           "text-[14px] font-semibold text-foreground",
           "transition-all duration-150",
           "hover:bg-surface hover:border-border-strong hover:shadow-sm",

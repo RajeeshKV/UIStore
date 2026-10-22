@@ -73,9 +73,9 @@ export function Header({
     <header
       className={cn(
         "sticky top-0 z-40 w-full",
-        "bg-surface-elevated/95 backdrop-blur-xl border-b border-border/60",
+        "bg-header-background/95 backdrop-blur-xl border-b border-border/60",
         "transition-shadow duration-300",
-        scrolled && "shadow-[0_2px_12px_rgba(0,0,0,0.06)]",
+        scrolled && "shadow-md",
       )}
     >
       <div className="w-full px-5 md:px-8 lg:px-10">
@@ -91,7 +91,7 @@ export function Header({
             <img
               src={logoUrl ?? "/logo-large.png"}
               alt={storeName}
-              className="h-8 md:h-9 w-auto object-contain"
+              className={cn("h-8 md:h-9 w-auto object-contain", !logoUrl && "store-brand-logo")}
             />
           </Link>
 
@@ -310,7 +310,7 @@ function DesktopNavItem({ item, pathname, search }: { item: NavItem; pathname: s
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="absolute top-full left-0 mt-2 w-48 rounded-2xl border border-border bg-surface-elevated shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5 z-50"
+            className="absolute top-full left-0 mt-2 w-48 rounded-2xl border border-border bg-surface-elevated shadow-overlay py-1.5 z-50"
           >
             {item.children.map((child) => (
               <Link
@@ -406,7 +406,7 @@ function AccountButton() {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl border border-border bg-surface-elevated shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5"
+            className="absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl border border-border bg-surface-elevated shadow-overlay py-1.5"
           >
             <div className="px-4 py-3 border-b border-border">
               <p className="text-[13px] font-bold text-foreground truncate">{displayName}</p>
@@ -466,7 +466,7 @@ function MobileSearchButton() {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="md:hidden fixed inset-x-0 top-16 z-50 bg-surface-elevated/95 backdrop-blur-xl border-b border-border/60 px-5 py-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
+            className="md:hidden fixed inset-x-0 top-16 z-50 bg-surface-elevated/95 backdrop-blur-xl border-b border-border/60 px-5 py-4 shadow-card"
           >
             <form role="search" onSubmit={handleSubmit} className="flex gap-2">
               <div className="relative flex-1">

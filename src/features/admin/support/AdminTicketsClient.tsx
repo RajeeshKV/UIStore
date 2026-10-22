@@ -96,7 +96,7 @@ export function AdminTicketsClient() {
         <div className="flex flex-col gap-1">
           <TicketStatusBadge status={row.status} />
           {row.awaitingFirstResponse && row.status === "Open" && (
-            <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Awaiting reply</span>
+            <span className="text-[10px] font-semibold text-info uppercase tracking-wide">Awaiting reply</span>
           )}
         </div>
       ),

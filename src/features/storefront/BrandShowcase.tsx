@@ -21,7 +21,7 @@ export function BrandShowcase({ brands, loading = false }: BrandShowcaseProps) {
   return (
     <section
       aria-labelledby="brands-heading"
-      className="py-8 md:py-12 bg-background border-t border-border"
+      className="py-[var(--theme-section-space)] bg-background border-t border-border"
     >
       <div className="px-5 md:px-8 lg:px-10">
         <div className="flex items-end justify-between mb-5">
@@ -72,7 +72,7 @@ export function BrandImageCard({ brand }: { brand: StorefrontBrandResponse }) {
     <Link
       href={`/brands/${brand.slug}`}
       className={cn(
-        "group relative flex flex-col justify-between h-56 rounded-2xl overflow-hidden",
+        "group relative flex flex-col justify-between h-56 rounded-[var(--radius-theme-card)] overflow-hidden",
         "bg-surface-container border border-border/40",
         "shadow-sm hover:shadow-xl transition-all duration-300",
         "focus-visible:outline-2 focus-visible:outline-primary",
@@ -98,13 +98,13 @@ export function BrandImageCard({ brand }: { brand: StorefrontBrandResponse }) {
 
       {/* Gradient overlay */}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/40 to-transparent"
+        className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent"
         aria-hidden="true"
       />
 
       {brand.productCount != null && (
         <div className="relative z-10 p-3.5 flex justify-end">
-          <span className="px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-md border border-white/60 text-[11px] font-bold text-foreground tracking-wider uppercase shadow-sm">
+          <span className="px-2.5 py-1 rounded-full bg-surface-elevated/90 backdrop-blur-md border border-border text-[11px] font-bold text-foreground tracking-wider uppercase shadow-sm">
             {brand.productCount} products
           </span>
         </div>
@@ -119,7 +119,7 @@ export function BrandImageCard({ brand }: { brand: StorefrontBrandResponse }) {
         </div>
         <div
           className={cn(
-            "w-9 h-9 rounded-full bg-white/90 backdrop-blur-md border border-white/60",
+            "w-9 h-9 rounded-full bg-surface-elevated/90 backdrop-blur-md border border-border",
             "flex items-center justify-center text-foreground shadow-sm",
             "group-hover:bg-primary group-hover:border-primary group-hover:text-primary-foreground",
             "transition-all duration-300",

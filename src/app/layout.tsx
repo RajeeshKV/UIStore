@@ -7,6 +7,7 @@ import { StoreProvider } from "@/features/store/StoreContext";
 import { storeApi } from "@/services/api/store";
 import { ScrollResetter } from "@/components/layout/NavigationEvents";
 import { DevThemeSwitcher } from "@/components/dev/ThemeSwitcher";
+import { getConfiguredStoreTheme } from "@/theme/server";
 import type { PublicBusinessSettingsResponse } from "@/types/api";
 
 const geistSans = Geist({
@@ -51,11 +52,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const settings = await getStoreSettings();
+  const storeTheme = getConfiguredStoreTheme();
 
   return (
     <html
       lang="en"
+      data-theme={storeTheme === "default" ? undefined : storeTheme}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -82,8 +86,8 @@ export default async function RootLayout({
             {children}
           </ToastProvider>
         </StoreProvider>
-        {/* Dev-only theme switcher - eliminated from production builds */}
-        <DevThemeSwitcher />
+        {/* Internal preview control; production storefronts use the fixed server theme. */}
+        <DevThemeSwitcher initialTheme={storeTheme} />
       </body>
     </html>
   );

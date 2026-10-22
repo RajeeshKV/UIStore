@@ -180,7 +180,7 @@ export function AdminEmailIntegrationClient() {
                   className="sr-only peer"
                 />
                 <span className="absolute inset-0 rounded-full bg-border peer-checked:bg-primary transition-colors" />
-                <span className="relative h-4 w-4 rounded-full bg-white shadow transition-transform translate-x-1 peer-checked:translate-x-6" />
+                <span className="relative h-4 w-4 rounded-full bg-surface-elevated shadow transition-transform translate-x-1 peer-checked:translate-x-6" />
               </label>
             </div>
           )}

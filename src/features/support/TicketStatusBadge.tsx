@@ -2,13 +2,13 @@ import { cn } from "@/lib/utils";
 import type { TicketStatus, TicketPriority } from "@/types/api";
 
 const STATUS_STYLE: Record<TicketStatus, string> = {
-  Open:     "bg-blue-50 text-blue-700 border-blue-200",
+  Open:     "bg-info-surface text-info border-info/30",
   Resolved: "bg-success/10 text-success border-success/20",
   Closed:   "bg-muted text-foreground-muted border-border",
 };
 
 const STATUS_DOT: Record<TicketStatus, string> = {
-  Open:     "bg-blue-500",
+  Open:     "bg-info",
   Resolved: "bg-success",
   Closed:   "bg-foreground-muted",
 };

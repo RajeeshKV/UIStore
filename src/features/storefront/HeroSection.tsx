@@ -92,7 +92,7 @@ export function HeroSection({ storeName }: HeroSectionProps) {
                   href="/shop"
                   className={cn(
                     "inline-flex h-11 items-center gap-2 px-6 rounded-md",
-                    "bg-white text-foreground font-medium text-body-sm",
+                    "bg-surface-elevated text-foreground font-medium text-body-sm",
                     "hover:bg-white/90 transition-colors duration-150",
                     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                   )}

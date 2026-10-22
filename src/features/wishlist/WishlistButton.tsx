@@ -51,7 +51,7 @@ export function WishlistButton({
         "flex items-center justify-center rounded-full transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         overlay
           ? "bg-surface-elevated/90 backdrop-blur-sm shadow-sm hover:bg-surface-elevated hover:scale-105"
-          : "bg-surface-elevated border border-border hover:border-primary shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
+          : "bg-surface-elevated border border-border hover:border-primary shadow-card",
         btnSize,
         className,
       )}

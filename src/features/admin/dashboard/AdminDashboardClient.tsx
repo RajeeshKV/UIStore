@@ -36,7 +36,7 @@ function StatCard({ label, value, icon, href, loading }: StatCardProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 rounded-xl border border-border bg-background p-4 md:p-5 shadow-[0_1px_2px_rgb(23_24_23_/_3%)] hover:border-border-strong transition-colors"
+      className="flex items-center gap-4 rounded-xl border border-border bg-background p-4 md:p-5 shadow-card hover:border-border-strong transition-colors"
     >
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">
         {icon}
@@ -163,7 +163,7 @@ export function AdminDashboardClient() {
       {/* Recent orders + recent products */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent orders */}
-        <section className="rounded-xl border border-border bg-background overflow-hidden shadow-[0_1px_2px_rgb(23_24_23_/_3%)]">
+        <section className="rounded-xl border border-border bg-background overflow-hidden shadow-card">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <h2 className="text-body font-semibold text-foreground flex items-center gap-2">
               <Clock className="size-4 text-foreground-muted" />
@@ -217,7 +217,7 @@ export function AdminDashboardClient() {
         </section>
 
         {/* Recent products */}
-        <section className="rounded-xl border border-border bg-background overflow-hidden shadow-[0_1px_2px_rgb(23_24_23_/_3%)]">
+        <section className="rounded-xl border border-border bg-background overflow-hidden shadow-card">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <h2 className="text-body font-semibold text-foreground flex items-center gap-2">
               <TrendingUp className="size-4 text-foreground-muted" />

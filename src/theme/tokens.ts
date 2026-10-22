@@ -40,11 +40,37 @@ export const colorTokens = [
   "control-hover",
   "focus-ring",
   "rating",
+  "storefront-background",
+  "admin-canvas",
+  "header-background",
+  "sidebar-background",
+  "section-background",
+  "section-alternate",
+  "surface-tertiary",
+  "product-surface",
+  "category-surface",
+  "table-surface",
+  "form-surface",
+  "popover-surface",
+  "dialog-surface",
+  "tooltip-surface",
+  "hover-surface",
+  "selected-surface",
+  "link",
+  "button-secondary-background",
+  "button-secondary-foreground",
+  "button-outline-border",
+  "success-surface",
+  "warning-surface",
+  "danger-surface",
+  "info",
+  "info-foreground",
+  "info-surface",
 ] as const;
 
 export const typographyTokens = ["sans", "display", "mono"] as const;
 export const radiusTokens = ["control", "card", "panel"] as const;
-export const elevationTokens = ["card", "overlay"] as const;
+export const elevationTokens = ["card", "hover", "overlay"] as const;
 export const motionTokens = ["duration-fast", "duration-base", "duration-slow", "ease-out-smooth"] as const;
 
 export type ColorToken = (typeof colorTokens)[number];

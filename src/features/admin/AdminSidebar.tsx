@@ -81,8 +81,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
       <aside
         className={cn(
           "fixed left-0 top-0 z-50 h-full w-60 flex flex-col",
-          // Design: white surface, clean border
-          "bg-white border-r border-border",
+          "bg-sidebar-background border-r border-border",
           "transition-transform duration-300 ease-out",
           open ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0 lg:static lg:z-auto",

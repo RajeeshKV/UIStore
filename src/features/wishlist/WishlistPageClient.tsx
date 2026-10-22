@@ -123,7 +123,7 @@ function WishlistCard({ item, currency, locale, removing, onRemove, onAddToCart 
   return (
     <div className={cn(
       "group flex gap-4 rounded-2xl border border-border bg-surface-elevated p-4 transition-shadow",
-      "hover:shadow-[0_4px_16px_rgba(0,0,0,0.07)]",
+      "hover:shadow-hover",
       removing && "opacity-50 pointer-events-none",
     )}>
       <Link href={`/products/${item.productSlug}`} className="shrink-0">

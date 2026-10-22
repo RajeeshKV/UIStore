@@ -81,7 +81,7 @@ export function FeaturedProductCard({
       whileHover={{ y: -3, boxShadow: "0 16px 40px rgba(0,0,0,0.10)" }}
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "group relative flex flex-col bg-surface-elevated rounded-2xl p-4",
+        "group relative flex flex-col bg-surface-elevated rounded-[var(--radius-theme-card)] p-4",
         "border border-border/60 shadow-sm",
         "transition-shadow duration-300",
         isOutOfStock && "opacity-70",

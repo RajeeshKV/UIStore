@@ -44,7 +44,7 @@ export function AdminTable<T>({
   }
 
   return (
-    <div className={cn("rounded-xl border border-border overflow-hidden bg-white shadow-[0_1px_2px_rgb(23_24_23_/_3%)]", className)}>
+    <div className={cn("rounded-xl border border-border overflow-hidden bg-table-surface shadow-card", className)}>
       <div className="overflow-x-auto">
         <table className="w-full text-[13px]">
           <thead>

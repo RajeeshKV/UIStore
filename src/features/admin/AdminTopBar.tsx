@@ -46,7 +46,7 @@ export function AdminTopBar({ onMenuClick }: AdminTopBarProps) {
   const initials = (adminName[0] ?? "A").toUpperCase();
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-white/95 backdrop-blur-sm px-4 md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-header-background/95 backdrop-blur-sm px-4 md:px-6">
       <SidebarToggle onClick={onMenuClick} />
 
       <h1 className="text-[15px] font-semibold text-foreground flex-1 tracking-tight">{pageTitle}</h1>
@@ -72,7 +72,7 @@ export function AdminTopBar({ onMenuClick }: AdminTopBarProps) {
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-            <div className="absolute right-0 top-full mt-2 z-20 w-52 rounded-2xl border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5">
+            <div className="absolute right-0 top-full mt-2 z-20 w-52 rounded-2xl border border-border bg-popover-surface shadow-overlay py-1.5">
               <div className="px-4 py-3 border-b border-border">
                 <p className="text-[13px] font-bold text-foreground truncate">{adminName}</p>
                 {admin?.email && (

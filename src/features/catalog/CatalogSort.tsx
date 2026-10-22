@@ -48,7 +48,7 @@ export function CatalogSort({ value, onChange, className }: CatalogSortProps) {
           <DropdownMenu.Portal forceMount>
             <DropdownMenu.Content asChild align="end" sideOffset={6}>
               <motion.div
-                className="z-50 w-52 rounded-2xl bg-surface-elevated border border-border shadow-[0_8px_24px_rgba(0,0,0,0.08)] py-1.5 overflow-hidden"
+                className="z-50 w-52 rounded-2xl bg-surface-elevated border border-border shadow-overlay py-1.5 overflow-hidden"
                 initial={{ opacity: 0, y: -6, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.97 }}

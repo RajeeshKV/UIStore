@@ -101,7 +101,7 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: () => void
       aria-live="polite"
       className={cn(
         "pointer-events-auto flex items-start gap-3",
-        "rounded-xl bg-surface-elevated shadow-[0_8px_24px_-4px_rgba(0,0,0,0.1)]",
+        "rounded-xl bg-surface-elevated shadow-overlay",
         "px-4 py-3 border border-border",
         borderMap[item.type],
       )}

@@ -46,7 +46,7 @@ export function Modal({
               <motion.div
                 className={cn(
                   "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2",
-                  "rounded-panel bg-surface-elevated border border-border shadow-overlay",
+                  "rounded-panel bg-dialog-surface border border-border shadow-overlay",
                   "max-h-[90vh] overflow-y-auto p-0",
                   size,
                 )}

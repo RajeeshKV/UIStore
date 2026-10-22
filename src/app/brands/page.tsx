@@ -42,7 +42,7 @@ export default async function BrandsPage() {
                 Brand Index
               </span>
               {brands.length > 0 && (
-                <div className="px-3.5 py-1 rounded-full bg-white shadow-sm text-foreground text-[13px] font-bold border border-border">
+                <div className="px-3.5 py-1 rounded-full bg-surface-elevated shadow-sm text-foreground text-[13px] font-bold border border-border">
                   {brands.length} Brands
                 </div>
               )}

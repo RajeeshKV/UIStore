@@ -109,6 +109,33 @@ Primary palette: monochrome obsidian + crimson accent
   --color-admin-foreground: var(--color-foreground);
   --color-admin-foreground-muted: var(--color-foreground-muted);
   --color-admin-border: var(--color-border);
+  /* Semantic app-shell and component roles. */
+  --color-storefront-background: var(--color-background);
+  --color-admin-canvas: var(--color-background);
+  --color-header-background: var(--color-surface-elevated);
+  --color-sidebar-background: var(--color-surface-elevated);
+  --color-section-background: var(--color-surface);
+  --color-section-alternate: var(--color-surface-container);
+  --color-surface-tertiary: var(--ds-surface-high);
+  --color-product-surface: var(--color-surface-elevated);
+  --color-category-surface: var(--color-surface-container);
+  --color-table-surface: var(--color-surface-elevated);
+  --color-form-surface: var(--color-surface-elevated);
+  --color-popover-surface: var(--color-surface-elevated);
+  --color-dialog-surface: var(--color-surface-elevated);
+  --color-tooltip-surface: var(--color-primary);
+  --color-hover-surface: var(--color-muted);
+  --color-selected-surface: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-elevated));
+  --color-link: var(--color-primary);
+  --color-button-secondary-background: var(--color-secondary);
+  --color-button-secondary-foreground: var(--color-secondary-foreground);
+  --color-button-outline-border: var(--color-border-strong);
+  --color-success-surface: color-mix(in srgb, var(--color-success) 12%, var(--color-surface-elevated));
+  --color-warning-surface: color-mix(in srgb, var(--color-warning) 12%, var(--color-surface-elevated));
+  --color-danger-surface: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface-elevated));
+  --color-info: #2463a8;
+  --color-info-foreground: #ffffff;
+  --color-info-surface: color-mix(in srgb, var(--color-info) 12%, var(--color-surface-elevated));
   --color-control-background: var(--color-surface-elevated);
   --color-control-border: var(--color-border);
   --color-control-hover: var(--color-muted);
@@ -116,9 +143,14 @@ Primary palette: monochrome obsidian + crimson accent
   --color-focus-ring: color-mix(in srgb, var(--color-focus) 22%, transparent);
   --color-rating: #b7791f;
   --radius-control: var(--radius-sm);
+  --radius-button: var(--radius-sm);
   --radius-panel: var(--radius-lg);
   --radius-card: var(--radius-md);
+  --radius-theme-card: var(--radius-card);
+  --radius-theme-button: var(--radius-button);
+  --theme-section-space: 2.5rem;
   --shadow-card: var(--shadow-sm);
+  --shadow-hover: var(--shadow-md);
   --shadow-overlay: var(--shadow-xl);
 }
 /*
@@ -164,6 +196,32 @@ Primary palette: monochrome obsidian + crimson accent
   --color-control-hover: var(--color-control-hover);
   --color-focus-ring: var(--color-focus-ring);
   --color-rating: var(--color-rating);
+  --color-storefront-background: var(--color-storefront-background);
+  --color-admin-canvas: var(--color-admin-canvas);
+  --color-header-background: var(--color-header-background);
+  --color-sidebar-background: var(--color-sidebar-background);
+  --color-section-background: var(--color-section-background);
+  --color-section-alternate: var(--color-section-alternate);
+  --color-surface-tertiary: var(--color-surface-tertiary);
+  --color-product-surface: var(--color-product-surface);
+  --color-category-surface: var(--color-category-surface);
+  --color-table-surface: var(--color-table-surface);
+  --color-form-surface: var(--color-form-surface);
+  --color-popover-surface: var(--color-popover-surface);
+  --color-dialog-surface: var(--color-dialog-surface);
+  --color-tooltip-surface: var(--color-tooltip-surface);
+  --color-hover-surface: var(--color-hover-surface);
+  --color-selected-surface: var(--color-selected-surface);
+  --color-link: var(--color-link);
+  --color-button-secondary-background: var(--color-button-secondary-background);
+  --color-button-secondary-foreground: var(--color-button-secondary-foreground);
+  --color-button-outline-border: var(--color-button-outline-border);
+  --color-success-surface: var(--color-success-surface);
+  --color-warning-surface: var(--color-warning-surface);
+  --color-danger-surface: var(--color-danger-surface);
+  --color-info: var(--color-info);
+  --color-info-foreground: var(--color-info-foreground);
+  --color-info-surface: var(--color-info-surface);
   /*
   ── Typography - Plus Jakarta Sans ────────────────────────────────────────
   */
@@ -255,8 +313,11 @@ Primary palette: monochrome obsidian + crimson accent
   */
   --radius-full: 9999px;
   --radius-control: var(--radius-sm);
+  --radius-button: var(--radius-sm);
   --radius-panel: var(--radius-lg);
   --radius-card: var(--radius-md);
+  --radius-theme-card: var(--radius-card);
+  --radius-theme-button: var(--radius-button);
   /*
   Shadows - restrained flat+surface aesthetic
   */
@@ -271,6 +332,7 @@ Primary palette: monochrome obsidian + crimson accent
   hero
   */
   --shadow-xl: 0 20px 40px -8px rgba(0,0,0,0.08);
+  --shadow-hover: var(--shadow-md);
   --shadow-card: var(--shadow-sm);
   --shadow-overlay: var(--shadow-xl);
   /*
@@ -315,6 +377,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+html, body { min-height: 100%; }
+html { background-color: var(--color-background); }
 
 /* Shared presentation foundations. The active data-theme remains the source of truth. */
 :root[data-theme="luxe"], :root[data-theme="dior"] {
@@ -324,6 +388,104 @@ body {
   --radius-lg: 0.625rem;
   --radius-xl: 0.875rem;
   --radius-2xl: 1.125rem;
+}
+
+:root { color-scheme: light; }
+
+/* Obsidian Luxury: true dark surfaces, champagne actions, and warm ivory text. */
+:root[data-theme="luxe"] {
+  color-scheme: dark;
+  --color-background: #12110f;
+  --color-storefront-background: #12110f;
+  --color-admin-canvas: #12110f;
+  --color-surface: #1b1916;
+  --color-surface-elevated: #24211d;
+  --color-surface-container: #2d2923;
+  --color-surface-tertiary: #39332c;
+  --color-header-background: #171512;
+  --color-sidebar-background: #171512;
+  --color-section-background: #1b1916;
+  --color-section-alternate: #24211d;
+  --color-product-surface: #1b1916;
+  --color-category-surface: #2d2923;
+  --color-table-surface: #1b1916;
+  --color-form-surface: #24211d;
+  --color-popover-surface: #24211d;
+  --color-dialog-surface: #24211d;
+  --color-control-background: #1b1916;
+  --color-control-hover: #2d2923;
+  --color-foreground: #f4eee4;
+  --color-foreground-muted: #c0b6a7;
+  --color-muted-foreground: #c0b6a7;
+  --color-border: #52483b;
+  --color-border-strong: #78664f;
+  --color-control-border: #52483b;
+  --color-primary: #c7a46b;
+  --color-primary-foreground: #1b150b;
+  --color-secondary: #b68d51;
+  --color-secondary-foreground: #1b150b;
+  --color-accent: #c7a46b;
+  --color-accent-foreground: #1b150b;
+  --color-muted: #2d2923;
+  --color-focus: #e0bd76;
+  --color-link: #e0bd76;
+  --color-focus-ring: rgb(224 189 118 / 28%);
+  --color-selected-surface: #332b20;
+  --color-overlay: rgb(0 0 0 / 72%);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 20%);
+  --shadow-sm: 0 4px 14px rgb(0 0 0 / 24%);
+  --shadow-md: 0 12px 30px rgb(0 0 0 / 32%);
+  --shadow-lg: 0 20px 46px rgb(0 0 0 / 38%);
+  --shadow-xl: 0 28px 60px rgb(0 0 0 / 44%);
+}
+
+/* Midnight Tech: blue-black layers with bright cyan controls. */
+:root[data-theme="amazon"] {
+  color-scheme: dark;
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-display: Inter, ui-sans-serif, system-ui, sans-serif;
+  --color-background: #0b1220;
+  --color-storefront-background: #0b1220;
+  --color-admin-canvas: #0b1220;
+  --color-surface: #101b2d;
+  --color-surface-elevated: #17263b;
+  --color-surface-container: #1c304a;
+  --color-surface-tertiary: #29415f;
+  --color-header-background: #101b2d;
+  --color-sidebar-background: #101b2d;
+  --color-section-background: #101b2d;
+  --color-section-alternate: #0e192a;
+  --color-product-surface: #101b2d;
+  --color-category-surface: #17263b;
+  --color-table-surface: #101b2d;
+  --color-form-surface: #17263b;
+  --color-popover-surface: #17263b;
+  --color-dialog-surface: #17263b;
+  --color-control-background: #101b2d;
+  --color-control-hover: #1c304a;
+  --color-foreground: #e7f0ff;
+  --color-foreground-muted: #afc2dc;
+  --color-muted-foreground: #afc2dc;
+  --color-border: #35506f;
+  --color-border-strong: #52749b;
+  --color-control-border: #35506f;
+  --color-primary: #55d6ff;
+  --color-primary-foreground: #05131c;
+  --color-secondary: #9ab4ff;
+  --color-secondary-foreground: #0b1220;
+  --color-accent: #55d6ff;
+  --color-accent-foreground: #05131c;
+  --color-muted: #1c304a;
+  --color-focus: #75e2ff;
+  --color-link: #75e2ff;
+  --color-focus-ring: rgb(85 214 255 / 28%);
+  --color-selected-surface: #17324a;
+  --color-overlay: rgb(1 7 16 / 78%);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 22%);
+  --shadow-sm: 0 4px 14px rgb(0 0 0 / 28%);
+  --shadow-md: 0 12px 30px rgb(0 0 0 / 38%);
+  --shadow-lg: 0 20px 46px rgb(0 0 0 / 44%);
+  --shadow-xl: 0 28px 60px rgb(0 0 0 / 50%);
 }
 
 :root[data-theme="starbucks"], :root[data-theme="patagonia"] {
@@ -371,17 +533,13 @@ body {
 
 .storefront-editorial,
 .admin-workspace {
-  background-color: var(--color-background);
   color: var(--color-foreground);
 }
 
+.storefront-editorial { background-color: var(--color-storefront-background); }
+
 .admin-workspace {
-  --color-background: var(--color-admin-background);
-  --color-surface-elevated: var(--color-admin-surface);
-  --color-surface: var(--color-admin-surface-subtle);
-  --color-foreground: var(--color-admin-foreground);
-  --color-foreground-muted: var(--color-admin-foreground-muted);
-  --color-border: var(--color-admin-border);
+  background-color: var(--color-admin-canvas);
 }
 
 h1, h2, h3 {
@@ -411,15 +569,6 @@ h1, h2, h3 {
 .admin-workspace :where(input, select, textarea):disabled {
   background-color: var(--color-muted);
 }
-
-/* Compatibility mapping for legacy neutral utilities while components migrate. */
-.bg-white { background-color: var(--color-surface-elevated); }
-.bg-gray-50, .bg-slate-50 { background-color: var(--color-surface); }
-.bg-gray-100, .bg-slate-100 { background-color: var(--color-surface-container); }
-.text-gray-900, .text-slate-900, .text-gray-800, .text-slate-800 { color: var(--color-foreground); }
-.text-gray-700, .text-slate-700, .text-gray-600, .text-slate-600,
-.text-gray-500, .text-slate-500 { color: var(--color-foreground-muted); }
-.border-gray-100, .border-gray-200, .border-slate-100, .border-slate-200 { border-color: var(--color-border); }
 
 .storefront-editorial :where(button, a, input, select, textarea),
 .admin-workspace :where(button, a, input, select, textarea) {
@@ -469,6 +618,93 @@ h1, h2, h3 {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-border-strong);
+}
+
+/* Per-theme application-shell and raised-surface tuning. Keeping these roles
+   on the root lets storefront shells, admin shells, controls and portals share
+   one active palette while retaining each theme's own material character. */
+:root[data-theme="luxe"] {
+  --color-surface-elevated: #fffdf8;
+  --color-header-background: #fffdf8;
+  --color-sidebar-background: #ece7de;
+  --color-form-surface: #fcfaf5;
+  --color-table-surface: #fffdf8;
+  --color-dialog-surface: #fffdf8;
+}
+:root[data-theme="starbucks"] {
+  --color-surface-elevated: #fffdf7;
+  --color-header-background: #fffdf7;
+  --color-sidebar-background: #e8e3d6;
+  --color-form-surface: #f8f6f0;
+  --color-table-surface: #fffdf7;
+  --color-dialog-surface: #fffdf7;
+}
+:root[data-theme="levis"] {
+  --color-surface-elevated: #fffefa;
+  --color-header-background: #fffefa;
+  --color-sidebar-background: #e7e0d4;
+  --color-form-surface: #f8f5ef;
+  --color-table-surface: #fffefa;
+  --color-dialog-surface: #fffefa;
+}
+:root[data-theme="ikea"] {
+  --color-header-background: #ffffff;
+  --color-sidebar-background: #dfe7f1;
+  --color-form-surface: #f5f7fa;
+  --color-table-surface: #ffffff;
+  --color-dialog-surface: #ffffff;
+}
+:root[data-theme="sephora"] {
+  --color-header-background: #ffffff;
+  --color-sidebar-background: #e9e5e2;
+  --color-form-surface: #faf9f8;
+  --color-table-surface: #ffffff;
+  --color-dialog-surface: #ffffff;
+}
+:root[data-theme="patagonia"] {
+  --color-surface-elevated: #fffefa;
+  --color-header-background: #fffefa;
+  --color-sidebar-background: #e1e1d2;
+  --color-form-surface: #f5f4ed;
+  --color-table-surface: #fffefa;
+  --color-dialog-surface: #fffefa;
+}
+:root[data-theme="tiffany"] {
+  --color-header-background: #ffffff;
+  --color-sidebar-background: #e9e3da;
+  --color-form-surface: #fbf9f6;
+  --color-table-surface: #ffffff;
+  --color-dialog-surface: #ffffff;
+}
+:root[data-theme="adidas"] {
+  --color-header-background: #ffffff;
+  --color-sidebar-background: #e5e5e5;
+  --color-form-surface: #f7f7f7;
+  --color-table-surface: #ffffff;
+  --color-dialog-surface: #ffffff;
+}
+:root[data-theme="coca-cola"] {
+  --color-surface-elevated: #fffdfc;
+  --color-header-background: #fffdfc;
+  --color-sidebar-background: #f1dfdc;
+  --color-form-surface: #fff8f7;
+  --color-table-surface: #fffdfc;
+  --color-dialog-surface: #fffdfc;
+}
+:root[data-theme="amazon"] {
+  --color-header-background: #ffffff;
+  --color-sidebar-background: #dfe4e5;
+  --color-form-surface: #fafafa;
+  --color-table-surface: #ffffff;
+  --color-dialog-surface: #ffffff;
+}
+:root[data-theme="dior"] {
+  --color-surface-elevated: #fffdf9;
+  --color-header-background: #fffdf9;
+  --color-sidebar-background: #e9e1d6;
+  --color-form-surface: #fcfaf7;
+  --color-table-surface: #fffdf9;
+  --color-dialog-surface: #fffdf9;
 }
 /*
 ── 9. Typography utilities ───────────────────────────────────────────────────
@@ -735,7 +971,7 @@ remain unchanged.
   /*
   Warm, editorial surfaces
   */
-  --ds-surface-lowest: #ffffff;
+  --ds-surface-lowest: #fffdf8;
   --ds-surface-low: #f8f6f1;
   --ds-surface: #f4f1eb;
   --ds-surface-container: #ece7de;
@@ -811,7 +1047,7 @@ Keeps existing layout utilities and component behavior unchanged.
   /*
   Warm café paper, cream, and subtle oat surfaces
   */
-  --ds-surface-lowest: #ffffff;
+  --ds-surface-lowest: #fffdf7;
   --ds-surface-low: #f8f6f0;
   --ds-surface: #f2efe6;
   --ds-surface-container: #e8e3d6;
@@ -876,6 +1112,8 @@ Evergreen primary controls; keep red reserved for errors/sale messaging
 */
 @media (prefers-reduced-motion: reduce) {
 }
+
+
 /*
 ─────────────────────────────────────────────────────────────────────────────
 17. Alternate theme - Denim Heritage
@@ -889,7 +1127,7 @@ Not an official Levi's brand asset. Existing layout and behavior are retained.
   /*
   Natural canvas and faded denim surfaces
   */
-  --ds-surface-lowest: #ffffff;
+  --ds-surface-lowest: #fffefa;
   --ds-surface-low: #f8f5ef;
   --ds-surface: #f1ede4;
   --ds-surface-container: #e7e0d4;
@@ -1232,7 +1470,7 @@ Iconic beverage retail: confident red, white, deep cola, rounded components.
 */
 :root[data-theme="coca-cola"], [data-theme="coca-cola"] {
   color-scheme:light;
-  --ds-surface-lowest:#ffffff;
+  --ds-surface-lowest:#fffdfc;
   --ds-surface-low:#fff8f7;
   --ds-surface:#f9efed;
   --ds-surface-container:#f0dedb;
@@ -1334,7 +1572,7 @@ Couture luxury: ivory, near-black, muted champagne and graceful surfaces.
 */
 :root[data-theme="dior"], [data-theme="dior"] {
   color-scheme:light;
-  --ds-surface-lowest:#ffffff;
+  --ds-surface-lowest:#fffdf9;
   --ds-surface-low:#fcfaf7;
   --ds-surface:#f5f0e8;
   --ds-surface-container:#e9e0d4;
@@ -1383,4 +1621,232 @@ Couture luxury: ivory, near-black, muted champagne and graceful surfaces.
 Shared accessibility and reduced-motion behavior
 */
 @media (prefers-reduced-motion: reduce) {
+}
+
+/* Final presentation layer: placed after legacy palette declarations so every
+   surface role resolves consistently for the dark and graphite families. */
+:root[data-theme="luxe"], :root[data-theme="amazon"] {
+  color-scheme: dark;
+  --color-background: #12110f;
+  --color-storefront-background: #12110f;
+  --color-admin-canvas: #12110f;
+  --color-surface: #1b1916;
+  --color-surface-elevated: #24211d;
+  --color-surface-container: #2d2923;
+  --color-surface-tertiary: #39332c;
+  --color-header-background: #171512;
+  --color-sidebar-background: #171512;
+  --color-section-background: #1b1916;
+  --color-section-alternate: #24211d;
+  --color-product-surface: #1b1916;
+  --color-category-surface: #2d2923;
+  --color-table-surface: #1b1916;
+  --color-form-surface: #24211d;
+  --color-popover-surface: #24211d;
+  --color-dialog-surface: #24211d;
+  --color-control-background: #1b1916;
+  --color-control-hover: #2d2923;
+  --color-foreground: #f4eee4;
+  --color-foreground-muted: #c0b6a7;
+  --color-muted-foreground: #c0b6a7;
+  --color-border: #52483b;
+  --color-border-strong: #78664f;
+  --color-control-border: #52483b;
+  --color-muted: #2d2923;
+  --color-focus-ring: color-mix(in srgb, var(--color-focus) 28%, transparent);
+  --color-selected-surface: color-mix(in srgb, var(--color-primary) 18%, #24211d);
+  --color-overlay: rgb(0 0 0 / 76%);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 22%);
+  --shadow-sm: 0 4px 14px rgb(0 0 0 / 28%);
+  --shadow-md: 0 12px 30px rgb(0 0 0 / 36%);
+  --shadow-lg: 0 20px 46px rgb(0 0 0 / 42%);
+  --shadow-xl: 0 28px 60px rgb(0 0 0 / 48%);
+}
+
+:root[data-theme="luxe"] {
+  --color-primary: #c7a46b;
+  --color-primary-foreground: #1b150b;
+  --color-secondary: #b68d51;
+  --color-secondary-foreground: #1b150b;
+  --color-accent: #c7a46b;
+  --color-accent-foreground: #1b150b;
+  --color-focus: #e0bd76;
+  --color-link: #e0bd76;
+  --font-display: Georgia, "Times New Roman", serif;
+  --radius-card: 0.375rem;
+  --radius-button: 0.25rem;
+  --theme-section-space: 3rem;
+}
+
+:root[data-theme="amazon"] {
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-display: Inter, ui-sans-serif, system-ui, sans-serif;
+  --color-background: #0b1220;
+  --color-storefront-background: #0b1220;
+  --color-admin-canvas: #0b1220;
+  --color-surface: #101b2d;
+  --color-surface-elevated: #17263b;
+  --color-surface-container: #1c304a;
+  --color-surface-tertiary: #29415f;
+  --color-header-background: #101b2d;
+  --color-sidebar-background: #101b2d;
+  --color-section-background: #101b2d;
+  --color-section-alternate: #0e192a;
+  --color-product-surface: #101b2d;
+  --color-category-surface: #17263b;
+  --color-table-surface: #101b2d;
+  --color-form-surface: #17263b;
+  --color-popover-surface: #17263b;
+  --color-dialog-surface: #17263b;
+  --color-control-background: #101b2d;
+  --color-control-hover: #1c304a;
+  --color-foreground: #e7f0ff;
+  --color-foreground-muted: #afc2dc;
+  --color-muted-foreground: #afc2dc;
+  --color-border: #35506f;
+  --color-border-strong: #52749b;
+  --color-control-border: #35506f;
+  --color-primary: #55d6ff;
+  --color-primary-foreground: #05131c;
+  --color-secondary: #9ab4ff;
+  --color-secondary-foreground: #0b1220;
+  --color-accent: #55d6ff;
+  --color-accent-foreground: #05131c;
+  --color-muted: #1c304a;
+  --color-focus: #75e2ff;
+  --color-link: #75e2ff;
+  --color-selected-surface: #17324a;
+  --color-overlay: rgb(1 7 16 / 80%);
+  --radius-card: 0.5rem;
+  --radius-button: 0.375rem;
+  --theme-section-space: 2rem;
+}
+
+:root[data-theme="adidas"] {
+  color-scheme: dark;
+  --color-background: #202326;
+  --color-storefront-background: #202326;
+  --color-admin-canvas: #202326;
+  --color-surface: #292d30;
+  --color-surface-elevated: #33383b;
+  --color-surface-container: #3b4144;
+  --color-surface-tertiary: #484f52;
+  --color-header-background: #25292c;
+  --color-sidebar-background: #25292c;
+  --color-section-background: #292d30;
+  --color-section-alternate: #33383b;
+  --color-product-surface: #292d30;
+  --color-category-surface: #33383b;
+  --color-table-surface: #292d30;
+  --color-form-surface: #33383b;
+  --color-popover-surface: #33383b;
+  --color-dialog-surface: #33383b;
+  --color-control-background: #292d30;
+  --color-control-hover: #3b4144;
+  --color-foreground: #f1f3f3;
+  --color-foreground-muted: #c3c9ca;
+  --color-muted-foreground: #c3c9ca;
+  --color-border: #555e61;
+  --color-border-strong: #737e81;
+  --color-control-border: #555e61;
+  --color-muted: #3b4144;
+  --color-primary: #f1f3f3;
+  --color-primary-foreground: #202326;
+  --color-secondary: #d4ff36;
+  --color-secondary-foreground: #202326;
+  --color-accent: #d4ff36;
+  --color-accent-foreground: #202326;
+  --color-focus: #d4ff36;
+  --color-link: #e2ff8a;
+  --color-selected-surface: #414a34;
+  --color-overlay: rgb(0 0 0 / 72%);
+  --theme-section-space: 1.875rem;
+}
+
+:root[data-theme="starbucks"], :root[data-theme="patagonia"] { --theme-section-space: 2.75rem; }
+:root[data-theme="sephora"], :root[data-theme="tiffany"], :root[data-theme="dior"] { --theme-section-space: 2.625rem; }
+
+:root[data-theme="starbucks"] {
+  color-scheme: light;
+  --color-background: #c8beae;
+  --color-storefront-background: #c8beae;
+  --color-admin-canvas: #c8beae;
+  --color-surface: #d5cbbb;
+  --color-surface-elevated: #e3dacb;
+  --color-surface-container: #b9ad9b;
+  --color-surface-tertiary: #aa9d89;
+  --color-header-background: #ded4c4;
+  --color-sidebar-background: #d5cbbb;
+  --color-section-background: #c8beae;
+  --color-section-alternate: #b9ad9b;
+  --color-product-surface: #e3dacb;
+  --color-category-surface: #b9ad9b;
+  --color-table-surface: #e3dacb;
+  --color-form-surface: #e3dacb;
+  --color-popover-surface: #e3dacb;
+  --color-dialog-surface: #e3dacb;
+  --color-control-background: #e3dacb;
+  --color-control-hover: #d5cbbb;
+  --color-foreground: #29251f;
+  --color-foreground-muted: #50483e;
+  --color-muted-foreground: #50483e;
+  --color-border: #9e927f;
+  --color-border-strong: #746957;
+  --color-control-border: #9e927f;
+  --color-muted: #b9ad9b;
+  --color-primary: #006241;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #a8753e;
+  --color-secondary-foreground: #ffffff;
+  --color-accent: #006241;
+  --color-accent-foreground: #ffffff;
+  --color-focus: #006241;
+  --color-link: #005536;
+  --color-selected-surface: #b4c5b6;
+  --color-overlay: rgb(31 26 20 / 54%);
+}
+
+:root[data-theme="patagonia"] {
+  color-scheme: light;
+  --color-background: #aeb9aa;
+  --color-storefront-background: #aeb9aa;
+  --color-admin-canvas: #aeb9aa;
+  --color-surface: #bfc9bb;
+  --color-surface-elevated: #d1dbcd;
+  --color-surface-container: #9eab9b;
+  --color-surface-tertiary: #8d9b8c;
+  --color-header-background: #c5d0c1;
+  --color-sidebar-background: #bfc9bb;
+  --color-section-background: #aeb9aa;
+  --color-section-alternate: #9eab9b;
+  --color-product-surface: #d1dbcd;
+  --color-category-surface: #9eab9b;
+  --color-table-surface: #d1dbcd;
+  --color-form-surface: #d1dbcd;
+  --color-popover-surface: #d1dbcd;
+  --color-dialog-surface: #d1dbcd;
+  --color-control-background: #d1dbcd;
+  --color-control-hover: #bfc9bb;
+  --color-foreground: #202b25;
+  --color-foreground-muted: #435047;
+  --color-muted-foreground: #435047;
+  --color-border: #859384;
+  --color-border-strong: #657663;
+  --color-control-border: #859384;
+  --color-muted: #9eab9b;
+  --color-primary: #234c3b;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #a43a3d;
+  --color-secondary-foreground: #ffffff;
+  --color-accent: #234c3b;
+  --color-accent-foreground: #ffffff;
+  --color-focus: #234c3b;
+  --color-link: #193f30;
+  --color-selected-surface: #c8d7c5;
+  --color-overlay: rgb(20 30 24 / 55%);
+}
+
+:root:is([data-theme="luxe"], [data-theme="amazon"], [data-theme="adidas"]) img[src="/logo-large.png"],
+:root:is([data-theme="luxe"], [data-theme="amazon"], [data-theme="adidas"]) img[src="/logo.png"] {
+  filter: brightness(0) invert(1);
 }

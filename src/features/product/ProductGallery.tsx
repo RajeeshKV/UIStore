@@ -108,7 +108,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               className={cn(
                 "absolute left-3 top-1/2 -translate-y-1/2 z-10",
                 "flex h-10 w-10 items-center justify-center rounded-full",
-                "bg-surface-elevated border border-border shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-foreground",
+                "bg-surface-elevated border border-border shadow-card text-foreground",
                 "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
                 "hover:scale-105 active:scale-95 transition-all duration-150",
                 "disabled:opacity-0 disabled:pointer-events-none",
@@ -123,7 +123,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               className={cn(
                 "absolute right-3 top-1/2 -translate-y-1/2 z-10",
                 "flex h-10 w-10 items-center justify-center rounded-full",
-                "bg-surface-elevated border border-border shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-foreground",
+                "bg-surface-elevated border border-border shadow-card text-foreground",
                 "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
                 "hover:scale-105 active:scale-95 transition-all duration-150",
                 "disabled:opacity-0 disabled:pointer-events-none",
@@ -141,7 +141,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           className={cn(
             "absolute bottom-3 right-3 z-10",
             "flex h-9 w-9 items-center justify-center rounded-full",
-            "bg-surface-elevated border border-border shadow-[0_2px_8px_rgba(0,0,0,0.08)] text-foreground-muted",
+            "bg-surface-elevated border border-border shadow-card text-foreground-muted",
             "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
             "hover:text-foreground transition-all duration-150",
           )}

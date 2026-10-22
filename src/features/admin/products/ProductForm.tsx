@@ -987,7 +987,7 @@ function VariantMatrixRow({ productId, row, attrLabel, productPrice, saving, onC
             row.isActive ? "bg-success" : "bg-muted",
           )}
         >
-          <span className={cn("inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform", row.isActive ? "translate-x-4" : "translate-x-0.5")} />
+          <span className={cn("inline-block h-3.5 w-3.5 transform rounded-full bg-surface-elevated shadow transition-transform", row.isActive ? "translate-x-4" : "translate-x-0.5")} />
         </button>
       </td>
 
