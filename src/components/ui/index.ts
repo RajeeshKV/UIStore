@@ -18,6 +18,7 @@ export {
 } from "./Skeleton";
 export { EmptyState } from "./EmptyState";
 export { ErrorState } from "./ErrorState";
+export { FrameLoader, RouteLoader } from "./FrameLoader";
 export { Pagination } from "./Pagination";
 export { ProductCard } from "./ProductCard";
 export { ProductGrid } from "./ProductGrid";
